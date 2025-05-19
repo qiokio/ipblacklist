@@ -47,6 +47,7 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
+            position: relative;
         }
 
         button:hover {
@@ -56,6 +57,28 @@
         button:disabled {
             background-color: #cccccc;
             cursor: not-allowed;
+        }
+
+        button.loading {
+            color: transparent;
+        }
+        
+        button.loading:after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin: -8px 0 0 -8px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         .card {
@@ -377,6 +400,10 @@
                     return;
                 }
                 
+                // 显示加载状态
+                verifyKeyBtn.classList.add('loading');
+                verifyKeyBtn.disabled = true;
+                
                 try {
                     // 使用check-api接口测试密钥
                     const response = await fetch(`/api/blacklist/check-api?key=${apiKey}&ip=8.8.8.8`);
@@ -393,9 +420,16 @@
                         `;
                         keyStatusContainer.classList.remove('hidden');
                         permissionsContainer.classList.add('hidden');
+                        
+                        // 移除加载状态
+                        verifyKeyBtn.classList.remove('loading');
+                        verifyKeyBtn.disabled = false;
                     }
                 } catch (error) {
                     showMessage('验证密钥失败: ' + error.message, 'error');
+                    // 移除加载状态
+                    verifyKeyBtn.classList.remove('loading');
+                    verifyKeyBtn.disabled = false;
                 }
             }
             
@@ -461,8 +495,15 @@
                     // 根据权限启用/禁用功能
                     updateFeaturesAvailability();
                     
+                    // 移除验证按钮的加载状态
+                    verifyKeyBtn.classList.remove('loading');
+                    verifyKeyBtn.disabled = false;
+                    
                 } catch (error) {
                     showMessage('获取密钥权限失败: ' + error.message, 'error');
+                    // 移除加载状态
+                    verifyKeyBtn.classList.remove('loading');
+                    verifyKeyBtn.disabled = false;
                 }
             }
             
@@ -519,6 +560,10 @@
                     return;
                 }
                 
+                // 显示加载状态
+                checkIpBtn.classList.add('loading');
+                checkIpBtn.disabled = true;
+                
                 try {
                     const response = await fetch(`/api/blacklist/check-api?key=${apiKey}&ip=${ip}`);
                     const data = await response.json();
@@ -527,12 +572,20 @@
                     checkIpResult.classList.remove('hidden');
                 } catch (error) {
                     showMessage('查询失败: ' + error.message, 'error');
+                } finally {
+                    // 移除加载状态
+                    checkIpBtn.classList.remove('loading');
+                    checkIpBtn.disabled = false;
                 }
             }
             
             // 获取IP黑名单列表
             async function listIps() {
                 const apiKey = window.currentApiKey;
+                
+                // 显示加载状态
+                listIpsBtn.classList.add('loading');
+                listIpsBtn.disabled = true;
                 
                 try {
                     const response = await fetch(`/api/blacklist/get-api?key=${apiKey}`);
@@ -542,6 +595,10 @@
                     listIpsResult.classList.remove('hidden');
                 } catch (error) {
                     showMessage('获取列表失败: ' + error.message, 'error');
+                } finally {
+                    // 移除加载状态
+                    listIpsBtn.classList.remove('loading');
+                    listIpsBtn.disabled = false;
                 }
             }
             
@@ -555,6 +612,10 @@
                     return;
                 }
                 
+                // 显示加载状态
+                addIpBtn.classList.add('loading');
+                addIpBtn.disabled = true;
+                
                 try {
                     const response = await fetch('/api/blacklist/add-api', {
                         method: 'POST',
@@ -567,6 +628,10 @@
                     addIpResult.classList.remove('hidden');
                 } catch (error) {
                     showMessage('添加IP失败: ' + error.message, 'error');
+                } finally {
+                    // 移除加载状态
+                    addIpBtn.classList.remove('loading');
+                    addIpBtn.disabled = false;
                 }
             }
             
@@ -580,6 +645,10 @@
                     return;
                 }
                 
+                // 显示加载状态
+                removeIpBtn.classList.add('loading');
+                removeIpBtn.disabled = true;
+                
                 try {
                     const response = await fetch('/api/blacklist/remove-api', {
                         method: 'POST',
@@ -592,6 +661,10 @@
                     removeIpResult.classList.remove('hidden');
                 } catch (error) {
                     showMessage('删除IP失败: ' + error.message, 'error');
+                } finally {
+                    // 移除加载状态
+                    removeIpBtn.classList.remove('loading');
+                    removeIpBtn.disabled = false;
                 }
             }
             

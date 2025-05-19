@@ -28,6 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        // 显示加载状态
+        loginBtn.classList.add('loading');
+        loginBtn.disabled = true;
+        
         try {
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
@@ -47,10 +51,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 重定向到管理页面
                 window.location.href = '/';
             } else {
+                // 移除加载状态
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
                 showError(data.message || '登录失败，请检查用户名和密码');
             }
         } catch (error) {
             console.error('登录请求失败:', error);
+            // 移除加载状态
+            loginBtn.classList.remove('loading');
+            loginBtn.disabled = false;
             showError('登录请求失败，请稍后再试');
         }
     }

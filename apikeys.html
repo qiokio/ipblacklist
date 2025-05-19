@@ -48,10 +48,33 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
+            position: relative;
         }
 
         button:hover {
             background-color: #0056b3;
+        }
+
+        button.loading {
+            color: transparent;
+        }
+        
+        button.loading:after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin: -8px 0 0 -8px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         .delete-btn {
@@ -378,19 +401,29 @@
         
         // 生成随机API密钥
         function generateApiKey() {
-            const bytes = new Uint8Array(16);
-            window.crypto.getRandomValues(bytes);
-            const key = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+            const generateBtn = document.getElementById('generateKeyBtn');
+            generateBtn.classList.add('loading');
+            generateBtn.disabled = true;
             
-            document.getElementById('newApiKeyInput').value = key;
-            document.getElementById('createKeyBtn').classList.remove('hidden');
-            document.getElementById('permissionsContainer').classList.remove('hidden');
+            setTimeout(() => {
+                const bytes = new Uint8Array(16);
+                window.crypto.getRandomValues(bytes);
+                const key = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+                
+                document.getElementById('newApiKeyInput').value = key;
+                document.getElementById('createKeyBtn').classList.remove('hidden');
+                document.getElementById('permissionsContainer').classList.remove('hidden');
+                
+                generateBtn.classList.remove('loading');
+                generateBtn.disabled = false;
+            }, 500); // 添加短暂延迟以显示加载效果
         }
         
         // 创建API密钥
         async function createApiKey() {
             const key = document.getElementById('newApiKeyInput').value;
             const note = document.getElementById('noteInput').value;
+            const createBtn = document.getElementById('createKeyBtn');
             
             // 获取权限设置
             const permissions = {
@@ -404,6 +437,10 @@
                 showMessage('请先生成API密钥', 'error');
                 return;
             }
+            
+            // 显示加载状态
+            createBtn.classList.add('loading');
+            createBtn.disabled = true;
             
             try {
                 const response = await fetch('/api/apikey/create', {
@@ -438,6 +475,10 @@
                 }
             } catch (error) {
                 showMessage('创建失败: ' + error.message, 'error');
+            } finally {
+                // 无论成功或失败，移除加载状态
+                createBtn.classList.remove('loading');
+                createBtn.disabled = false;
             }
         }
         
