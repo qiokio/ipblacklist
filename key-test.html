@@ -407,24 +407,37 @@
                     const listTest = await fetch(`/api/blacklist/get-api?key=${apiKey}`);
                     const hasListPerm = listTest.ok;
                     
-                    // 通过POST请求带错误的IP来测试add权限（不会真的添加）
-                    const addTest = await fetch('/api/blacklist/add-api', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ key: apiKey, ip: 'invalid_ip_to_test_permission' })
-                    });
-                    // 如果返回400，说明IP无效但密钥有效且有权限
-                    // 如果返回401或403，说明无权限
-                    const hasAddPerm = addTest.status === 400;
+                    // 测试add权限 - 修改检测方法
+                    let hasAddPerm = false;
+                    try {
+                        const addTest = await fetch('/api/blacklist/add-api', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ key: apiKey, ip: 'invalid_ip_to_test_permission' })
+                        });
+                        const addResult = await addTest.json();
+                        // 如果是无效IP错误，说明密钥通过了权限验证但IP格式无效
+                        hasAddPerm = addTest.status === 400 && addResult.message && addResult.message.includes('IP格式无效');
+                    } catch (err) {
+                        console.error('测试add权限时出错:', err);
+                        hasAddPerm = false;
+                    }
                     
-                    // 测试delete权限
-                    const deleteTest = await fetch('/api/blacklist/remove-api', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ key: apiKey, ip: '' })
-                    });
-                    // 如果返回400，说明参数无效但密钥有效且有权限
-                    const hasDeletePerm = deleteTest.status === 400;
+                    // 测试delete权限 - 修改检测方法
+                    let hasDeletePerm = false;
+                    try {
+                        const deleteTest = await fetch('/api/blacklist/remove-api', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ key: apiKey, ip: '' })
+                        });
+                        const deleteResult = await deleteTest.json();
+                        // 如果是"未提供IP地址"错误，说明密钥通过了权限验证但IP参数无效
+                        hasDeletePerm = deleteTest.status === 400 && deleteResult.message && deleteResult.message.includes('未提供IP地址');
+                    } catch (err) {
+                        console.error('测试delete权限时出错:', err);
+                        hasDeletePerm = false;
+                    }
                     
                     // 保存当前密钥和权限
                     window.currentApiKey = apiKey;
