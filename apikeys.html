@@ -8,6 +8,74 @@
     <link rel="stylesheet" href="styles/layout.css">
     <!-- 字体图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal.show {
+            display: block;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 4px;
+            width: 80%;
+            max-width: 500px;
+            position: relative;
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .form-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .edit-btn {
+            background-color: #28a745;
+            margin-right: 5px;
+        }
+        
+        .edit-btn:hover {
+            background-color: #218838;
+        }
+    </style>
 </head>
 <body>
     <div class="grid-container">
@@ -139,6 +207,57 @@
                 </table>
             </div>
             
+            <!-- 修改API密钥的弹窗 -->
+            <div id="editKeyModal" class="modal hidden">
+                <div class="modal-content">
+                    <span class="close-button">&times;</span>
+                    <h3>修改API密钥</h3>
+                    <input type="hidden" id="editKeyId">
+                    
+                    <div class="form-group">
+                        <label for="editKeyNote">备注：</label>
+                        <input type="text" id="editKeyNote" class="form-control" placeholder="输入备注">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>权限设置：</label>
+                        <div class="permission-item">
+                            <label>
+                                <input type="checkbox" id="editPermissionRead" checked disabled>
+                                查询IP
+                            </label>
+                            <div class="permission-description">允许查询IP是否在黑名单中（默认允许且不可更改）</div>
+                        </div>
+                        <div class="permission-item">
+                            <label>
+                                <input type="checkbox" id="editPermissionList">
+                                获取IP列表
+                            </label>
+                            <div class="permission-description">允许获取完整的IP黑名单列表</div>
+                        </div>
+                        <div class="permission-item">
+                            <label>
+                                <input type="checkbox" id="editPermissionAdd">
+                                添加IP
+                            </label>
+                            <div class="permission-description">允许向黑名单添加IP地址</div>
+                        </div>
+                        <div class="permission-item">
+                            <label>
+                                <input type="checkbox" id="editPermissionDelete">
+                                删除IP
+                            </label>
+                            <div class="permission-description">允许从黑名单删除IP地址</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button id="saveKeyBtn" class="btn">保存更改</button>
+                        <button id="cancelEditBtn" class="btn btn-secondary">取消</button>
+                    </div>
+                </div>
+            </div>
+            
             <div class="card hint">
                 <h3>API密钥使用说明</h3>
                 <p>API密钥可以用于以下API端点：</p>
@@ -167,6 +286,13 @@
             
             // 创建密钥按钮事件
             document.getElementById('createKeyBtn').addEventListener('click', createApiKey);
+            
+            // 关闭修改弹窗按钮事件
+            document.querySelector('.close-button').addEventListener('click', closeEditModal);
+            document.getElementById('cancelEditBtn').addEventListener('click', closeEditModal);
+            
+            // 保存修改按钮事件
+            document.getElementById('saveKeyBtn').addEventListener('click', updateApiKey);
         });
         
         // 检查用户是否已登录
@@ -301,12 +427,13 @@
                             if (keyInfo.permissions.add) permissions.push('添加');
                             if (keyInfo.permissions.delete) permissions.push('删除');
                             
-                            row.innerHTML = `
+                                                        row.innerHTML = `
                                 <td data-title="API密钥">${keyInfo.key}</td>
                                 <td data-title="备注">${keyInfo.note || '-'}</td>
                                 <td data-title="创建时间">${formattedDate}</td>
                                 <td data-title="权限">${permissions.join(', ')}</td>
                                 <td data-title="操作">
+                                    <button class="edit-btn" data-key="${keyInfo.key}">修改</button>
                                     <button class="delete-btn" data-key="${keyInfo.key}">删除</button>
                                 </td>
                             `;
@@ -319,6 +446,14 @@
                             btn.addEventListener('click', function() {
                                 const key = this.getAttribute('data-key');
                                 deleteApiKey(key);
+                            });
+                        });
+                        
+                        // 为修改按钮添加事件监听
+                        document.querySelectorAll('.edit-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                const key = this.getAttribute('data-key');
+                                openEditModal(key);
                             });
                         });
                     }
@@ -369,6 +504,106 @@
             setTimeout(() => {
                 messageContainer.className = 'message hidden';
             }, 5000);
+        }
+        
+        // 打开修改弹窗
+        async function openEditModal(key) {
+            try {
+                // 获取密钥详情
+                const response = await fetch('/api/apikey/list', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const keyInfo = data.keys.find(k => k.key === key);
+                    
+                    if (keyInfo) {
+                        // 填充表单数据
+                        document.getElementById('editKeyId').value = keyInfo.key;
+                        document.getElementById('editKeyNote').value = keyInfo.note || '';
+                        
+                        // 设置权限复选框
+                        document.getElementById('editPermissionList').checked = keyInfo.permissions.list || false;
+                        document.getElementById('editPermissionAdd').checked = keyInfo.permissions.add || false;
+                        document.getElementById('editPermissionDelete').checked = keyInfo.permissions.delete || false;
+                        
+                        // 显示弹窗
+                        document.getElementById('editKeyModal').classList.add('show');
+                        document.getElementById('editKeyModal').style.display = 'block';
+                    } else {
+                        showMessage('找不到指定的API密钥', 'error');
+                    }
+                } else {
+                    showMessage('获取API密钥详情失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('获取API密钥详情失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 关闭修改弹窗
+        function closeEditModal() {
+            document.getElementById('editKeyModal').classList.remove('show');
+            document.getElementById('editKeyModal').style.display = 'none';
+        }
+        
+        // 更新API密钥
+        async function updateApiKey() {
+            const key = document.getElementById('editKeyId').value;
+            const note = document.getElementById('editKeyNote').value;
+            const saveBtn = document.getElementById('saveKeyBtn');
+            
+            // 获取权限设置
+            const permissions = {
+                read: true, // 默认都有查询权限
+                list: document.getElementById('editPermissionList').checked,
+                add: document.getElementById('editPermissionAdd').checked,
+                delete: document.getElementById('editPermissionDelete').checked
+            };
+            
+            if (!key) {
+                showMessage('无效的API密钥', 'error');
+                return;
+            }
+            
+            // 显示加载状态
+            saveBtn.classList.add('loading');
+            saveBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/apikey/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    },
+                    body: JSON.stringify({ key, note, permissions })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('API密钥更新成功', 'success');
+                    
+                    // 关闭弹窗
+                    closeEditModal();
+                    
+                    // 重新加载API密钥列表
+                    loadApiKeys();
+                } else {
+                    showMessage('更新失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('更新失败: ' + error.message, 'error');
+            } finally {
+                // 无论成功或失败，移除加载状态
+                saveBtn.classList.remove('loading');
+                saveBtn.disabled = false;
+            }
         }
     </script>
 </body>
