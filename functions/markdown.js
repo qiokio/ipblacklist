@@ -1,5 +1,4 @@
-// 引入marked库用于Markdown解析
-import { marked } from 'marked';
+// Markdown渲染器 - 使用自己实现的解析函数，不依赖外部库
 
 // 处理对Markdown文件的请求
 export async function onRequest(context) {
