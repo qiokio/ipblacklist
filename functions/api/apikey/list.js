@@ -39,7 +39,10 @@ export async function onRequestGet(context) {
       }
     }
     
-    return new Response(JSON.stringify(apiKeysData), { headers });
+    return new Response(JSON.stringify({
+      success: true,
+      keys: apiKeysData
+    }), { headers });
     
   } catch (error) {
     return new Response(JSON.stringify({
