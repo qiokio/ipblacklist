@@ -1,0 +1,223 @@
+import { addToBlacklist, removeFromBlacklist, getBlacklist, checkKVConnection } from './ipBlacklist.js';
+
+class BlacklistManager {
+    constructor() {
+        this.init();
+    }
+
+    async init() {
+        console.log('初始化黑名单管理器');
+        // 加载KV初始化脚本
+        await this.loadKVInitScript();
+        await this.checkConnection();
+        this.bindEvents();
+        await this.refreshBlacklist();
+    }
+
+    async loadKVInitScript() {
+        return new Promise((resolve) => {
+            // 设置超时计时器，如果5秒内脚本未加载完成，则继续执行
+            const timeout = setTimeout(() => {
+                console.warn('KV初始化脚本加载超时，尝试加载备用脚本');
+                this.loadFallbackScript().then(resolve);
+            }, 5000);
+
+            // 使用fetch加载KV初始化脚本，而不是使用script标签
+            console.log('使用fetch加载KV初始化脚本');
+            
+            const baseUrl = window.location.origin;
+            fetch(`${baseUrl}/functions/api/init-kv.js`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`API请求失败: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(scriptText => {
+                    // 使用Function构造函数执行返回的脚本
+                    const scriptFunction = new Function(scriptText);
+                    scriptFunction();
+                    console.log('KV初始化脚本加载完成（通过Functions API）');
+                    clearTimeout(timeout);
+                    resolve();
+                })
+                .catch(error => {
+                    console.error('通过Functions API加载KV初始化脚本失败，尝试加载备用脚本', error);
+                    clearTimeout(timeout);
+                    this.loadFallbackScript().then(resolve);
+                });
+        });
+    }
+
+    async loadFallbackScript() {
+        return new Promise((resolve) => {
+            console.log('加载备用KV初始化脚本');
+            const script = document.createElement('script');
+            script.src = `${window.location.origin}/init-kv.js`;
+            
+            script.onload = () => {
+                console.log('备用KV初始化脚本加载完成');
+                resolve();
+            };
+            
+            script.onerror = () => {
+                console.error('备用KV初始化脚本也加载失败，尝试使用静态API路径');
+                
+                // 设置一个默认的KV状态
+                window.ENV = window.ENV || {};
+                window.ENV.KV_STATUS = {
+                    connected: false,
+                    message: "无法加载任何KV初始化脚本，黑名单功能将不可用"
+                };
+                
+                resolve();
+            };
+            
+            document.head.appendChild(script);
+        });
+    }
+
+    async checkConnection() {
+        const status = await checkKVConnection();
+        const statusElement = document.getElementById('kvStatus');
+        if (statusElement) {
+            statusElement.textContent = `KV状态: ${status.message}`;
+            statusElement.className = status.connected ? 'status-ok' : 'status-error';
+        }
+    }
+
+    bindEvents() {
+        const addButton = document.getElementById('addIpBtn');
+        const ipInput = document.getElementById('ipInput');
+        
+        console.log('绑定事件', { addButton, ipInput });
+        
+        // 添加IP按钮事件
+        if (addButton) {
+            addButton.addEventListener('click', () => {
+                console.log('点击添加按钮');
+                this.handleAddIP();
+            });
+        } else {
+            console.error('未找到添加按钮元素');
+        }
+        
+        // 添加回车键支持
+        if (ipInput) {
+            ipInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    console.log('按下回车键');
+                    this.handleAddIP();
+                }
+            });
+        }
+        
+        // 移除IP按钮事件（使用事件委托）
+        const table = document.getElementById('blacklistTable');
+        if (table) {
+            table.addEventListener('click', (e) => {
+                if (e.target.classList.contains('remove-ip-btn')) {
+                    const ip = e.target.dataset.ip;
+                    this.handleRemoveIP(ip);
+                }
+            });
+        } else {
+            console.error('未找到黑名单表格元素');
+        }
+    }
+
+    async handleAddIP() {
+        const ipInput = document.getElementById('ipInput');
+        if (!ipInput) {
+            console.error('未找到IP输入框');
+            return;
+        }
+
+        const ip = ipInput.value.trim();
+        console.log('处理添加IP:', ip);
+        
+        if (!this.validateIP(ip)) {
+            alert('请输入有效的IP地址');
+            return;
+        }
+
+        try {
+            const success = await addToBlacklist(ip);
+            if (success) {
+                ipInput.value = '';
+                await this.refreshBlacklist();
+                alert('IP已添加到黑名单');
+            } else {
+                alert('添加IP失败，请重试');
+            }
+        } catch (error) {
+            console.error('添加IP时出错:', error);
+            alert('添加IP时发生错误，请查看控制台');
+        }
+    }
+
+    async handleRemoveIP(ip) {
+        if (!confirm(`确定要从黑名单中移除 ${ip} 吗？`)) {
+            return;
+        }
+
+        try {
+            const success = await removeFromBlacklist(ip);
+            if (success) {
+                await this.refreshBlacklist();
+                alert('IP已从黑名单中移除');
+            } else {
+                alert('移除IP失败，请重试');
+            }
+        } catch (error) {
+            console.error('移除IP时出错:', error);
+            alert('移除IP时发生错误，请查看控制台');
+        }
+    }
+
+    async refreshBlacklist() {
+        try {
+            const blacklist = await getBlacklist();
+            const tableBody = document.getElementById('blacklistTableBody');
+            
+            if (!tableBody) {
+                console.error('未找到表格主体元素');
+                return;
+            }
+
+            tableBody.innerHTML = blacklist.map(ip => `
+                <tr>
+                    <td>${ip}</td>
+                    <td>
+                        <button class="remove-ip-btn" data-ip="${ip}">移除</button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            console.error('刷新黑名单时出错:', error);
+            alert('刷新黑名单时发生错误，请查看控制台');
+        }
+    }
+
+    validateIP(ip) {
+        const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+        const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
+        
+        if (!ipv4Regex.test(ip) && !ipv6Regex.test(ip)) {
+            return false;
+        }
+
+        // 验证IPv4每个数字是否在0-255范围内
+        if (ipv4Regex.test(ip)) {
+            const parts = ip.split('.');
+            return parts.every(part => parseInt(part) >= 0 && parseInt(part) <= 255);
+        }
+
+        return true;
+    }
+}
+
+// 初始化黑名单管理器
+document.addEventListener('DOMContentLoaded', () => {
+    new BlacklistManager();
+}); 
