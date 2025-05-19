@@ -138,6 +138,15 @@
             align-items: center;
             gap: 10px;
         }
+        
+        /* 按钮元素通用样式 */
+        button.btn {
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: inherit;
+        }
     </style>
 </head>
 <body>
@@ -148,7 +157,7 @@
                 <span>已登录为：</span>
                 <span id="username" class="username">管理员</span>
                 <a href="/dashboard.html" class="btn btn-secondary" style="padding: 6px 12px;">进入控制台</a>
-                <button id="logoutBtn" style="padding: 6px 12px;">退出登录</button>
+                <button id="logoutBtn" class="btn btn-secondary" style="padding: 6px 12px;">退出登录</button>
             </div>
             <div id="loginActions">
                 <a href="/login.html" class="btn btn-secondary" style="padding: 6px 12px;">登录</a>
