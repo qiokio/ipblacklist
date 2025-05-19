@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const passwordInput = document.getElementById('password');
     const errorMessage = document.getElementById('errorMessage');
 
+    console.log('login.js加载 - 当前页面:', window.location.pathname);
+    
     // 检查是否已经登录
     checkAuthStatus();
 
@@ -28,6 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        console.log('尝试登录，用户名:', username);
+        
         // 显示加载状态
         loginBtn.classList.add('loading');
         loginBtn.disabled = true;
@@ -41,15 +45,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ username, password }),
             });
             
+            console.log('登录响应状态:', response.status);
             const data = await response.json();
+            console.log('登录响应数据:', data);
             
             if (response.ok && data.success) {
                 // 登录成功，保存认证信息
+                console.log('登录成功，保存令牌到localStorage');
                 localStorage.setItem('auth_token', data.token);
-                localStorage.setItem('user', username);
+                localStorage.setItem('user', JSON.stringify({
+                    username: username,
+                    loginTime: new Date().toISOString()
+                }));
                 
-                // 重定向到管理页面
-                window.location.href = '/';
+                // 打印状态进行确认
+                console.log('保存后的localStorage状态:', {
+                    'auth_token': localStorage.getItem('auth_token') ? '已设置' : '未设置',
+                    'user': localStorage.getItem('user')
+                });
+                
+                // 确保令牌正确存储后再重定向
+                setTimeout(() => {
+                    // 重定向到管理页面
+                    window.location.href = '/dashboard.html';
+                }, 500);
             } else {
                 // 移除加载状态
                 loginBtn.classList.remove('loading');
@@ -79,20 +98,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // 检查认证状态
     async function checkAuthStatus() {
         const token = localStorage.getItem('auth_token');
+        console.log('checkAuthStatus - token存在:', !!token);
         
         if (token) {
             try {
+                console.log('验证已保存的token...');
                 const response = await fetch('/api/auth/verify', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
                 
+                console.log('验证响应状态:', response.status);
                 const data = await response.json();
+                console.log('验证响应数据:', data);
                 
                 if (response.ok && data.valid) {
                     // 已登录，重定向到主页
-                    window.location.href = '/';
+                    console.log('令牌有效，重定向到控制台');
+                    window.location.href = '/dashboard.html';
+                } else {
+                    // 令牌无效，清除
+                    console.log('令牌无效，清除localStorage');
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user');
                 }
             } catch (error) {
                 console.error('验证登录状态失败:', error);

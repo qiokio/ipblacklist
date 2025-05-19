@@ -42,18 +42,26 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 获取认证令牌
     const token = localStorage.getItem('auth_token');
+    console.log('当前页面路径:', window.location.pathname);
+    console.log('localStorage中的token:', token ? '存在' : '不存在');
     
     if (token) {
+        console.log('正在验证token...');
         // 尝试获取用户信息
         fetch('/api/auth/verify', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('验证响应状态:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('验证响应数据:', data);
             if (data.valid) {
                 // 显示用户信息
+                console.log('令牌有效，用户名:', data.user.username);
                 if (usernameElement) {
                     usernameElement.textContent = data.user.username;
                 }
@@ -61,17 +69,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (loginActions) loginActions.style.display = 'none';
             } else {
                 // 令牌无效
+                console.log('令牌无效');
+                localStorage.removeItem('auth_token'); // 移除无效令牌
+                localStorage.removeItem('user');
                 if (userInfo) userInfo.style.display = 'none';
                 if (loginActions) loginActions.style.display = 'flex';
             }
         })
         .catch(error => {
             console.error('验证失败:', error);
+            localStorage.removeItem('auth_token'); // 出错时也移除令牌
+            localStorage.removeItem('user');
             if (userInfo) userInfo.style.display = 'none';
             if (loginActions) loginActions.style.display = 'flex';
         });
     } else {
         // 未登录
+        console.log('未检测到令牌，显示未登录状态');
         if (userInfo) userInfo.style.display = 'none';
         if (loginActions) loginActions.style.display = 'flex';
     }
