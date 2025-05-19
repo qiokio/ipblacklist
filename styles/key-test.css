@@ -32,6 +32,22 @@ input[type="text"] {
     font-size: 14px;
 }
 
+/* 添加按钮基本样式 */
+button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    position: relative;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
 .button {
     display: inline-block;
     padding: 8px 16px;
