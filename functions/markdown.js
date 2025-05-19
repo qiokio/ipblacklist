@@ -3,29 +3,41 @@ import { marked } from 'marked';
 
 // 处理对Markdown文件的请求
 export async function onRequest(context) {
-  const { request, env } = context;
+  const { request } = context;
   const url = new URL(request.url);
   const path = url.pathname;
   
-  // 只处理.md文件
+  // 调试信息
+  console.log('请求路径:', path);
+  
+  // 检查是否是.md文件
   if (!path.endsWith('.md')) {
-    return new Response('Not a markdown file', { status: 400 });
+    return new Response(`不是Markdown文件: ${path}`, { 
+      status: 400,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+    });
   }
   
-  // 获取资源
   try {
-    // 使用fetch去获取Markdown文件内容（Cloudflare Pages会自动找到静态资源）
-    const response = await fetch(request);
+    // 尝试直接获取文件内容
+    console.log('尝试获取Markdown文件:', path);
+    const mdResponse = await fetch(request);
     
-    if (!response.ok) {
-      return new Response(`无法找到Markdown文件: ${path}`, { status: 404 });
+    if (!mdResponse.ok) {
+      console.log('获取Markdown文件失败:', mdResponse.status);
+      return new Response(`无法找到Markdown文件: ${path}, 状态码: ${mdResponse.status}`, { 
+        status: 404,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      });
     }
     
-    // 读取Markdown内容
-    const mdContent = await response.text();
+    // 获取Markdown内容
+    const mdContent = await mdResponse.text();
+    console.log('获取到Markdown内容:', mdContent.substring(0, 100) + '...');
     
-    // 使用marked库将Markdown转换为HTML
-    const htmlContent = marked(mdContent);
+    // 手动将Markdown转换为HTML
+    const htmlContent = convertMarkdownToHTML(mdContent);
+    console.log('转换后的HTML:', htmlContent.substring(0, 100) + '...');
     
     // 创建完整的HTML页面
     const fullHtml = `
@@ -153,18 +165,72 @@ export async function onRequest(context) {
     </html>
     `;
     
-    // 返回渲染后的HTML内容
+    // 返回渲染后的HTML
     return new Response(fullHtml, {
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600'
+        'Cache-Control': 'no-cache'
       }
     });
     
   } catch (error) {
+    console.error('处理Markdown时出错:', error);
     return new Response(`渲染Markdown时发生错误: ${error.message}`, { 
       status: 500,
       headers: { 'Content-Type': 'text/plain; charset=utf-8' }
     });
   }
+}
+
+// 简单的Markdown转HTML实现
+function convertMarkdownToHTML(markdown) {
+  // 处理标题
+  let html = markdown
+    .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+    .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+    .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+    .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
+    .replace(/^##### (.*$)/gm, '<h5>$1</h5>')
+    .replace(/^###### (.*$)/gm, '<h6>$1</h6>');
+    
+  // 处理段落
+  html = html.replace(/^\s*(\n)?(.+)/gm, function(m) {
+    return /^<(\/)?(h\d|ul|ol|li|blockquote|pre|table)/.test(m) ? m : '<p>' + m + '</p>';
+  });
+  
+  // 处理粗体和斜体
+  html = html
+    .replace(/\*\*(.*)\*\*/gm, '<strong>$1</strong>')
+    .replace(/\*(.*)\*/gm, '<em>$1</em>')
+    .replace(/\_\_(.*)\_\_/gm, '<strong>$1</strong>')
+    .replace(/\_(.*)\_/gm, '<em>$1</em>');
+    
+  // 处理链接
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/gm, '<a href="$2">$1</a>');
+  
+  // 处理行内代码
+  html = html.replace(/`([^`]+)`/gm, '<code>$1</code>');
+  
+  // 处理代码块
+  html = html.replace(/```([\s\S]*?)```/gm, '<pre><code>$1</code></pre>');
+  
+  // 处理列表项
+  html = html
+    .replace(/^\s*\*\s(.+)/gm, '<ul><li>$1</li></ul>')
+    .replace(/^\s*\d+\.\s(.+)/gm, '<ol><li>$1</li></ol>');
+    
+  // 合并相邻列表
+  html = html
+    .replace(/<\/ul>\s*<ul>/g, '')
+    .replace(/<\/ol>\s*<ol>/g, '');
+    
+  // 处理水平线
+  html = html.replace(/^\s*\-{3,}\s*$/gm, '<hr>');
+  
+  // 清理段落内的换行和HTML
+  html = html.replace(/<p>([\s\S]*?)<\/p>/gm, function(match, content) {
+    return '<p>' + content.replace(/\n/g, '<br>') + '</p>';
+  });
+  
+  return html;
 } 
