@@ -7,17 +7,18 @@
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
             background-color: #f5f5f5;
         }
 
         .container {
             background-color: white;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 0;
+            box-shadow: none;
+            max-width: 100%;
+            margin: 0;
         }
 
         h1 {
@@ -221,12 +222,10 @@
         
         /* 响应式设计 - 移动端适配 */
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            
             .container {
                 padding: 15px;
+                border-radius: 0;
+                box-shadow: none;
             }
             
             /* 调整标题在移动端的显示 */
