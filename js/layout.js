@@ -3,6 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 获取DOM元素
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const sidebar = document.querySelector('.sidebar');
+    const gridContainer = document.querySelector('.grid-container');
+    
+    // 添加侧边栏收起按钮
+    addSidebarToggle();
     
     // 处理移动端菜单切换
     if (mobileMenuToggle && sidebar) {
@@ -22,7 +26,14 @@ document.addEventListener('DOMContentLoaded', () => {
             (href !== '/' && href !== '/index.html' && currentPath.includes(href))) {
             link.classList.add('active');
         }
+        
+        // 为每个菜单链接添加span包裹文本内容
+        const textContent = link.innerHTML.replace(/<span class="sidebar-menu-icon">.*?<\/span>\s*/g, '');
+        link.innerHTML = link.innerHTML.replace(textContent, `<span class="sidebar-menu-text">${textContent}</span>`);
     });
+    
+    // 初始化侧边栏状态
+    initSidebarState();
     
     // 登录状态管理
     const userInfo = document.getElementById('userInfo');
@@ -74,5 +85,56 @@ document.addEventListener('DOMContentLoaded', () => {
             if (userInfo) userInfo.style.display = 'none';
             if (loginActions) loginActions.style.display = 'flex';
         });
+    }
+    
+    // 添加侧边栏收起按钮
+    function addSidebarToggle() {
+        if (!sidebar) return;
+        
+        const toggleButton = document.createElement('button');
+        toggleButton.className = 'sidebar-toggle';
+        toggleButton.setAttribute('aria-label', '收起侧边栏');
+        toggleButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        
+        toggleButton.addEventListener('click', () => {
+            toggleSidebar();
+        });
+        
+        sidebar.appendChild(toggleButton);
+    }
+    
+    // 切换侧边栏状态
+    function toggleSidebar() {
+        if (!gridContainer) return;
+        
+        const isCollapsed = gridContainer.classList.toggle('sidebar-collapsed');
+        const toggleButton = document.querySelector('.sidebar-toggle');
+        
+        if (toggleButton) {
+            toggleButton.innerHTML = isCollapsed ? 
+                '<i class="fas fa-chevron-right"></i>' : 
+                '<i class="fas fa-chevron-left"></i>';
+            
+            toggleButton.setAttribute('aria-label', 
+                isCollapsed ? '展开侧边栏' : '收起侧边栏');
+        }
+        
+        // 保存状态到本地存储
+        localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
+    }
+    
+    // 初始化侧边栏状态
+    function initSidebarState() {
+        const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+        
+        if (isCollapsed && gridContainer) {
+            gridContainer.classList.add('sidebar-collapsed');
+            
+            const toggleButton = document.querySelector('.sidebar-toggle');
+            if (toggleButton) {
+                toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                toggleButton.setAttribute('aria-label', '展开侧边栏');
+            }
+        }
     }
 }); 
