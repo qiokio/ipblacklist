@@ -5,6 +5,20 @@
     padding: 8px 16px;
     height: 36px;
     line-height: 20px;
+    box-sizing: border-box;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 5px;
+    vertical-align: middle;
+    font-weight: normal;
+    border: none;
+}
+
+/* 控制台链接按钮特别处理 */
+.top-bar-actions a.btn {
+    text-decoration: none;
 }
 
 /* 侧边栏折叠按钮增强样式 */
