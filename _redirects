@@ -1,6 +1,3 @@
-# 重定向所有HTTP请求到HTTPS
-http://:project.pages.dev/* https://:project.pages.dev/:splat 301!
-
 # 确保用户访问管理界面时已经登录
 /admin/* /login.html 302
 
