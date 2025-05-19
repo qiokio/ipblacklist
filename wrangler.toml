@@ -1,17 +1,8 @@
 name = "ip-blacklist"
 compatibility_date = "2023-12-01"
-workers_dev = true
-
-# Pages配置
-pages_build_output_dir = "."
-
-[site]
-bucket = "."
-
-[build]
-command = ""
 
 # KV命名空间绑定
-kv_namespaces = [
-  { binding = "IP_BLACKLIST", id = "YOUR_KV_NAMESPACE_ID_HERE" }
-] 
+[[kv_namespaces]]
+binding = "IP_BLACKLIST"
+# 请将下面的占位符替换为您在Cloudflare控制面板找到的实际KV命名空间ID
+id = "YOUR_KV_NAMESPACE_ID_HERE" 
