@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IP黑名单管理</title>
-    <!-- 备用脚本，仅作为最后的手段，使用defer以确保它不阻塞页面加载 -->
-    <script src="init-kv.js" defer id="fallback-kv-script" data-use-only-if-api-fails></script>
-    <!-- 注释：现在通过_worker.js处理所有KV相关操作 -->
+    <title>IP黑名单系统 - 首页</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -14,123 +11,126 @@
             margin: 0 auto;
             padding: 20px;
             background-color: #f5f5f5;
+            line-height: 1.6;
         }
 
         .container {
             background-color: white;
-            padding: 20px;
+            padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
         h1 {
             color: #333;
-            margin-bottom: 20px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
-        }
-
-        input[type="text"] {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        button {
-            padding: 8px 16px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        .remove-ip-btn {
-            background-color: #dc3545;
-        }
-
-        .remove-ip-btn:hover {
-            background-color: #c82333;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-        }
-
-        tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        .status-ok {
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        .status-error {
-            color: #dc3545;
-            font-weight: bold;
-        }
-
-        #kvStatus {
-            margin-bottom: 20px;
-            padding: 10px;
-            border-radius: 4px;
-            background-color: #f8f9fa;
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
+            margin-bottom: 10px;
+            font-size: 2.4em;
         }
         
-        .hint {
+        h2 {
+            color: #444;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            font-size: 1.8em;
+        }
+        
+        h3 {
+            color: #555;
             margin-top: 20px;
-            padding: 15px;
+            font-size: 1.4em;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .feature-list {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 30px;
+        }
+
+        .feature-item {
             background-color: #f8f9fa;
             border-left: 4px solid #007bff;
+            padding: 15px;
+            margin-bottom: 15px;
             border-radius: 4px;
         }
         
-        .hint h3 {
-            margin-top: 0;
+        .feature-title {
+            font-weight: bold;
             color: #007bff;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .action-buttons {
+            margin-top: 40px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .api-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 30px;
+        }
+        
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            font-size: 0.9em;
+        }
+        
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #777;
+            font-size: 0.9em;
         }
         
         .auth-header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+            justify-content: flex-end;
+            padding: 10px 0;
         }
         
         .user-info {
@@ -138,99 +138,148 @@
             align-items: center;
             gap: 10px;
         }
-        
-        .username {
-            font-weight: 600;
-        }
-        
-        .auth-actions button {
-            background-color: #6c757d;
-        }
-        
-        .auth-actions button:hover {
-            background-color: #5a6268;
-        }
-        
-        #authMessage {
-            margin-bottom: 20px;
-            padding: 15px;
-            border-radius: 4px;
-            background-color: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
-            display: none;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="../" class="back-link">← 返回首页</a>
-        
-        <!-- 身份认证信息头部 -->
+        <!-- 用户登录信息 -->
         <div class="auth-header">
-            <h1>IP黑名单管理</h1>
-            <div class="auth-actions">
-                <div id="userInfo" class="user-info" style="display: none;">
-                    <span>用户：</span>
-                    <span id="username" class="username">未登录</span>
-                    <button id="logoutBtn">退出登录</button>
-                </div>
-                <div id="loginActions" style="display: block;">
-                    <button id="loginPageBtn">登录</button>
-                </div>
+            <div id="userInfo" class="user-info" style="display: none;">
+                <span>已登录为：</span>
+                <span id="username" class="username">管理员</span>
+                <a href="/dashboard.html" class="btn btn-secondary" style="padding: 6px 12px;">进入控制台</a>
+                <button id="logoutBtn" style="padding: 6px 12px;">退出登录</button>
+            </div>
+            <div id="loginActions">
+                <a href="/login.html" class="btn btn-secondary" style="padding: 6px 12px;">登录</a>
             </div>
         </div>
         
-        <!-- 认证信息提示 -->
-        <div id="authMessage" style="display: block;">
-            您需要登录才能管理IP黑名单
-        </div>
+        <header>
+            <h1>IP黑名单系统</h1>
+            <p class="subtitle">简单、高效、可靠的IP地址黑名单管理系统</p>
+        </header>
         
-        <div id="kvStatus">正在检查KV连接状态...</div>
-        
-        <div id="mainContent" style="display: none;">
-            <div class="input-group">
-                <input type="text" id="ipInput" placeholder="输入IP地址（例如：192.168.1.1）">
-                <button id="addIpBtn">添加到黑名单</button>
-            </div>
-
-            <table id="blacklistTable">
-                <thead>
-                    <tr>
-                        <th>IP地址</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="blacklistTableBody">
-                    <!-- 黑名单列表将通过JavaScript动态填充 -->
-                </tbody>
-            </table>
+        <section>
+            <h2>系统简介</h2>
+            <p>
+                IP黑名单系统是一个轻量级解决方案，旨在帮助网站管理员轻松管理IP黑名单，保护网站免受恶意访问。
+                系统基于Cloudflare Pages和KV存储构建，具有高性能和全球可用性。
+            </p>
             
-            <!-- 添加API密钥管理入口 -->
-            <div class="api-key-management" style="margin-top: 30px;">
-                <h3>API接口管理</h3>
-                <p>您可以创建API密钥，用于在不登录的情况下查询IP黑名单状态。</p>
-                <a href="/apikeys.html" class="button">管理API密钥</a>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <span class="feature-title">简单易用</span>
+                    直观的用户界面，无需专业知识即可快速上手。添加和删除IP地址只需点击几下。
+                </li>
+                <li class="feature-item">
+                    <span class="feature-title">安全可靠</span>
+                    基于JWT的认证系统确保只有授权用户可以管理黑名单。API密钥系统提供安全的查询能力。
+                </li>
+                <li class="feature-item">
+                    <span class="feature-title">灵活集成</span>
+                    提供多种API端点，便于与您现有的系统和应用程序集成。支持RESTful接口和多种编程语言。
+                </li>
+                <li class="feature-item">
+                    <span class="feature-title">高性能</span>
+                    利用Cloudflare的全球网络，确保查询响应迅速，无论用户位于何处。
+                </li>
+            </ul>
+        </section>
+        
+        <section>
+            <h2>主要功能</h2>
+            
+            <h3>IP黑名单管理</h3>
+            <p>
+                通过简单直观的界面添加、查看和删除黑名单中的IP地址。系统支持IPv4地址格式，提供实时的添加和删除操作。
+            </p>
+            
+            <h3>API密钥管理</h3>
+            <p>
+                创建和管理API密钥，允许第三方应用在不需要完整登录的情况下查询IP是否在黑名单中。每个API密钥都可以添加备注，方便管理。
+            </p>
+            
+            <div class="api-section">
+                <h3>API接口</h3>
+                <p>
+                    系统提供多种API端点，用于查询和管理IP黑名单：
+                </p>
+                <ul>
+                    <li><strong>公开查询：</strong> <code>/api/blacklist/check-external?ip=1.2.3.4</code></li>
+                    <li><strong>API密钥查询：</strong> <code>/api/blacklist/check-api?ip=1.2.3.4&key=您的API密钥</code></li>
+                    <li><strong>认证API：</strong> 添加、删除和管理黑名单（需要JWT认证）</li>
+                </ul>
+                <p>
+                    <a href="/API-HANDBOOK.md" target="_blank">查看完整API文档</a>
+                </p>
             </div>
+        </section>
+        
+        <div class="action-buttons">
+            <a href="/dashboard.html" class="btn">进入控制台</a>
+            <a href="/login.html" class="btn btn-secondary">登录系统</a>
         </div>
         
-        <div class="hint">
-            <h3>使用说明</h3>
-            <p>
-                本页面使用Cloudflare KV存储黑名单数据。如果显示"KV命名空间未定义"错误，请确保您已经：
-            </p>
-            <ol>
-                <li>在Cloudflare Pages中创建了名为"IP_BLACKLIST"的KV命名空间</li>
-                <li>将此KV命名空间绑定到当前Pages应用</li>
-                <li>绑定变量的名称必须为"IP_BLACKLIST"</li>
-            </ol>
-            <p>
-                如遇任何问题，请查看浏览器控制台以获取更多错误信息。
-            </p>
-        </div>
+        <footer>
+            <p>IP黑名单系统 &copy; 2023 | <a href="https://github.com/qiokio/ipblacklist" target="_blank">GitHub 项目</a></p>
+        </footer>
     </div>
 
-    <script type="module" src="./js/blacklistManager.js"></script>
-    <script type="module" src="./js/auth.js"></script>
+    <script type="module">
+        // 检查用户登录状态并更新UI
+        document.addEventListener('DOMContentLoaded', () => {
+            const userInfo = document.getElementById('userInfo');
+            const loginActions = document.getElementById('loginActions');
+            const usernameElement = document.getElementById('username');
+            const logoutBtn = document.getElementById('logoutBtn');
+            
+            // 获取认证令牌
+            const token = localStorage.getItem('auth_token');
+            
+            if (token) {
+                // 尝试获取用户信息
+                fetch('/api/auth/verify', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.valid) {
+                        // 显示用户信息
+                        if (usernameElement) {
+                            usernameElement.textContent = data.user.username;
+                        }
+                        userInfo.style.display = 'flex';
+                        loginActions.style.display = 'none';
+                    } else {
+                        // 令牌无效
+                        userInfo.style.display = 'none';
+                        loginActions.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('验证失败:', error);
+                    userInfo.style.display = 'none';
+                    loginActions.style.display = 'block';
+                });
+            } else {
+                // 未登录
+                userInfo.style.display = 'none';
+                loginActions.style.display = 'block';
+            }
+            
+            // 退出登录事件
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user');
+                    userInfo.style.display = 'none';
+                    loginActions.style.display = 'block';
+                });
+            }
+        });
+    </script>
 </body>
 </html> 
