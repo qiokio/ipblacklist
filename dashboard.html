@@ -159,6 +159,39 @@
             border-left: 4px solid #dc3545;
             display: none;
         }
+        
+        /* 按钮样式链接 */
+        .button {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .button:hover {
+            background-color: #0056b3;
+            color: white;
+            text-decoration: none;
+        }
+        
+        /* API管理部分样式 */
+        .api-key-management {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .api-key-management h3 {
+            color: #28a745;
+            margin-top: 0;
+        }
     </style>
 </head>
 <body>
@@ -206,9 +239,9 @@
             </table>
             
             <!-- 添加API密钥管理入口 -->
-            <div class="api-key-management" style="margin-top: 30px;">
+            <div class="api-key-management">
                 <h3>API接口管理</h3>
-                <p>您可以创建API密钥，用于在不登录的情况下查询IP黑名单状态。</p>
+                <p>您可以创建API密钥，用于在不登录的情况下查询IP黑名单状态。这些密钥使第三方应用能够安全地查询黑名单，而无需完整的管理权限。</p>
                 <a href="/apikeys.html" class="button">管理API密钥</a>
             </div>
         </div>
