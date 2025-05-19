@@ -5,7 +5,10 @@
 # /old-path /new-path 301
 
 # 确保API文档可通过简短URL访问
-/docs /API-HANDBOOK.md 302
+/docs /api-docs.html 302
+
+# 保持对旧文档的兼容性
+/API-HANDBOOK.md /api-docs.html 302
 
 # API密钥测试工具的简短URL
 /keytest /key-test.html 302
