@@ -5,86 +5,155 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API密钥管理 - IP黑名单系统</title>
     <link rel="stylesheet" href="styles/apikeys.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <!-- 字体图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <div class="auth-header">
-            <h1>API密钥管理</h1>
-            <a href="/" class="button">返回首页</a>
-        </div>
-        
-        <div id="messageContainer" class="hidden message"></div>
-        
-        <div class="input-group">
-            <input type="text" id="newApiKeyInput" placeholder="生成新的API密钥" readonly>
-            <button id="generateKeyBtn">生成密钥</button>
-        </div>
-        
-        <div id="permissionsContainer" class="permissions-container hidden">
-            <div class="permissions-title">设置API密钥权限：</div>
-            <div class="permission-item">
-                <label>
-                    <input type="checkbox" id="permissionRead" checked disabled>
-                    查询IP
-                </label>
-                <div class="permission-description">允许查询IP是否在黑名单中（默认允许且不可更改）</div>
-            </div>
-            <div class="permission-item">
-                <label>
-                    <input type="checkbox" id="permissionList">
-                    获取IP列表
-                </label>
-                <div class="permission-description">允许获取完整的IP黑名单列表</div>
-            </div>
-            <div class="permission-item">
-                <label>
-                    <input type="checkbox" id="permissionAdd">
-                    添加IP
-                </label>
-                <div class="permission-description">允许向黑名单添加IP地址</div>
-            </div>
-            <div class="permission-item">
-                <label>
-                    <input type="checkbox" id="permissionDelete">
-                    删除IP
-                </label>
-                <div class="permission-description">允许从黑名单删除IP地址</div>
+    <div class="grid-container">
+        <!-- 顶栏 -->
+        <div class="top-bar">
+            <button id="mobileMenuToggle" class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="top-bar-title">API密钥管理</div>
+            <div class="top-bar-actions">
+                <div id="userInfo" class="user-info" style="display: none;">
+                    <span>用户：</span>
+                    <span id="username" class="username">未登录</span>
+                    <a href="/dashboard.html" class="btn btn-secondary">控制台</a>
+                    <button id="logoutBtn" class="btn btn-secondary">退出</button>
+                </div>
+                <div id="loginActions" style="display: flex;">
+                    <a href="/login.html" class="btn btn-secondary">登录</a>
+                </div>
             </div>
         </div>
         
-        <div class="input-group">
-            <input type="text" id="noteInput" placeholder="备注（可选）" class="note-input">
-            <button id="createKeyBtn" class="hidden">保存密钥</button>
-        </div>
-        
-        <table id="apiKeysTable">
-            <thead>
-                <tr>
-                    <th>API密钥</th>
-                    <th>备注</th>
-                    <th>创建时间</th>
-                    <th>权限</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody id="apiKeysTableBody">
-                <!-- 表格内容由JavaScript填充 -->
-            </tbody>
-        </table>
-        
-        <div class="hint">
-            <h3>API密钥使用说明</h3>
-            <p>API密钥可以用于以下API端点：</p>
-            <ul>
-                <li><strong>查询IP</strong>: <code>/api/blacklist/check-api?key=YOUR_API_KEY&ip=1.2.3.4</code></li>
-                <li><strong>获取IP列表</strong>: <code>/api/blacklist/get-api?key=YOUR_API_KEY</code></li>
-                <li><strong>添加IP</strong>: <code>/api/blacklist/add-api</code> (POST, 需要在body中提供IP和API密钥)</li>
-                <li><strong>删除IP</strong>: <code>/api/blacklist/remove-api</code> (POST, 需要在body中提供IP和API密钥)</li>
+        <!-- 侧栏导航 -->
+        <div class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="/" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-home"></i></span>
+                        首页
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/dashboard.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-tachometer-alt"></i></span>
+                        控制台
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/apikeys.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-key"></i></span>
+                        API密钥管理
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/key-test.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-vial"></i></span>
+                        API密钥测试
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/api-docs.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-book"></i></span>
+                        API文档
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/env-setup.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-cog"></i></span>
+                        环境配置
+                    </a>
+                </li>
             </ul>
-            <p>请保管好您的API密钥，泄露可能导致他人能操作您的IP黑名单。</p>
+        </div>
+        
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <div id="messageContainer" class="hidden message"></div>
+            
+            <div class="card">
+                <h2>创建API密钥</h2>
+                <div class="input-group">
+                    <input type="text" id="newApiKeyInput" placeholder="生成新的API密钥" readonly>
+                    <button id="generateKeyBtn" class="btn">生成密钥</button>
+                </div>
+                
+                <div id="permissionsContainer" class="permissions-container hidden">
+                    <div class="permissions-title">设置API密钥权限：</div>
+                    <div class="permission-item">
+                        <label>
+                            <input type="checkbox" id="permissionRead" checked disabled>
+                            查询IP
+                        </label>
+                        <div class="permission-description">允许查询IP是否在黑名单中（默认允许且不可更改）</div>
+                    </div>
+                    <div class="permission-item">
+                        <label>
+                            <input type="checkbox" id="permissionList">
+                            获取IP列表
+                        </label>
+                        <div class="permission-description">允许获取完整的IP黑名单列表</div>
+                    </div>
+                    <div class="permission-item">
+                        <label>
+                            <input type="checkbox" id="permissionAdd">
+                            添加IP
+                        </label>
+                        <div class="permission-description">允许向黑名单添加IP地址</div>
+                    </div>
+                    <div class="permission-item">
+                        <label>
+                            <input type="checkbox" id="permissionDelete">
+                            删除IP
+                        </label>
+                        <div class="permission-description">允许从黑名单删除IP地址</div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" id="noteInput" placeholder="备注（可选）" class="note-input">
+                    <button id="createKeyBtn" class="hidden btn">保存密钥</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>我的API密钥</h2>
+                <table id="apiKeysTable">
+                    <thead>
+                        <tr>
+                            <th>API密钥</th>
+                            <th>备注</th>
+                            <th>创建时间</th>
+                            <th>权限</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="apiKeysTableBody">
+                        <!-- 表格内容由JavaScript填充 -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="card hint">
+                <h3>API密钥使用说明</h3>
+                <p>API密钥可以用于以下API端点：</p>
+                <ul>
+                    <li><strong>查询IP</strong>: <code>/api/blacklist/check-api?key=YOUR_API_KEY&ip=1.2.3.4</code></li>
+                    <li><strong>获取IP列表</strong>: <code>/api/blacklist/get-api?key=YOUR_API_KEY</code></li>
+                    <li><strong>添加IP</strong>: <code>/api/blacklist/add-api</code> (POST, 需要在body中提供IP和API密钥)</li>
+                    <li><strong>删除IP</strong>: <code>/api/blacklist/remove-api</code> (POST, 需要在body中提供IP和API密钥)</li>
+                </ul>
+                <p>请保管好您的API密钥，泄露可能导致他人能操作您的IP黑名单。</p>
+            </div>
         </div>
     </div>
 
+    <script src="js/layout.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // 检查用户是否已登录
@@ -200,216 +269,57 @@
                     }
                 });
                 
-                const apiKeys = await response.json();
-                
-                const tableBody = document.getElementById('apiKeysTableBody');
-                tableBody.innerHTML = '';
-                
-                if (apiKeys.length === 0) {
-                    const row = document.createElement('tr');
-                    row.innerHTML = '<td colspan="5" style="text-align: center;">暂无API密钥</td>';
-                    tableBody.appendChild(row);
-                    return;
-                }
-                
-                apiKeys.forEach(function(keyData) {
-                    const row = document.createElement('tr');
-                    
-                    // 格式化权限显示
-                    const permissions = keyData.permissions || { read: true };
-                    const permissionsText = [
-                        permissions.read ? '查询IP' : '',
-                        permissions.list ? '获取列表' : '',
-                        permissions.add ? '添加IP' : '',
-                        permissions.delete ? '删除IP' : ''
-                    ].filter(Boolean).join(', ');
-                    
-                    // 格式化创建时间
-                    const createdDate = new Date(keyData.createdAt);
-                    const formattedDate = createdDate.toLocaleString('zh-CN');
-                    
-                    row.innerHTML = `
-                        <td>
-                            <div class="api-key">${keyData.key}</div>
-                            <button class="copy-btn" onclick="copyToClipboard('${keyData.key}')">复制</button>
-                        </td>
-                        <td>
-                            <input type="text" class="note-input" value="${keyData.note || ''}" id="note-${keyData.key}">
-                        </td>
-                        <td>${formattedDate}</td>
-                        <td>
-                            <div>${permissionsText}</div>
-                            <button class="update-btn copy-btn" onclick="showEditPermissions('${keyData.key}')">修改权限</button>
-                        </td>
-                        <td>
-                            <button class="update-btn" onclick="updateApiKey('${keyData.key}')">更新</button>
-                            <button class="delete-btn" onclick="deleteApiKey('${keyData.key}')">删除</button>
-                        </td>
-                    `;
-                    
-                    tableBody.appendChild(row);
-                });
-            } catch (error) {
-                showMessage('加载API密钥失败: ' + error.message, 'error');
-            }
-        }
-        
-        // 复制API密钥到剪贴板
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(function() {
-                showMessage('已复制到剪贴板', 'success');
-            }, function() {
-                showMessage('复制失败', 'error');
-            });
-        }
-        
-        // 显示编辑权限对话框
-        function showEditPermissions(key) {
-            // 创建对话框元素
-            const dialog = document.createElement('div');
-            dialog.style.position = 'fixed';
-            dialog.style.top = '0';
-            dialog.style.left = '0';
-            dialog.style.width = '100%';
-            dialog.style.height = '100%';
-            dialog.style.backgroundColor = 'rgba(0,0,0,0.5)';
-            dialog.style.display = 'flex';
-            dialog.style.justifyContent = 'center';
-            dialog.style.alignItems = 'center';
-            dialog.style.zIndex = '1000';
-            
-            // 获取当前权限
-            fetch('/api/apikey/list', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-                }
-            })
-            .then(response => response.json())
-            .then(apiKeys => {
-                const keyData = apiKeys.find(k => k.key === key);
-                const permissions = keyData.permissions || { read: true };
-                
-                // 创建对话框内容
-                const content = document.createElement('div');
-                content.style.backgroundColor = 'white';
-                content.style.padding = '20px';
-                content.style.borderRadius = '8px';
-                content.style.maxWidth = '500px';
-                content.style.width = '90%';
-                
-                content.innerHTML = `
-                    <h3>修改API密钥权限</h3>
-                    <div class="permissions-container" style="border: none;">
-                        <div class="permission-item">
-                            <label>
-                                <input type="checkbox" id="edit-permissionRead" checked disabled>
-                                查询IP
-                            </label>
-                            <div class="permission-description">允许查询IP是否在黑名单中（默认允许且不可更改）</div>
-                        </div>
-                        <div class="permission-item">
-                            <label>
-                                <input type="checkbox" id="edit-permissionList" ${permissions.list ? 'checked' : ''}>
-                                获取IP列表
-                            </label>
-                            <div class="permission-description">允许获取完整的IP黑名单列表</div>
-                        </div>
-                        <div class="permission-item">
-                            <label>
-                                <input type="checkbox" id="edit-permissionAdd" ${permissions.add ? 'checked' : ''}>
-                                添加IP
-                            </label>
-                            <div class="permission-description">允许向黑名单添加IP地址</div>
-                        </div>
-                        <div class="permission-item">
-                            <label>
-                                <input type="checkbox" id="edit-permissionDelete" ${permissions.delete ? 'checked' : ''}>
-                                删除IP
-                            </label>
-                            <div class="permission-description">允许从黑名单删除IP地址</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                        <button class="delete-btn" id="cancelEditBtn">取消</button>
-                        <button class="update-btn" id="savePermissionsBtn">保存</button>
-                    </div>
-                `;
-                
-                dialog.appendChild(content);
-                document.body.appendChild(dialog);
-                
-                // 取消按钮事件
-                document.getElementById('cancelEditBtn').addEventListener('click', function() {
-                    document.body.removeChild(dialog);
-                });
-                
-                // 保存按钮事件
-                document.getElementById('savePermissionsBtn').addEventListener('click', function() {
-                    const updatedPermissions = {
-                        read: true,
-                        list: document.getElementById('edit-permissionList').checked,
-                        add: document.getElementById('edit-permissionAdd').checked,
-                        delete: document.getElementById('edit-permissionDelete').checked
-                    };
-                    
-                    updateApiKeyPermissions(key, updatedPermissions);
-                    document.body.removeChild(dialog);
-                });
-            })
-            .catch(error => {
-                showMessage('获取API密钥信息失败: ' + error.message, 'error');
-                document.body.removeChild(dialog);
-            });
-        }
-        
-        // 更新API密钥权限
-        async function updateApiKeyPermissions(key, permissions) {
-            try {
-                const response = await fetch('/api/apikey/update', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-                    },
-                    body: JSON.stringify({ key, permissions })
-                });
-                
                 const data = await response.json();
                 
                 if (data.success) {
-                    showMessage('API密钥权限更新成功', 'success');
-                    loadApiKeys();
+                    const tableBody = document.getElementById('apiKeysTableBody');
+                    tableBody.innerHTML = '';
+                    
+                    if (data.keys.length === 0) {
+                        const row = document.createElement('tr');
+                        row.innerHTML = '<td colspan="5" class="empty-table">暂无API密钥，请点击"生成密钥"按钮创建</td>';
+                        tableBody.appendChild(row);
+                    } else {
+                        data.keys.forEach(keyInfo => {
+                            const row = document.createElement('tr');
+                            
+                            // 格式化创建时间
+                            const createdAt = new Date(keyInfo.created);
+                            const formattedDate = createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString();
+                            
+                            // 格式化权限
+                            const permissions = [];
+                            if (keyInfo.permissions.read) permissions.push('查询');
+                            if (keyInfo.permissions.list) permissions.push('列表');
+                            if (keyInfo.permissions.add) permissions.push('添加');
+                            if (keyInfo.permissions.delete) permissions.push('删除');
+                            
+                            row.innerHTML = `
+                                <td data-title="API密钥">${keyInfo.key}</td>
+                                <td data-title="备注">${keyInfo.note || '-'}</td>
+                                <td data-title="创建时间">${formattedDate}</td>
+                                <td data-title="权限">${permissions.join(', ')}</td>
+                                <td data-title="操作">
+                                    <button class="delete-btn" data-key="${keyInfo.key}">删除</button>
+                                </td>
+                            `;
+                            
+                            tableBody.appendChild(row);
+                        });
+                        
+                        // 为删除按钮添加事件监听
+                        document.querySelectorAll('.delete-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                const key = this.getAttribute('data-key');
+                                deleteApiKey(key);
+                            });
+                        });
+                    }
                 } else {
-                    showMessage('更新失败: ' + data.message, 'error');
+                    showMessage('获取API密钥列表失败: ' + data.message, 'error');
                 }
             } catch (error) {
-                showMessage('更新失败: ' + error.message, 'error');
-            }
-        }
-        
-        // 更新API密钥
-        async function updateApiKey(key) {
-            const note = document.getElementById(`note-${key}`).value;
-            
-            try {
-                const response = await fetch('/api/apikey/update', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-                    },
-                    body: JSON.stringify({ key, note })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('API密钥更新成功', 'success');
-                } else {
-                    showMessage('更新失败: ' + data.message, 'error');
-                }
-            } catch (error) {
-                showMessage('更新失败: ' + error.message, 'error');
+                showMessage('获取API密钥列表失败: ' + error.message, 'error');
             }
         }
         
@@ -444,14 +354,13 @@
         
         // 显示消息
         function showMessage(message, type) {
-            const container = document.getElementById('messageContainer');
-            container.textContent = message;
-            container.className = `message ${type}`;
-            container.classList.remove('hidden');
+            const messageContainer = document.getElementById('messageContainer');
+            messageContainer.textContent = message;
+            messageContainer.className = `message ${type}`;
             
-            // 5秒后自动隐藏消息
-            setTimeout(function() {
-                container.classList.add('hidden');
+            // 自动消失
+            setTimeout(() => {
+                messageContainer.className = 'message hidden';
             }, 5000);
         }
     </script>
