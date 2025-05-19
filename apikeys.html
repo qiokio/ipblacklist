@@ -189,8 +189,14 @@
                 const key = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
                 
                 document.getElementById('newApiKeyInput').value = key;
+                
+                // 显示权限设置和保存按钮
                 document.getElementById('createKeyBtn').classList.remove('hidden');
                 document.getElementById('permissionsContainer').classList.remove('hidden');
+                
+                // 确保权限设置可见且样式正确
+                const permissionsContainer = document.getElementById('permissionsContainer');
+                permissionsContainer.style.display = 'block';
                 
                 generateBtn.classList.remove('loading');
                 generateBtn.disabled = false;
@@ -238,16 +244,17 @@
                     // 清空输入框
                     document.getElementById('newApiKeyInput').value = '';
                     document.getElementById('noteInput').value = '';
-                    document.getElementById('createKeyBtn').classList.add('hidden');
-                    document.getElementById('permissionsContainer').classList.add('hidden');
                     
-                    // 重置权限复选框
+                    // 重置权限复选框但不隐藏
                     document.getElementById('permissionList').checked = false;
                     document.getElementById('permissionAdd').checked = false;
                     document.getElementById('permissionDelete').checked = false;
                     
                     // 重新加载API密钥列表
                     loadApiKeys();
+                    
+                    // 显示生成密钥按钮
+                    document.getElementById('generateKeyBtn').disabled = false;
                 } else {
                     showMessage('创建失败: ' + data.message, 'error');
                 }
@@ -284,7 +291,7 @@
                             const row = document.createElement('tr');
                             
                             // 格式化创建时间
-                            const createdAt = new Date(keyInfo.created);
+                            const createdAt = new Date(keyInfo.createdAt);
                             const formattedDate = createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString();
                             
                             // 格式化权限
