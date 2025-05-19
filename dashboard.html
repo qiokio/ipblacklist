@@ -247,17 +247,31 @@
         </div>
         
         <div class="hint">
-            <h3>使用说明</h3>
+            <h3>控制台使用指南</h3>
             <p>
-                本系统使用Cloudflare KV存储黑名单数据。如果显示"KV命名空间未定义"错误，请确保您已经：
+                欢迎使用IP黑名单控制台。本控制台提供以下功能：
             </p>
-            <ol>
-                <li>在Cloudflare Pages中创建了名为"IP_BLACKLIST"的KV命名空间</li>
-                <li>将此KV命名空间绑定到当前Pages应用</li>
-                <li>绑定变量的名称必须为"IP_BLACKLIST"</li>
-            </ol>
+            
+            <h4 style="color: #007bff; margin-top: 15px; margin-bottom: 8px;">1. IP黑名单管理</h4>
+            <ul style="padding-left: 20px; margin-bottom: 15px;">
+                <li><strong>添加IP：</strong> 在输入框中输入IPv4地址（例如：8.8.8.8），然后点击"添加到黑名单"按钮</li>
+                <li><strong>查看黑名单：</strong> 当前黑名单中的IP会显示在列表中</li>
+                <li><strong>删除IP：</strong> 点击IP地址旁边的"删除"按钮，可将其从黑名单中移除</li>
+            </ul>
+            
+            <h4 style="color: #28a745; margin-top: 15px; margin-bottom: 8px;">2. API密钥管理</h4>
+            <ul style="padding-left: 20px; margin-bottom: 15px;">
+                <li>点击"管理API密钥"按钮，进入API密钥管理页面</li>
+                <li>您可以创建、更新或删除API密钥，用于外部系统查询黑名单状态</li>
+                <li>每个API密钥都可以添加备注，便于管理和识别其用途</li>
+            </ul>
+            
+            <h4 style="color: #dc3545; margin-top: 15px; margin-bottom: 8px;">技术说明</h4>
             <p>
-                如遇任何问题，请查看浏览器控制台以获取更多错误信息。
+                本系统使用Cloudflare KV存储黑名单数据。如果显示"KV命名空间未定义"错误，请确保您已在Cloudflare Pages中正确配置了名为"IP_BLACKLIST"的KV命名空间绑定。
+            </p>
+            <p>
+                所有操作都是实时的，添加或删除IP会立即生效。系统支持标准IPv4地址格式（如：192.168.1.1）。
             </p>
         </div>
     </div>
