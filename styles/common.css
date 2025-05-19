@@ -7,6 +7,25 @@
     line-height: 20px;
 }
 
+/* 侧边栏折叠按钮增强样式 */
+.sidebar-toggle {
+    background-color: #3498db !important;
+    color: white !important;
+    width: 40px !important;
+    height: 40px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    z-index: 200 !important;
+}
+
+.sidebar-toggle:hover {
+    background-color: #2980b9 !important;
+    transform: scale(1.1);
+}
+
+.sidebar-toggle-container {
+    z-index: 150 !important;
+}
+
 /* 确认弹窗样式 */
 .confirm-modal {
     display: none;

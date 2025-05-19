@@ -82,16 +82,34 @@ document.addEventListener('DOMContentLoaded', () => {
     function addSidebarToggle() {
         if (!sidebar) return;
         
+        // 创建一个容器div来放置按钮
+        const toggleContainer = document.createElement('div');
+        toggleContainer.className = 'sidebar-toggle-container';
+        toggleContainer.style.position = 'absolute';
+        toggleContainer.style.bottom = '20px';
+        toggleContainer.style.width = '100%';
+        toggleContainer.style.display = 'flex';
+        toggleContainer.style.justifyContent = 'center';
+        toggleContainer.style.padding = '10px 0';
+        
         const toggleButton = document.createElement('button');
         toggleButton.className = 'sidebar-toggle';
         toggleButton.setAttribute('aria-label', '收起侧边栏');
         toggleButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
         
+        // 增强按钮可见性
+        toggleButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+        toggleButton.style.border = '1px solid #2c3e50';
+        
         toggleButton.addEventListener('click', () => {
             toggleSidebar();
         });
         
-        sidebar.appendChild(toggleButton);
+        toggleContainer.appendChild(toggleButton);
+        sidebar.appendChild(toggleContainer);
+        
+        // 确认按钮已添加的控制台日志
+        console.log('侧边栏折叠按钮已添加');
     }
     
     // 切换侧边栏状态
@@ -112,6 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 保存状态到本地存储
         localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
+        
+        // 记录切换状态的控制台日志
+        console.log('侧边栏状态切换为:', isCollapsed ? '收起' : '展开');
     }
     
     // 初始化侧边栏状态
