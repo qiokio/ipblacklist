@@ -76,6 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mainContent) {
             mainContent.style.display = 'block';
         }
+        
+        // 显示使用指南
+        const usageGuide = document.getElementById('usageGuide');
+        if (usageGuide) {
+            usageGuide.style.display = 'block';
+        }
     }
     
     // 显示未认证界面
@@ -98,6 +104,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (mainContent) {
             mainContent.style.display = 'none';
+        }
+        
+        // 隐藏使用指南
+        const usageGuide = document.getElementById('usageGuide');
+        if (usageGuide) {
+            usageGuide.style.display = 'none';
         }
     }
     

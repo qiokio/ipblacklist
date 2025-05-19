@@ -67,7 +67,7 @@ class BlacklistManager {
                 window.ENV = window.ENV || {};
                 window.ENV.KV_STATUS = {
                     connected: false,
-                    message: "无法加载任何KV初始化脚本，黑名单功能将不可用"
+                    message: "无法连接KV存储，系统将无法正常使用"
                 };
                 
                 resolve();
@@ -81,8 +81,16 @@ class BlacklistManager {
         const status = await checkKVConnection();
         const statusElement = document.getElementById('kvStatus');
         if (statusElement) {
-            statusElement.textContent = `KV状态: ${status.message}`;
-            statusElement.className = status.connected ? 'status-ok' : 'status-error';
+            if (status.connected) {
+                statusElement.textContent = `KV状态: ${status.message}`;
+                statusElement.className = 'status-ok';
+            } else {
+                statusElement.innerHTML = `<strong>KV连接错误:</strong> ${status.message}<br>
+                <span style="font-size: 0.9em; margin-top: 5px; display: block;">
+                    请确保在Cloudflare Pages中正确配置了"IP_BLACKLIST"的KV命名空间绑定。
+                </span>`;
+                statusElement.className = 'status-error';
+            }
         }
     }
 
