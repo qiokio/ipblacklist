@@ -1,5 +1,11 @@
 {
   "version": 1,
   "include": ["/*"],
-  "exclude": []
+  "exclude": [],
+  "routes": [
+    {
+      "pattern": "*.md",
+      "script": "[md]"
+    }
+  ]
 } 
