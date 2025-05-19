@@ -10,6 +10,10 @@
 # 保持对旧文档的兼容性
 /API-HANDBOOK.md /api-docs.html 302
 
+# 环境变量配置文档
+/env-setup /env-setup.html 302
+/ENVIRONMENT-SETUP.md /env-setup.html 302
+
 # API密钥测试工具的简短URL
 /keytest /key-test.html 302
 /api-test /key-test.html 302
