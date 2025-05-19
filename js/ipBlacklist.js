@@ -4,28 +4,57 @@
 // 通过Functions API访问KV
 const API_BASE = '/functions/api/blacklist';
 
+// 获取认证令牌
+function getAuthToken() {
+    return localStorage.getItem('auth_token');
+}
+
+// 创建带认证的请求头
+function createAuthHeaders() {
+    const token = getAuthToken();
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+    
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return headers;
+}
+
 /**
  * 检测KV连接状态
  * @returns {Promise<{connected: boolean, message: string}>} 连接状态信息
  */
 async function checkKVConnection() {
     try {
-        // 如果window.ENV中有KV状态信息，直接使用
-        if (window.ENV && window.ENV.KV_STATUS) {
-            return window.ENV.KV_STATUS;
+        const response = await fetch('/api/blacklist/check', {
+            headers: createAuthHeaders()
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('检查KV连接失败:', errorData);
+            if (response.status === 401) {
+                // 对于KV连接检查，如果未认证，我们返回一个友好的错误而不是强制跳转
+                return {
+                    connected: false,
+                    message: '需要登录才能访问KV存储'
+                };
+            }
+            return {
+                connected: false,
+                message: `检查KV连接失败: ${response.statusText}`
+            };
         }
         
-        // 否则通过API检查连接状态（使用Functions API）
-        const response = await fetch(`${API_BASE}/check`);
-        if (!response.ok) {
-            throw new Error(`API请求失败: ${response.status}`);
-        }
         return await response.json();
     } catch (error) {
-        console.error('KV连接测试失败:', error);
+        console.error('检查KV连接接口错误:', error);
         return {
             connected: false,
-            message: `KV连接错误: ${error.message}`
+            message: `检查KV连接接口错误: ${error.message}`
         };
     }
 }
@@ -52,22 +81,27 @@ async function isIPBlacklisted(ip) {
  */
 async function addToBlacklist(ip) {
     try {
-        const response = await fetch(`${API_BASE}/add`, {
+        const response = await fetch('/api/blacklist/add', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: createAuthHeaders(),
             body: JSON.stringify({ ip })
         });
         
         if (!response.ok) {
-            throw new Error(`API请求失败: ${response.status}`);
+            const errorData = await response.json();
+            console.error('添加IP到黑名单失败:', errorData);
+            if (response.status === 401) {
+                // 认证失败，提示用户登录
+                alert('您的登录已过期，请重新登录');
+                window.location.href = '/login.html';
+            }
+            return false;
         }
         
-        const result = await response.json();
-        return result.success;
+        const data = await response.json();
+        return data.success;
     } catch (error) {
-        console.error('添加IP到黑名单时出错:', error);
+        console.error('添加IP到黑名单接口错误:', error);
         return false;
     }
 }
@@ -79,22 +113,27 @@ async function addToBlacklist(ip) {
  */
 async function removeFromBlacklist(ip) {
     try {
-        const response = await fetch(`${API_BASE}/remove`, {
+        const response = await fetch('/api/blacklist/remove', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: createAuthHeaders(),
             body: JSON.stringify({ ip })
         });
         
         if (!response.ok) {
-            throw new Error(`API请求失败: ${response.status}`);
+            const errorData = await response.json();
+            console.error('从黑名单移除IP失败:', errorData);
+            if (response.status === 401) {
+                // 认证失败，提示用户登录
+                alert('您的登录已过期，请重新登录');
+                window.location.href = '/login.html';
+            }
+            return false;
         }
         
-        const result = await response.json();
-        return result.success;
+        const data = await response.json();
+        return data.success;
     } catch (error) {
-        console.error('从黑名单移除IP时出错:', error);
+        console.error('从黑名单移除IP接口错误:', error);
         return false;
     }
 }
@@ -105,14 +144,42 @@ async function removeFromBlacklist(ip) {
  */
 async function getBlacklist() {
     try {
-        const response = await fetch(`${API_BASE}/get`);
+        const response = await fetch('/api/blacklist/get', {
+            headers: createAuthHeaders()
+        });
+        
         if (!response.ok) {
-            throw new Error(`API请求失败: ${response.status}`);
+            const errorData = await response.json();
+            console.error('获取黑名单失败:', errorData);
+            if (response.status === 401) {
+                // 认证失败，提示用户登录
+                alert('您的登录已过期，请重新登录');
+                window.location.href = '/login.html';
+            }
+            return [];
         }
+        
         return await response.json();
     } catch (error) {
-        console.error('获取黑名单时出错:', error);
+        console.error('获取黑名单接口错误:', error);
         return [];
+    }
+}
+
+// 检查IP是否在黑名单中
+async function checkIP(ip) {
+    try {
+        const response = await fetch(`/api/blacklist/check-external?ip=${encodeURIComponent(ip)}`);
+        
+        if (!response.ok) {
+            console.error('检查IP状态失败:', response.statusText);
+            return { blocked: false, error: true, message: '检查IP状态失败' };
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('检查IP接口错误:', error);
+        return { blocked: false, error: true, message: '检查IP接口错误' };
     }
 }
 
@@ -121,5 +188,6 @@ export {
     addToBlacklist,
     removeFromBlacklist,
     getBlacklist,
-    checkKVConnection
+    checkKVConnection,
+    checkIP
 }; 

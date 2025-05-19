@@ -125,31 +125,87 @@
             margin-top: 0;
             color: #007bff;
         }
+        
+        .auth-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .username {
+            font-weight: 600;
+        }
+        
+        .auth-actions button {
+            background-color: #6c757d;
+        }
+        
+        .auth-actions button:hover {
+            background-color: #5a6268;
+        }
+        
+        #authMessage {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <a href="../" class="back-link">← 返回首页</a>
-        <h1>IP黑名单管理</h1>
+        
+        <!-- 身份认证信息头部 -->
+        <div class="auth-header">
+            <h1>IP黑名单管理</h1>
+            <div class="auth-actions">
+                <div id="userInfo" class="user-info" style="display: none;">
+                    <span>用户：</span>
+                    <span id="username" class="username">未登录</span>
+                    <button id="logoutBtn">退出登录</button>
+                </div>
+                <div id="loginActions" style="display: none;">
+                    <button id="loginPageBtn">登录</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 认证信息提示 -->
+        <div id="authMessage">
+            您需要登录才能管理IP黑名单
+        </div>
         
         <div id="kvStatus">正在检查KV连接状态...</div>
         
-        <div class="input-group">
-            <input type="text" id="ipInput" placeholder="输入IP地址（例如：192.168.1.1）">
-            <button id="addIpBtn">添加到黑名单</button>
-        </div>
+        <div id="mainContent" style="display: none;">
+            <div class="input-group">
+                <input type="text" id="ipInput" placeholder="输入IP地址（例如：192.168.1.1）">
+                <button id="addIpBtn">添加到黑名单</button>
+            </div>
 
-        <table id="blacklistTable">
-            <thead>
-                <tr>
-                    <th>IP地址</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody id="blacklistTableBody">
-                <!-- 黑名单列表将通过JavaScript动态填充 -->
-            </tbody>
-        </table>
+            <table id="blacklistTable">
+                <thead>
+                    <tr>
+                        <th>IP地址</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="blacklistTableBody">
+                    <!-- 黑名单列表将通过JavaScript动态填充 -->
+                </tbody>
+            </table>
+        </div>
         
         <div class="hint">
             <h3>使用说明</h3>
@@ -168,5 +224,6 @@
     </div>
 
     <script type="module" src="./js/blacklistManager.js"></script>
+    <script type="module" src="./js/auth.js"></script>
 </body>
 </html> 

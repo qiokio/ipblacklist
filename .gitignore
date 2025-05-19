@@ -16,4 +16,19 @@ dist/
 
 # 系统文件
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Node.js
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+
+# 本地环境变量
+.env
+.env.local
+.dev.vars
+
+# 构建输出
+dist/
+build/
+.output/ 
