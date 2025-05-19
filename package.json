@@ -1,0 +1,24 @@
+{
+  "name": "ip-blacklist",
+  "version": "1.0.0",
+  "description": "IP黑名单管理系统",
+  "main": "index.js",
+  "scripts": {
+    "dev": "wrangler pages dev .",
+    "deploy": "wrangler pages publish .",
+    "build": "bash ./build.sh"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  },
+  "keywords": [
+    "cloudflare",
+    "pages",
+    "functions",
+    "blacklist",
+    "ip"
+  ],
+  "author": "",
+  "license": "MIT"
+} 

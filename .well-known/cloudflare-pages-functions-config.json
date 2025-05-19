@@ -1,0 +1,29 @@
+{
+  "routes": [
+    {
+      "pattern": "/functions/api/init-kv.js",
+      "function": "api/init-kv",
+      "target": "pages-function"
+    },
+    {
+      "pattern": "/functions/api/blacklist/check",
+      "function": "api/blacklist/check",
+      "target": "pages-function"
+    },
+    {
+      "pattern": "/functions/api/blacklist/get",
+      "function": "api/blacklist/get",
+      "target": "pages-function"
+    },
+    {
+      "pattern": "/functions/api/blacklist/add",
+      "function": "api/blacklist/add",
+      "target": "pages-function"
+    },
+    {
+      "pattern": "/functions/api/blacklist/remove",
+      "function": "api/blacklist/remove",
+      "target": "pages-function"
+    }
+  ]
+} 
