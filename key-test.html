@@ -214,8 +214,15 @@
                             body: JSON.stringify({ key: apiKey, ip: 'invalid_ip_to_test_permission' })
                         });
                         const addResult = await addTest.json();
-                        // 如果是无效IP错误，说明密钥通过了权限验证但IP格式无效
-                        hasAddPerm = addTest.status === 400 && addResult.message && addResult.message.includes('IP格式无效');
+                        
+                        // 如果返回的错误消息是IP格式错误，而不是权限错误，说明有添加权限
+                        hasAddPerm = (addTest.status === 400 && 
+                                     addResult.message && 
+                                     addResult.message.includes('IP格式无效')) || 
+                                     (addTest.ok && addResult.success);
+                                     
+                        // 权限错误的状态码是401，而不是400
+                        hasAddPerm = hasAddPerm && addTest.status !== 401;
                     } catch (err) {
                         console.error('测试add权限时出错:', err);
                         hasAddPerm = false;
@@ -230,8 +237,15 @@
                             body: JSON.stringify({ key: apiKey, ip: '' })
                         });
                         const deleteResult = await deleteTest.json();
-                        // 如果是"未提供IP地址"错误，说明密钥通过了权限验证但IP参数无效
-                        hasDeletePerm = deleteTest.status === 400 && deleteResult.message && deleteResult.message.includes('未提供IP地址');
+                        
+                        // 如果返回的错误消息是未提供IP地址，而不是权限错误，说明有删除权限
+                        hasDeletePerm = (deleteTest.status === 400 && 
+                                        deleteResult.message && 
+                                        deleteResult.message.includes('未提供IP地址')) || 
+                                        (deleteTest.ok && deleteResult.success);
+                                        
+                        // 权限错误的状态码是401，而不是400
+                        hasDeletePerm = hasDeletePerm && deleteTest.status !== 401;
                     } catch (err) {
                         console.error('测试delete权限时出错:', err);
                         hasDeletePerm = false;
@@ -245,6 +259,9 @@
                         add: hasAddPerm,
                         delete: hasDeletePerm
                     };
+                    
+                    // 输出调试信息到控制台
+                    console.log('检测到的权限:', window.currentPermissions);
                     
                     // 显示密钥权限状态
                     displayKeyStatus();
