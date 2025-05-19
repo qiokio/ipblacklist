@@ -183,197 +183,528 @@
             color: white;
             text-decoration: none;
         }
+        
+        /* 权限复选框样式 */
+        .permissions-container {
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
+        
+        .permissions-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .permission-item {
+            margin-bottom: 8px;
+        }
+        
+        .permission-item label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .permission-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        
+        .permission-description {
+            font-size: 12px;
+            color: #666;
+            margin-left: 24px;
+            margin-top: 2px;
+        }
+        
+        /* 响应式设计 - 移动端适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            /* 调整标题在移动端的显示 */
+            .auth-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            /* 表格响应式处理 */
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            
+            tr {
+                border: 1px solid #ddd;
+                margin-bottom: 10px;
+            }
+            
+            td {
+                border: none;
+                border-bottom: 1px solid #eee;
+                position: relative;
+                padding-left: 50%;
+            }
+            
+            td:before {
+                position: absolute;
+                top: 12px;
+                left: 12px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                font-weight: 600;
+            }
+            
+            td:nth-of-type(1):before { content: "API密钥"; }
+            td:nth-of-type(2):before { content: "备注"; }
+            td:nth-of-type(3):before { content: "创建时间"; }
+            td:nth-of-type(4):before { content: "权限"; }
+            td:nth-of-type(5):before { content: "操作"; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="/dashboard.html" class="back-link">← 返回控制台</a>
-        
         <div class="auth-header">
             <h1>API密钥管理</h1>
+            <a href="/" class="button">返回首页</a>
         </div>
         
-        <div id="message" class="message hidden"></div>
+        <div id="messageContainer" class="hidden message"></div>
         
         <div class="input-group">
-            <input type="text" id="noteInput" placeholder="输入API密钥备注(可选)">
-            <button id="createKeyBtn">创建新API密钥</button>
+            <input type="text" id="newApiKeyInput" placeholder="生成新的API密钥" readonly>
+            <button id="generateKeyBtn">生成密钥</button>
         </div>
-
+        
+        <div id="permissionsContainer" class="permissions-container hidden">
+            <div class="permissions-title">设置API密钥权限：</div>
+            <div class="permission-item">
+                <label>
+                    <input type="checkbox" id="permissionRead" checked disabled>
+                    查询IP
+                </label>
+                <div class="permission-description">允许查询IP是否在黑名单中（默认允许且不可更改）</div>
+            </div>
+            <div class="permission-item">
+                <label>
+                    <input type="checkbox" id="permissionList">
+                    获取IP列表
+                </label>
+                <div class="permission-description">允许获取完整的IP黑名单列表</div>
+            </div>
+            <div class="permission-item">
+                <label>
+                    <input type="checkbox" id="permissionAdd">
+                    添加IP
+                </label>
+                <div class="permission-description">允许向黑名单添加IP地址</div>
+            </div>
+            <div class="permission-item">
+                <label>
+                    <input type="checkbox" id="permissionDelete">
+                    删除IP
+                </label>
+                <div class="permission-description">允许从黑名单删除IP地址</div>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <input type="text" id="noteInput" placeholder="备注（可选）" class="note-input">
+            <button id="createKeyBtn" class="hidden">保存密钥</button>
+        </div>
+        
         <table id="apiKeysTable">
             <thead>
                 <tr>
-                    <th style="width: 30%">API密钥</th>
-                    <th style="width: 20%">创建时间</th>
-                    <th style="width: 30%">备注</th>
-                    <th style="width: 20%">操作</th>
+                    <th>API密钥</th>
+                    <th>备注</th>
+                    <th>创建时间</th>
+                    <th>权限</th>
+                    <th>操作</th>
                 </tr>
             </thead>
             <tbody id="apiKeysTableBody">
-                <!-- API密钥列表将通过JavaScript动态填充 -->
+                <!-- 表格内容由JavaScript填充 -->
             </tbody>
         </table>
         
         <div class="hint">
-            <h3>使用说明</h3>
-            <p>
-                API密钥可用于在不登录系统的情况下查询IP是否在黑名单中。
-            </p>
-            <p>
-                使用方法：向 <code>/api/blacklist/check-api?ip=目标IP&key=您的API密钥</code> 发送GET请求。
-            </p>
-            <p>
-                示例：<code>https://您的域名/api/blacklist/check-api?ip=1.2.3.4&key=您的API密钥</code>
-            </p>
-            <p>
-                <strong>安全提示：</strong> 请妥善保管您的API密钥，API密钥仅支持查询操作，不能用于添加或删除黑名单。
-            </p>
+            <h3>API密钥使用说明</h3>
+            <p>API密钥可以用于以下API端点：</p>
+            <ul>
+                <li><strong>查询IP</strong>: <code>/api/blacklist/check-api?key=YOUR_API_KEY&ip=1.2.3.4</code></li>
+                <li><strong>获取IP列表</strong>: <code>/api/blacklist/get-api?key=YOUR_API_KEY</code></li>
+                <li><strong>添加IP</strong>: <code>/api/blacklist/add-api</code> (POST, 需要在body中提供IP和API密钥)</li>
+                <li><strong>删除IP</strong>: <code>/api/blacklist/remove-api</code> (POST, 需要在body中提供IP和API密钥)</li>
+            </ul>
+            <p>请保管好您的API密钥，泄露可能导致他人能操作您的IP黑名单。</p>
         </div>
     </div>
 
-    <script type="module" src="./js/apiKeyManager.js"></script>
-    <script type="module">
-        import { createApiKey, getAllApiKeys, updateApiKeyNote, deleteApiKey } from './js/apiKeyManager.js';
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查用户是否已登录
+            checkAuthentication();
+            
+            // 获取API密钥列表
+            loadApiKeys();
+            
+            // 生成密钥按钮事件
+            document.getElementById('generateKeyBtn').addEventListener('click', generateApiKey);
+            
+            // 创建密钥按钮事件
+            document.getElementById('createKeyBtn').addEventListener('click', createApiKey);
+        });
         
-        document.addEventListener('DOMContentLoaded', async () => {
-            // 检查登录状态
-            const token = localStorage.getItem('auth_token');
+        // 检查用户是否已登录
+        function checkAuthentication() {
+            const token = localStorage.getItem('token');
             if (!token) {
                 window.location.href = '/login.html';
+            }
+        }
+        
+        // 生成随机API密钥
+        function generateApiKey() {
+            const bytes = new Uint8Array(16);
+            window.crypto.getRandomValues(bytes);
+            const key = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+            
+            document.getElementById('newApiKeyInput').value = key;
+            document.getElementById('createKeyBtn').classList.remove('hidden');
+            document.getElementById('permissionsContainer').classList.remove('hidden');
+        }
+        
+        // 创建API密钥
+        async function createApiKey() {
+            const key = document.getElementById('newApiKeyInput').value;
+            const note = document.getElementById('noteInput').value;
+            
+            // 获取权限设置
+            const permissions = {
+                read: true, // 默认都有查询权限
+                list: document.getElementById('permissionList').checked,
+                add: document.getElementById('permissionAdd').checked,
+                delete: document.getElementById('permissionDelete').checked
+            };
+            
+            if (!key) {
+                showMessage('请先生成API密钥', 'error');
                 return;
             }
             
-            const createKeyBtn = document.getElementById('createKeyBtn');
-            const noteInput = document.getElementById('noteInput');
-            const apiKeysTableBody = document.getElementById('apiKeysTableBody');
-            const messageBox = document.getElementById('message');
-            
-            // 加载API密钥列表
-            await refreshApiKeysList();
-            
-            // 绑定创建按钮事件
-            createKeyBtn.addEventListener('click', async () => {
-                try {
-                    const note = noteInput.value.trim();
-                    const result = await createApiKey(note);
-                    noteInput.value = '';
-                    
-                    showMessage('API密钥创建成功！', 'success');
-                    await refreshApiKeysList();
-                } catch (error) {
-                    showMessage('创建API密钥失败: ' + error.message, 'error');
-                }
-            });
-            
-            // 刷新API密钥列表
-            async function refreshApiKeysList() {
-                try {
-                    const apiKeys = await getAllApiKeys();
-                    
-                    if (apiKeys.length === 0) {
-                        apiKeysTableBody.innerHTML = `
-                            <tr>
-                                <td colspan="4" style="text-align: center;">没有API密钥，请创建一个新的密钥</td>
-                            </tr>
-                        `;
-                        return;
-                    }
-                    
-                    apiKeysTableBody.innerHTML = apiKeys.map(keyData => `
-                        <tr data-key="${keyData.key}">
-                            <td>
-                                <div class="api-key">${keyData.key}</div>
-                                <button class="copy-btn" data-key="${keyData.key}">复制</button>
-                            </td>
-                            <td>${formatDate(keyData.createdAt)}</td>
-                            <td>
-                                <input type="text" class="note-input" value="${keyData.note}" data-key="${keyData.key}">
-                                <button class="update-btn" data-key="${keyData.key}">更新</button>
-                            </td>
-                            <td>
-                                <button class="delete-btn" data-key="${keyData.key}">删除</button>
-                            </td>
-                        </tr>
-                    `).join('');
-                    
-                    // 绑定复制按钮事件
-                    document.querySelectorAll('.copy-btn').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const key = btn.getAttribute('data-key');
-                            navigator.clipboard.writeText(key)
-                                .then(() => {
-                                    const originalText = btn.textContent;
-                                    btn.textContent = '已复制!';
-                                    setTimeout(() => {
-                                        btn.textContent = originalText;
-                                    }, 2000);
-                                })
-                                .catch(err => {
-                                    console.error('复制失败:', err);
-                                });
-                        });
-                    });
-                    
-                    // 绑定更新按钮事件
-                    document.querySelectorAll('.update-btn').forEach(btn => {
-                        btn.addEventListener('click', async () => {
-                            const key = btn.getAttribute('data-key');
-                            const noteInput = document.querySelector(`.note-input[data-key="${key}"]`);
-                            const note = noteInput.value.trim();
-                            
-                            try {
-                                await updateApiKeyNote(key, note);
-                                showMessage('备注更新成功！', 'success');
-                            } catch (error) {
-                                showMessage('更新备注失败: ' + error.message, 'error');
-                            }
-                        });
-                    });
-                    
-                    // 绑定删除按钮事件
-                    document.querySelectorAll('.delete-btn').forEach(btn => {
-                        btn.addEventListener('click', async () => {
-                            const key = btn.getAttribute('data-key');
-                            
-                            if (confirm('确定要删除这个API密钥吗？此操作不可恢复。')) {
-                                try {
-                                    await deleteApiKey(key);
-                                    showMessage('API密钥已删除！', 'success');
-                                    await refreshApiKeysList();
-                                } catch (error) {
-                                    showMessage('删除API密钥失败: ' + error.message, 'error');
-                                }
-                            }
-                        });
-                    });
-                } catch (error) {
-                    showMessage('获取API密钥列表失败: ' + error.message, 'error');
-                }
-            }
-            
-            // 显示消息
-            function showMessage(text, type) {
-                messageBox.textContent = text;
-                messageBox.className = `message ${type}`;
-                
-                // 3秒后自动隐藏
-                setTimeout(() => {
-                    messageBox.className = 'message hidden';
-                }, 3000);
-            }
-            
-            // 格式化日期
-            function formatDate(dateString) {
-                const date = new Date(dateString);
-                return date.toLocaleString('zh-CN', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
+            try {
+                const response = await fetch('/api/apikey/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ key, note, permissions })
                 });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('API密钥创建成功', 'success');
+                    
+                    // 清空输入框
+                    document.getElementById('newApiKeyInput').value = '';
+                    document.getElementById('noteInput').value = '';
+                    document.getElementById('createKeyBtn').classList.add('hidden');
+                    document.getElementById('permissionsContainer').classList.add('hidden');
+                    
+                    // 重置权限复选框
+                    document.getElementById('permissionList').checked = false;
+                    document.getElementById('permissionAdd').checked = false;
+                    document.getElementById('permissionDelete').checked = false;
+                    
+                    // 重新加载API密钥列表
+                    loadApiKeys();
+                } else {
+                    showMessage('创建失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('创建失败: ' + error.message, 'error');
             }
-        });
+        }
+        
+        // 加载API密钥列表
+        async function loadApiKeys() {
+            try {
+                const response = await fetch('/api/apikey/list', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                const apiKeys = await response.json();
+                
+                const tableBody = document.getElementById('apiKeysTableBody');
+                tableBody.innerHTML = '';
+                
+                if (apiKeys.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = '<td colspan="5" style="text-align: center;">暂无API密钥</td>';
+                    tableBody.appendChild(row);
+                    return;
+                }
+                
+                apiKeys.forEach(function(keyData) {
+                    const row = document.createElement('tr');
+                    
+                    // 格式化权限显示
+                    const permissions = keyData.permissions || { read: true };
+                    const permissionsText = [
+                        permissions.read ? '查询IP' : '',
+                        permissions.list ? '获取列表' : '',
+                        permissions.add ? '添加IP' : '',
+                        permissions.delete ? '删除IP' : ''
+                    ].filter(Boolean).join(', ');
+                    
+                    // 格式化创建时间
+                    const createdDate = new Date(keyData.createdAt);
+                    const formattedDate = createdDate.toLocaleString('zh-CN');
+                    
+                    row.innerHTML = `
+                        <td>
+                            <div class="api-key">${keyData.key}</div>
+                            <button class="copy-btn" onclick="copyToClipboard('${keyData.key}')">复制</button>
+                        </td>
+                        <td>
+                            <input type="text" class="note-input" value="${keyData.note || ''}" id="note-${keyData.key}">
+                        </td>
+                        <td>${formattedDate}</td>
+                        <td>
+                            <div>${permissionsText}</div>
+                            <button class="update-btn copy-btn" onclick="showEditPermissions('${keyData.key}')">修改权限</button>
+                        </td>
+                        <td>
+                            <button class="update-btn" onclick="updateApiKey('${keyData.key}')">更新</button>
+                            <button class="delete-btn" onclick="deleteApiKey('${keyData.key}')">删除</button>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                showMessage('加载API密钥失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 复制API密钥到剪贴板
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                showMessage('已复制到剪贴板', 'success');
+            }, function() {
+                showMessage('复制失败', 'error');
+            });
+        }
+        
+        // 显示编辑权限对话框
+        function showEditPermissions(key) {
+            // 创建对话框元素
+            const dialog = document.createElement('div');
+            dialog.style.position = 'fixed';
+            dialog.style.top = '0';
+            dialog.style.left = '0';
+            dialog.style.width = '100%';
+            dialog.style.height = '100%';
+            dialog.style.backgroundColor = 'rgba(0,0,0,0.5)';
+            dialog.style.display = 'flex';
+            dialog.style.justifyContent = 'center';
+            dialog.style.alignItems = 'center';
+            dialog.style.zIndex = '1000';
+            
+            // 获取当前权限
+            fetch('/api/apikey/list', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(apiKeys => {
+                const keyData = apiKeys.find(k => k.key === key);
+                const permissions = keyData.permissions || { read: true };
+                
+                // 创建对话框内容
+                const content = document.createElement('div');
+                content.style.backgroundColor = 'white';
+                content.style.padding = '20px';
+                content.style.borderRadius = '8px';
+                content.style.maxWidth = '500px';
+                content.style.width = '90%';
+                
+                content.innerHTML = `
+                    <h3>修改API密钥权限</h3>
+                    <div class="permissions-container" style="border: none;">
+                        <div class="permission-item">
+                            <label>
+                                <input type="checkbox" id="edit-permissionRead" checked disabled>
+                                查询IP
+                            </label>
+                            <div class="permission-description">允许查询IP是否在黑名单中（默认允许且不可更改）</div>
+                        </div>
+                        <div class="permission-item">
+                            <label>
+                                <input type="checkbox" id="edit-permissionList" ${permissions.list ? 'checked' : ''}>
+                                获取IP列表
+                            </label>
+                            <div class="permission-description">允许获取完整的IP黑名单列表</div>
+                        </div>
+                        <div class="permission-item">
+                            <label>
+                                <input type="checkbox" id="edit-permissionAdd" ${permissions.add ? 'checked' : ''}>
+                                添加IP
+                            </label>
+                            <div class="permission-description">允许向黑名单添加IP地址</div>
+                        </div>
+                        <div class="permission-item">
+                            <label>
+                                <input type="checkbox" id="edit-permissionDelete" ${permissions.delete ? 'checked' : ''}>
+                                删除IP
+                            </label>
+                            <div class="permission-description">允许从黑名单删除IP地址</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                        <button class="delete-btn" id="cancelEditBtn">取消</button>
+                        <button class="update-btn" id="savePermissionsBtn">保存</button>
+                    </div>
+                `;
+                
+                dialog.appendChild(content);
+                document.body.appendChild(dialog);
+                
+                // 取消按钮事件
+                document.getElementById('cancelEditBtn').addEventListener('click', function() {
+                    document.body.removeChild(dialog);
+                });
+                
+                // 保存按钮事件
+                document.getElementById('savePermissionsBtn').addEventListener('click', function() {
+                    const updatedPermissions = {
+                        read: true,
+                        list: document.getElementById('edit-permissionList').checked,
+                        add: document.getElementById('edit-permissionAdd').checked,
+                        delete: document.getElementById('edit-permissionDelete').checked
+                    };
+                    
+                    updateApiKeyPermissions(key, updatedPermissions);
+                    document.body.removeChild(dialog);
+                });
+            })
+            .catch(error => {
+                showMessage('获取API密钥信息失败: ' + error.message, 'error');
+                document.body.removeChild(dialog);
+            });
+        }
+        
+        // 更新API密钥权限
+        async function updateApiKeyPermissions(key, permissions) {
+            try {
+                const response = await fetch('/api/apikey/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ key, permissions })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('API密钥权限更新成功', 'success');
+                    loadApiKeys();
+                } else {
+                    showMessage('更新失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('更新失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 更新API密钥
+        async function updateApiKey(key) {
+            const note = document.getElementById(`note-${key}`).value;
+            
+            try {
+                const response = await fetch('/api/apikey/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ key, note })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('API密钥更新成功', 'success');
+                } else {
+                    showMessage('更新失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('更新失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 删除API密钥
+        async function deleteApiKey(key) {
+            if (!confirm('确定要删除此API密钥吗？此操作不可撤销。')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/apikey/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ key })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('API密钥删除成功', 'success');
+                    loadApiKeys();
+                } else {
+                    showMessage('删除失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('删除失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 显示消息
+        function showMessage(message, type) {
+            const container = document.getElementById('messageContainer');
+            container.textContent = message;
+            container.className = `message ${type}`;
+            container.classList.remove('hidden');
+            
+            // 5秒后自动隐藏消息
+            setTimeout(function() {
+                container.classList.add('hidden');
+            }, 5000);
+        }
     </script>
 </body>
 </html> 

@@ -2,6 +2,8 @@
 
 // API密钥前缀(用于KV存储)
 const API_KEY_PREFIX = 'apikey:';
+// API密钥列表的键名
+const API_KEY_LIST = 'apikeys_list';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -28,8 +30,8 @@ export async function onRequestPost(context) {
       });
     }
     
-    // 检查密钥是否存在
-    const keyExists = await env.IP_BLACKLIST.get(`${API_KEY_PREFIX}${key}`);
+    // 检查密钥是否存在 - 从新的KV命名空间获取
+    const keyExists = await env.API_KEYS.get(`${API_KEY_PREFIX}${key}`);
     if (!keyExists) {
       return new Response(JSON.stringify({
         success: false,
@@ -40,17 +42,17 @@ export async function onRequestPost(context) {
       });
     }
     
-    // 从KV中删除密钥
-    await env.IP_BLACKLIST.delete(`${API_KEY_PREFIX}${key}`);
+    // 从KV中删除密钥 - 使用新的KV命名空间
+    await env.API_KEYS.delete(`${API_KEY_PREFIX}${key}`);
     
-    // 从密钥列表中移除
+    // 从密钥列表中移除 - 使用新的KV命名空间和键名
     let keysList = [];
-    const existingList = await env.IP_BLACKLIST.get(`${API_KEY_PREFIX}list`);
+    const existingList = await env.API_KEYS.get(API_KEY_LIST);
     
     if (existingList) {
       keysList = JSON.parse(existingList);
       keysList = keysList.filter(item => item !== key);
-      await env.IP_BLACKLIST.put(`${API_KEY_PREFIX}list`, JSON.stringify(keysList));
+      await env.API_KEYS.put(API_KEY_LIST, JSON.stringify(keysList));
     }
     
     return new Response(JSON.stringify({

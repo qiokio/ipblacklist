@@ -1,10 +1,10 @@
-// 基于API密钥的IP黑名单查询接口
+// 基于API密钥的IP黑名单列表获取接口
 
 // API密钥前缀(用于KV存储)
 const API_KEY_PREFIX = 'apikey:';
 
 // 验证API密钥
-async function validateApiKey(key, env, requiredPermission = 'read') {
+async function validateApiKey(key, env, requiredPermission = 'list') {
   if (!key) {
     return { valid: false, message: '未提供API密钥' };
   }
@@ -30,33 +30,6 @@ async function validateApiKey(key, env, requiredPermission = 'read') {
   }
 }
 
-// 验证IP格式
-function validateIPv4(ip) {
-  const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
-  if (!ipv4Regex.test(ip)) {
-    return false;
-  }
-  
-  const parts = ip.split('.').map(part => parseInt(part, 10));
-  return parts.every(part => part >= 0 && part <= 255);
-}
-
-// 检查IP是否在黑名单中
-async function checkIPInBlacklist(ip, env) {
-  try {
-    const blacklist = await env.IP_BLACKLIST.get('blacklist');
-    if (!blacklist) {
-      return false;
-    }
-    
-    const blacklistArray = JSON.parse(blacklist);
-    return blacklistArray.includes(ip);
-  } catch (error) {
-    console.error('检查IP黑名单失败:', error);
-    return false;
-  }
-}
-
 export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
@@ -70,12 +43,11 @@ export async function onRequestGet(context) {
   };
   
   try {
-    // 获取请求参数
+    // 获取API密钥
     const apiKey = url.searchParams.get('key');
-    const ip = url.searchParams.get('ip') || request.headers.get('CF-Connecting-IP');
     
-    // 验证API密钥
-    const keyValidation = await validateApiKey(apiKey, env, 'read');
+    // 验证API密钥和权限
+    const keyValidation = await validateApiKey(apiKey, env, 'list');
     if (!keyValidation.valid) {
       return new Response(JSON.stringify({
         error: true,
@@ -86,30 +58,22 @@ export async function onRequestGet(context) {
       });
     }
     
-    // 验证IP格式
-    if (ip && !validateIPv4(ip)) {
-      return new Response(JSON.stringify({
-        error: true,
-        message: 'IP格式无效'
-      }), {
-        status: 400,
-        headers
-      });
+    // 从KV获取黑名单
+    const blacklist = await env.IP_BLACKLIST.get('blacklist');
+    
+    // 如果黑名单不存在，返回空数组
+    if (!blacklist) {
+      return new Response(JSON.stringify([]), { headers });
     }
     
-    // 检查IP是否在黑名单中
-    const blocked = await checkIPInBlacklist(ip, env);
-    
-    return new Response(JSON.stringify({
-      ip,
-      blocked,
-      message: blocked ? `IP ${ip} 在黑名单中` : `IP ${ip} 不在黑名单中`
-    }), { headers });
+    // 解析黑名单并返回
+    const blacklistArray = JSON.parse(blacklist);
+    return new Response(JSON.stringify(blacklistArray), { headers });
     
   } catch (error) {
     return new Response(JSON.stringify({
       error: true,
-      message: '查询失败: ' + error.message
+      message: '获取黑名单失败: ' + error.message
     }), {
       status: 500,
       headers

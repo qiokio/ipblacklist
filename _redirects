@@ -7,6 +7,10 @@
 # 确保API文档可通过简短URL访问
 /docs /API-HANDBOOK.md 302
 
+# API密钥测试工具的简短URL
+/keytest /key-test.html 302
+/api-test /key-test.html 302
+
 # 设置首页别名
 /home / 302
 

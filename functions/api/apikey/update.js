@@ -16,7 +16,7 @@ export async function onRequestPost(context) {
   
   try {
     // 解析请求体中的API密钥数据
-    const { key, note } = await request.json();
+    const { key, note, permissions } = await request.json();
     
     if (!key) {
       return new Response(JSON.stringify({
@@ -28,8 +28,8 @@ export async function onRequestPost(context) {
       });
     }
     
-    // 检查密钥是否存在
-    const keyDataStr = await env.IP_BLACKLIST.get(`${API_KEY_PREFIX}${key}`);
+    // 检查密钥是否存在 - 从新的KV命名空间获取
+    const keyDataStr = await env.API_KEYS.get(`${API_KEY_PREFIX}${key}`);
     if (!keyDataStr) {
       return new Response(JSON.stringify({
         success: false,
@@ -42,9 +42,27 @@ export async function onRequestPost(context) {
     
     // 更新密钥数据
     const keyData = JSON.parse(keyDataStr);
-    keyData.note = note;
     
-    await env.IP_BLACKLIST.put(`${API_KEY_PREFIX}${key}`, JSON.stringify(keyData));
+    // 更新备注
+    if (note !== undefined) {
+      keyData.note = note;
+    }
+    
+    // 更新权限
+    if (permissions !== undefined) {
+      keyData.permissions = {
+        ...keyData.permissions || {
+          read: true,
+          list: false,
+          add: false,
+          delete: false
+        },
+        ...permissions
+      };
+    }
+    
+    // 保存到新的KV命名空间
+    await env.API_KEYS.put(`${API_KEY_PREFIX}${key}`, JSON.stringify(keyData));
     
     return new Response(JSON.stringify({
       success: true,

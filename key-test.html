@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API密钥测试工具 - IP黑名单系统</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: #333;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: normal;
+        }
+
+        .badge-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .badge-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .badge-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .card-body {
+            margin-bottom: 15px;
+        }
+
+        .result {
+            background-color: #f8f9fa;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 13px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .permission-tag {
+            display: inline-block;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 5px;
+            padding: 2px 6px;
+        }
+
+        .permission-read {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+
+        .permission-list {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+        }
+
+        .permission-add {
+            background-color: #fff3e0;
+            color: #e65100;
+        }
+
+        .permission-delete {
+            background-color: #ffebee;
+            color: #b71c1c;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .auth-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+            color: white;
+            text-decoration: none;
+        }
+
+        .hint {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+
+        .hint h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="auth-header">
+            <h1>API密钥测试工具</h1>
+            <a href="/" class="button">返回首页</a>
+        </div>
+        
+        <div id="messageContainer" class="hidden message"></div>
+        
+        <div class="card">
+            <div class="card-header">设置API密钥</div>
+            <div class="card-body">
+                <div class="input-group">
+                    <input type="text" id="apiKeyInput" placeholder="输入您的API密钥">
+                    <button id="verifyKeyBtn">验证密钥</button>
+                </div>
+                <div id="keyStatusContainer" class="hidden"></div>
+            </div>
+        </div>
+        
+        <div id="permissionsContainer" class="hidden">
+            <h2>可用的API功能</h2>
+            <div id="permissionsList"></div>
+            
+            <!-- 查询IP功能卡片 -->
+            <div class="card" id="checkIpCard">
+                <div class="card-header">
+                    查询IP是否在黑名单
+                    <span class="badge badge-primary">需要read权限</span>
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <input type="text" id="checkIpInput" placeholder="输入要查询的IP地址">
+                        <button id="checkIpBtn">查询</button>
+                    </div>
+                    <div id="checkIpResult" class="result hidden"></div>
+                </div>
+            </div>
+            
+            <!-- 获取IP列表功能卡片 -->
+            <div class="card" id="listIpsCard">
+                <div class="card-header">
+                    获取完整IP黑名单
+                    <span class="badge badge-success">需要list权限</span>
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <button id="listIpsBtn">获取列表</button>
+                    </div>
+                    <div id="listIpsResult" class="result hidden"></div>
+                </div>
+            </div>
+            
+            <!-- 添加IP功能卡片 -->
+            <div class="card" id="addIpCard">
+                <div class="card-header">
+                    添加IP到黑名单
+                    <span class="badge badge-warning">需要add权限</span>
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <input type="text" id="addIpInput" placeholder="输入要添加的IP地址">
+                        <button id="addIpBtn">添加</button>
+                    </div>
+                    <div id="addIpResult" class="result hidden"></div>
+                </div>
+            </div>
+            
+            <!-- 删除IP功能卡片 -->
+            <div class="card" id="removeIpCard">
+                <div class="card-header">
+                    从黑名单删除IP
+                    <span class="badge badge-danger">需要delete权限</span>
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <input type="text" id="removeIpInput" placeholder="输入要删除的IP地址">
+                        <button id="removeIpBtn">删除</button>
+                    </div>
+                    <div id="removeIpResult" class="result hidden"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="hint">
+            <h3>使用说明</h3>
+            <p>此工具用于测试API密钥的有效性和权限范围。</p>
+            <ol>
+                <li>输入API密钥并点击"验证密钥"按钮</li>
+                <li>系统将显示此密钥拥有的权限</li>
+                <li>根据权限，您可以使用相应的功能测试API</li>
+                <li>请注意，执行增删操作会实际修改您的黑名单数据</li>
+            </ol>
+            <p>如果您需要创建或修改API密钥，请前往<a href="/apikeys.html">API密钥管理页面</a>。</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取元素引用
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const verifyKeyBtn = document.getElementById('verifyKeyBtn');
+            const keyStatusContainer = document.getElementById('keyStatusContainer');
+            const permissionsContainer = document.getElementById('permissionsContainer');
+            const permissionsList = document.getElementById('permissionsList');
+            
+            const checkIpCard = document.getElementById('checkIpCard');
+            const checkIpInput = document.getElementById('checkIpInput');
+            const checkIpBtn = document.getElementById('checkIpBtn');
+            const checkIpResult = document.getElementById('checkIpResult');
+            
+            const listIpsCard = document.getElementById('listIpsCard');
+            const listIpsBtn = document.getElementById('listIpsBtn');
+            const listIpsResult = document.getElementById('listIpsResult');
+            
+            const addIpCard = document.getElementById('addIpCard');
+            const addIpInput = document.getElementById('addIpInput');
+            const addIpBtn = document.getElementById('addIpBtn');
+            const addIpResult = document.getElementById('addIpResult');
+            
+            const removeIpCard = document.getElementById('removeIpCard');
+            const removeIpInput = document.getElementById('removeIpInput');
+            const removeIpBtn = document.getElementById('removeIpBtn');
+            const removeIpResult = document.getElementById('removeIpResult');
+            
+            // 验证密钥按钮事件
+            verifyKeyBtn.addEventListener('click', verifyApiKey);
+            
+            // 绑定功能按钮事件
+            checkIpBtn.addEventListener('click', checkIp);
+            listIpsBtn.addEventListener('click', listIps);
+            addIpBtn.addEventListener('click', addIp);
+            removeIpBtn.addEventListener('click', removeIp);
+            
+            // 权限状态和功能卡片的对应关系
+            const permissionCardMap = {
+                'read': checkIpCard,
+                'list': listIpsCard,
+                'add': addIpCard,
+                'delete': removeIpCard
+            };
+            
+            // 验证API密钥函数
+            async function verifyApiKey() {
+                const apiKey = apiKeyInput.value.trim();
+                
+                if (!apiKey) {
+                    showMessage('请输入API密钥', 'error');
+                    return;
+                }
+                
+                try {
+                    // 使用check-api接口测试密钥
+                    const response = await fetch(`/api/blacklist/check-api?key=${apiKey}&ip=8.8.8.8`);
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        // 获取密钥详细信息（权限等）
+                        await getKeyPermissions(apiKey);
+                    } else {
+                        keyStatusContainer.innerHTML = `
+                            <div class="error">
+                                <strong>密钥验证失败：</strong> ${data.message || '无效的API密钥'}
+                            </div>
+                        `;
+                        keyStatusContainer.classList.remove('hidden');
+                        permissionsContainer.classList.add('hidden');
+                    }
+                } catch (error) {
+                    showMessage('验证密钥失败: ' + error.message, 'error');
+                }
+            }
+            
+            // 获取密钥权限
+            async function getKeyPermissions(apiKey) {
+                try {
+                    // 这里我们模拟获取密钥权限
+                    // 实际中，可以通过先使用各个接口测试来判断权限
+                    // 或添加一个专门返回密钥权限的API端点
+                    
+                    // 先测试read权限（默认应该都有）
+                    const readTest = await fetch(`/api/blacklist/check-api?key=${apiKey}&ip=8.8.8.8`);
+                    const hasReadPerm = readTest.ok;
+                    
+                    // 测试list权限
+                    const listTest = await fetch(`/api/blacklist/get-api?key=${apiKey}`);
+                    const hasListPerm = listTest.ok;
+                    
+                    // 通过POST请求带错误的IP来测试add权限（不会真的添加）
+                    const addTest = await fetch('/api/blacklist/add-api', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key: apiKey, ip: 'invalid_ip_to_test_permission' })
+                    });
+                    // 如果返回400，说明IP无效但密钥有效且有权限
+                    // 如果返回401或403，说明无权限
+                    const hasAddPerm = addTest.status === 400;
+                    
+                    // 测试delete权限
+                    const deleteTest = await fetch('/api/blacklist/remove-api', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key: apiKey, ip: '' })
+                    });
+                    // 如果返回400，说明参数无效但密钥有效且有权限
+                    const hasDeletePerm = deleteTest.status === 400;
+                    
+                    // 保存当前密钥和权限
+                    window.currentApiKey = apiKey;
+                    window.currentPermissions = {
+                        read: hasReadPerm,
+                        list: hasListPerm,
+                        add: hasAddPerm,
+                        delete: hasDeletePerm
+                    };
+                    
+                    // 显示密钥权限状态
+                    displayKeyStatus();
+                    
+                    // 根据权限启用/禁用功能
+                    updateFeaturesAvailability();
+                    
+                } catch (error) {
+                    showMessage('获取密钥权限失败: ' + error.message, 'error');
+                }
+            }
+            
+            // 显示密钥状态和权限
+            function displayKeyStatus() {
+                const perm = window.currentPermissions;
+                const permLabels = [];
+                
+                if (perm.read) permLabels.push('<span class="permission-tag permission-read">查询IP</span>');
+                if (perm.list) permLabels.push('<span class="permission-tag permission-list">获取列表</span>');
+                if (perm.add) permLabels.push('<span class="permission-tag permission-add">添加IP</span>');
+                if (perm.delete) permLabels.push('<span class="permission-tag permission-delete">删除IP</span>');
+                
+                keyStatusContainer.innerHTML = `
+                    <div class="success">
+                        <strong>密钥验证成功！</strong><br>
+                        此密钥拥有以下权限：${permLabels.join(' ')}
+                    </div>
+                `;
+                keyStatusContainer.classList.remove('hidden');
+                permissionsContainer.classList.remove('hidden');
+                
+                // 显示权限列表
+                permissionsList.innerHTML = '';
+                if (permLabels.length > 0) {
+                    permissionsList.innerHTML = `<p>此密钥拥有以下权限：${permLabels.join(' ')}</p>`;
+                } else {
+                    permissionsList.innerHTML = '<p>此密钥没有任何有效的权限。</p>';
+                }
+            }
+            
+            // 根据权限更新功能可用性
+            function updateFeaturesAvailability() {
+                const perm = window.currentPermissions;
+                
+                // 更新每个功能卡片的可用状态
+                for (const [permission, card] of Object.entries(permissionCardMap)) {
+                    if (perm[permission]) {
+                        card.classList.remove('hidden');
+                        card.querySelector('button').disabled = false;
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                }
+            }
+            
+            // 查询IP是否在黑名单
+            async function checkIp() {
+                const ip = checkIpInput.value.trim();
+                const apiKey = window.currentApiKey;
+                
+                if (!ip) {
+                    showMessage('请输入IP地址', 'error');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`/api/blacklist/check-api?key=${apiKey}&ip=${ip}`);
+                    const data = await response.json();
+                    
+                    checkIpResult.textContent = JSON.stringify(data, null, 2);
+                    checkIpResult.classList.remove('hidden');
+                } catch (error) {
+                    showMessage('查询失败: ' + error.message, 'error');
+                }
+            }
+            
+            // 获取IP黑名单列表
+            async function listIps() {
+                const apiKey = window.currentApiKey;
+                
+                try {
+                    const response = await fetch(`/api/blacklist/get-api?key=${apiKey}`);
+                    const data = await response.json();
+                    
+                    listIpsResult.textContent = JSON.stringify(data, null, 2);
+                    listIpsResult.classList.remove('hidden');
+                } catch (error) {
+                    showMessage('获取列表失败: ' + error.message, 'error');
+                }
+            }
+            
+            // 添加IP到黑名单
+            async function addIp() {
+                const ip = addIpInput.value.trim();
+                const apiKey = window.currentApiKey;
+                
+                if (!ip) {
+                    showMessage('请输入IP地址', 'error');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/api/blacklist/add-api', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key: apiKey, ip: ip })
+                    });
+                    const data = await response.json();
+                    
+                    addIpResult.textContent = JSON.stringify(data, null, 2);
+                    addIpResult.classList.remove('hidden');
+                } catch (error) {
+                    showMessage('添加IP失败: ' + error.message, 'error');
+                }
+            }
+            
+            // 从黑名单删除IP
+            async function removeIp() {
+                const ip = removeIpInput.value.trim();
+                const apiKey = window.currentApiKey;
+                
+                if (!ip) {
+                    showMessage('请输入IP地址', 'error');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/api/blacklist/remove-api', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key: apiKey, ip: ip })
+                    });
+                    const data = await response.json();
+                    
+                    removeIpResult.textContent = JSON.stringify(data, null, 2);
+                    removeIpResult.classList.remove('hidden');
+                } catch (error) {
+                    showMessage('删除IP失败: ' + error.message, 'error');
+                }
+            }
+            
+            // 显示消息函数
+            function showMessage(text, type) {
+                const container = document.getElementById('messageContainer');
+                container.textContent = text;
+                container.className = `message ${type}`;
+                container.classList.remove('hidden');
+                
+                // 5秒后自动隐藏消息
+                setTimeout(function() {
+                    container.classList.add('hidden');
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html> 

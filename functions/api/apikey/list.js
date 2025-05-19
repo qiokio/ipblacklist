@@ -2,6 +2,8 @@
 
 // API密钥前缀(用于KV存储)
 const API_KEY_PREFIX = 'apikey:';
+// API密钥列表的键名
+const API_KEY_LIST = 'apikeys_list';
 
 export async function onRequestGet(context) {
   const { env } = context;
@@ -15,18 +17,18 @@ export async function onRequestGet(context) {
   };
   
   try {
-    // 从KV获取API密钥列表
+    // 从新的KV命名空间获取API密钥列表
     let keysList = [];
-    const existingList = await env.IP_BLACKLIST.get(`${API_KEY_PREFIX}list`);
+    const existingList = await env.API_KEYS.get(API_KEY_LIST);
     
     if (existingList) {
       keysList = JSON.parse(existingList);
     }
     
-    // 获取每个密钥的详细信息
+    // 获取每个密钥的详细信息 - 从新的KV命名空间获取
     const apiKeysData = [];
     for (const key of keysList) {
-      const keyDataStr = await env.IP_BLACKLIST.get(`${API_KEY_PREFIX}${key}`);
+      const keyDataStr = await env.API_KEYS.get(`${API_KEY_PREFIX}${key}`);
       if (keyDataStr) {
         try {
           const keyData = JSON.parse(keyDataStr);

@@ -192,6 +192,97 @@
             color: #28a745;
             margin-top: 0;
         }
+        
+        /* 响应式设计 - 移动端适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            /* 调整认证头部在移动端的显示 */
+            .auth-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .auth-header h1 {
+                margin-bottom: 10px;
+                font-size: 1.5rem;
+            }
+            
+            .user-info {
+                flex-wrap: wrap;
+                margin-bottom: 10px;
+            }
+            
+            /* 调整输入框和按钮在移动端的显示 */
+            .input-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .input-group input[type="text"] {
+                width: 100%;
+            }
+            
+            .input-group button {
+                width: 100%;
+            }
+            
+            /* 调整表格在移动端的显示 */
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            
+            tr {
+                border: 1px solid #ddd;
+                margin-bottom: 10px;
+                border-radius: 4px;
+            }
+            
+            td {
+                border: none;
+                border-bottom: 1px solid #eee;
+                position: relative;
+                padding-left: 40%;
+                text-align: right;
+            }
+            
+            td:before {
+                position: absolute;
+                top: 12px;
+                left: 12px;
+                width: 35%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+                content: attr(data-title);
+            }
+            
+            #blacklistTable td:nth-of-type(1):before { content: "IP地址"; }
+            #blacklistTable td:nth-of-type(2):before { content: "操作"; }
+            
+            /* 其他移动端调整 */
+            .hint {
+                padding: 10px;
+            }
+            
+            .hint ul {
+                padding-left: 15px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -278,5 +369,32 @@
 
     <script type="module" src="./js/blacklistManager.js"></script>
     <script type="module" src="./js/auth.js"></script>
+    
+    <!-- 调整JavaScript使其支持移动端表格 -->
+    <script>
+        // 动态添加表格数据标题
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.innerWidth <= 768) {
+                // 为黑名单表格添加数据标题属性
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.addedNodes.length) {
+                            document.querySelectorAll('#blacklistTableBody tr').forEach(row => {
+                                row.querySelectorAll('td').forEach((cell, index) => {
+                                    if (index === 0) cell.setAttribute('data-title', 'IP地址');
+                                    if (index === 1) cell.setAttribute('data-title', '操作');
+                                });
+                            });
+                        }
+                    });
+                });
+                
+                const blacklistTableBody = document.getElementById('blacklistTableBody');
+                if (blacklistTableBody) {
+                    observer.observe(blacklistTableBody, { childList: true, subtree: true });
+                }
+            }
+        });
+    </script>
 </body>
 </html> 

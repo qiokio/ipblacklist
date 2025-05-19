@@ -1,34 +1,31 @@
-# 依赖包
+# 依赖
 node_modules/
+.dev.vars
+
+# 编译输出
+dist/
+build/
+
+# 日志
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # 本地环境文件
 .env
 .env.local
-.dev.vars
-
-# 构建目录
-.wrangler/
-dist/
+.env.development.local
+.env.test.local
+.env.production.local
 
 # 编辑器配置
-.vscode/
 .idea/
+.vscode/
+*.swp
+*.swo
 
-# 系统文件
+# 操作系统文件
 .DS_Store
-Thumbs.db
-
-# Node.js
-npm-debug.log
-yarn-error.log
-yarn-debug.log
-
-# 本地环境变量
-.env
-.env.local
-.dev.vars
-
-# 构建输出
-dist/
-build/
-.output/ 
+Thumbs.db 

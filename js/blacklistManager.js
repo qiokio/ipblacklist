@@ -193,14 +193,37 @@ class BlacklistManager {
                 return;
             }
 
-            tableBody.innerHTML = blacklist.map(ip => `
-                <tr>
-                    <td>${ip}</td>
-                    <td>
-                        <button class="remove-ip-btn" data-ip="${ip}">移除</button>
-                    </td>
-                </tr>
-            `).join('');
+            if (blacklist.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="2" style="text-align: center;">黑名单为空</td></tr>';
+                return;
+            }
+
+            // 判断是否为移动设备
+            const isMobile = window.innerWidth <= 768;
+            
+            tableBody.innerHTML = blacklist.map(ip => {
+                if (isMobile) {
+                    // 移动端包含数据标题属性
+                    return `
+                        <tr>
+                            <td data-title="IP地址">${ip}</td>
+                            <td data-title="操作">
+                                <button class="remove-ip-btn" data-ip="${ip}">移除</button>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    // 桌面端不需要数据标题
+                    return `
+                        <tr>
+                            <td>${ip}</td>
+                            <td>
+                                <button class="remove-ip-btn" data-ip="${ip}">移除</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }).join('');
         } catch (error) {
             console.error('刷新黑名单时出错:', error);
             alert('刷新黑名单时发生错误，请查看控制台');

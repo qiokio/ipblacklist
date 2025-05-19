@@ -2,6 +2,8 @@
 
 // API密钥前缀(用于KV存储)
 const API_KEY_PREFIX = 'apikey:';
+// API密钥列表的键名
+const API_KEY_LIST = 'apikeys_list';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -16,7 +18,7 @@ export async function onRequestPost(context) {
   
   try {
     // 解析请求体中的API密钥数据
-    const { key, note, createdAt } = await request.json();
+    const { key, note, permissions, createdAt } = await request.json();
     
     if (!key) {
       return new Response(JSON.stringify({
@@ -28,19 +30,31 @@ export async function onRequestPost(context) {
       });
     }
     
-    // 存储API密钥到KV
+    // 验证权限格式
+    const defaultPermissions = {
+      read: true,   // 查看IP是否在黑名单的权限
+      list: false,  // 获取IP列表的权限
+      add: false,   // 添加IP的权限
+      delete: false // 删除IP的权限
+    };
+    
+    // 使用提供的权限或默认权限
+    const keyPermissions = permissions || defaultPermissions;
+    
+    // 存储API密钥到KV - 使用新的API_KEYS命名空间
     const keyData = {
       key,
       note: note || '',
+      permissions: keyPermissions,
       createdAt: createdAt || new Date().toISOString()
     };
     
-    await env.IP_BLACKLIST.put(`${API_KEY_PREFIX}${key}`, JSON.stringify(keyData));
+    await env.API_KEYS.put(`${API_KEY_PREFIX}${key}`, JSON.stringify(keyData));
     
     // 添加到API密钥列表
     let keysList = [];
     try {
-      const existingList = await env.IP_BLACKLIST.get(`${API_KEY_PREFIX}list`);
+      const existingList = await env.API_KEYS.get(API_KEY_LIST);
       if (existingList) {
         keysList = JSON.parse(existingList);
       }
@@ -51,7 +65,7 @@ export async function onRequestPost(context) {
     // 确保不添加重复密钥
     if (!keysList.includes(key)) {
       keysList.push(key);
-      await env.IP_BLACKLIST.put(`${API_KEY_PREFIX}list`, JSON.stringify(keysList));
+      await env.API_KEYS.put(API_KEY_LIST, JSON.stringify(keysList));
     }
     
     return new Response(JSON.stringify({
