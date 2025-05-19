@@ -5,149 +5,142 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IP黑名单系统 - 首页</title>
     <link rel="stylesheet" href="styles/index.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <!-- 字体图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <!-- 用户登录信息 -->
-        <div class="auth-header">
-            <div id="userInfo" class="user-info" style="display: none;">
-                <span>已登录为：</span>
-                <span id="username" class="username">管理员</span>
-                <a href="/dashboard.html" class="btn btn-secondary" style="padding: 6px 12px;">进入控制台</a>
-                <button id="logoutBtn" class="btn btn-secondary" style="padding: 6px 12px;">退出登录</button>
-            </div>
-            <div id="loginActions">
-                <a href="/login.html" class="btn btn-secondary" style="padding: 6px 12px;">登录</a>
+    <div class="grid-container">
+        <!-- 顶栏 -->
+        <div class="top-bar">
+            <button id="mobileMenuToggle" class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="top-bar-title">IP黑名单系统</div>
+            <div class="top-bar-actions">
+                <div id="userInfo" class="user-info" style="display: none;">
+                    <span>已登录为：</span>
+                    <span id="username" class="username">管理员</span>
+                    <a href="/dashboard.html" class="btn btn-secondary">控制台</a>
+                    <button id="logoutBtn" class="btn btn-secondary">退出</button>
+                </div>
+                <div id="loginActions" style="display: flex;">
+                    <a href="/login.html" class="btn btn-secondary">登录</a>
+                </div>
             </div>
         </div>
         
-        <header>
-            <h1>IP黑名单系统</h1>
-            <p class="subtitle">简单、高效、可靠的IP地址黑名单管理系统</p>
-        </header>
-        
-        <section>
-            <h2>系统简介</h2>
-            <p>
-                IP黑名单系统是一个轻量级解决方案，旨在帮助网站管理员轻松管理IP黑名单，保护网站免受恶意访问。
-                系统基于Cloudflare Pages和KV存储构建，具有高性能和全球可用性。
-            </p>
-            
-            <ul class="feature-list">
-                <li class="feature-item">
-                    <span class="feature-title">简单易用</span>
-                    直观的用户界面，无需专业知识即可快速上手。添加和删除IP地址只需点击几下。
+        <!-- 侧栏导航 -->
+        <div class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="/" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-home"></i></span>
+                        首页
+                    </a>
                 </li>
-                <li class="feature-item">
-                    <span class="feature-title">安全可靠</span>
-                    基于JWT的认证系统确保只有授权用户可以管理黑名单。API密钥系统提供安全的查询能力。
+                <li class="sidebar-menu-item">
+                    <a href="/dashboard.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-tachometer-alt"></i></span>
+                        控制台
+                    </a>
                 </li>
-                <li class="feature-item">
-                    <span class="feature-title">灵活集成</span>
-                    提供多种API端点，便于与您现有的系统和应用程序集成。支持RESTful接口和多种编程语言。
+                <li class="sidebar-menu-item">
+                    <a href="/key-test.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-key"></i></span>
+                        API密钥测试
+                    </a>
                 </li>
-                <li class="feature-item">
-                    <span class="feature-title">高性能</span>
-                    利用Cloudflare的全球网络，确保查询响应迅速，无论用户位于何处。
+                <li class="sidebar-menu-item">
+                    <a href="/api-docs.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-book"></i></span>
+                        API文档
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/env-setup.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-cog"></i></span>
+                        环境配置
+                    </a>
                 </li>
             </ul>
-        </section>
-        
-        <section>
-            <h2>主要功能</h2>
-            
-            <h3>IP黑名单管理</h3>
-            <p>
-                通过简单直观的界面添加、查看和删除黑名单中的IP地址。系统支持IPv4地址格式，提供实时的添加和删除操作。
-            </p>
-            
-            <h3>API密钥管理</h3>
-            <p>
-                创建和管理API密钥，允许第三方应用在不需要完整登录的情况下查询IP是否在黑名单中。每个API密钥都可以添加备注，方便管理。
-            </p>
-            
-            <div class="api-section">
-                <h3>API接口</h3>
-                <p>
-                    系统提供多种API端点，用于查询和管理IP黑名单：
-                </p>
-                <ul>
-                    <li><strong>公开查询：</strong> <code>/api/blacklist/check-external?ip=1.2.3.4</code></li>
-                    <li><strong>API密钥查询：</strong> <code>/api/blacklist/check-api?ip=1.2.3.4&key=您的API密钥</code></li>
-                    <li><strong>认证API：</strong> 添加、删除和管理黑名单（需要JWT认证）</li>
-                </ul>
-                <p>
-                    <a href="/api-docs.html" target="_blank">查看完整API文档</a> | 
-                    <a href="/key-test.html" target="_blank">API密钥测试工具</a>
-                </p>
-            </div>
-        </section>
-        
-        <div class="action-buttons">
-            <a href="/dashboard.html" class="btn">进入控制台</a>
-            <a href="/login.html" class="btn btn-secondary">登录系统</a>
-            <a href="/key-test.html" class="btn btn-secondary">API密钥测试</a>
         </div>
         
-        <footer>
-            <p>IP黑名单系统 &copy; 2023 | <a href="https://github.com/qiokio/ipblacklist" target="_blank">GitHub 项目</a></p>
-        </footer>
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <div class="card">
+                <h1>IP黑名单系统</h1>
+                <p class="subtitle">简单、高效、可靠的IP地址黑名单管理系统</p>
+            </div>
+            
+            <div class="card">
+                <h2>系统简介</h2>
+                <p>
+                    IP黑名单系统是一个轻量级解决方案，旨在帮助网站管理员轻松管理IP黑名单，保护网站免受恶意访问。
+                    系统基于Cloudflare Pages和KV存储构建，具有高性能和全球可用性。
+                </p>
+                
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <span class="feature-title">简单易用</span>
+                        直观的用户界面，无需专业知识即可快速上手。添加和删除IP地址只需点击几下。
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-title">安全可靠</span>
+                        基于JWT的认证系统确保只有授权用户可以管理黑名单。API密钥系统提供安全的查询能力。
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-title">灵活集成</span>
+                        提供多种API端点，便于与您现有的系统和应用程序集成。支持RESTful接口和多种编程语言。
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-title">高性能</span>
+                        利用Cloudflare的全球网络，确保查询响应迅速，无论用户位于何处。
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h2>主要功能</h2>
+                
+                <h3>IP黑名单管理</h3>
+                <p>
+                    通过简单直观的界面添加、查看和删除黑名单中的IP地址。系统支持IPv4地址格式，提供实时的添加和删除操作。
+                </p>
+                
+                <h3>API密钥管理</h3>
+                <p>
+                    创建和管理API密钥，允许第三方应用在不需要完整登录的情况下查询IP是否在黑名单中。每个API密钥都可以添加备注，方便管理。
+                </p>
+                
+                <div class="api-section">
+                    <h3>API接口</h3>
+                    <p>
+                        系统提供多种API端点，用于查询和管理IP黑名单：
+                    </p>
+                    <ul>
+                        <li><strong>公开查询：</strong> <code>/api/blacklist/check-external?ip=1.2.3.4</code></li>
+                        <li><strong>API密钥查询：</strong> <code>/api/blacklist/check-api?ip=1.2.3.4&key=您的API密钥</code></li>
+                        <li><strong>认证API：</strong> 添加、删除和管理黑名单（需要JWT认证）</li>
+                    </ul>
+                    <p>
+                        <a href="/api-docs.html" target="_blank">查看完整API文档</a> | 
+                        <a href="/key-test.html" target="_blank">API密钥测试工具</a>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="/dashboard.html" class="btn">进入控制台</a>
+                <a href="/login.html" class="btn btn-secondary">登录系统</a>
+                <a href="/key-test.html" class="btn btn-secondary">API密钥测试</a>
+            </div>
+            
+            <footer>
+                <p>IP黑名单系统 &copy; 2023 | <a href="https://github.com/qiokio/ipblacklist" target="_blank">GitHub 项目</a></p>
+            </footer>
+        </div>
     </div>
-
-    <script type="module">
-        // 检查用户登录状态并更新UI
-        document.addEventListener('DOMContentLoaded', () => {
-            const userInfo = document.getElementById('userInfo');
-            const loginActions = document.getElementById('loginActions');
-            const usernameElement = document.getElementById('username');
-            const logoutBtn = document.getElementById('logoutBtn');
-            
-            // 获取认证令牌
-            const token = localStorage.getItem('auth_token');
-            
-            if (token) {
-                // 尝试获取用户信息
-                fetch('/api/auth/verify', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.valid) {
-                        // 显示用户信息
-                        if (usernameElement) {
-                            usernameElement.textContent = data.user.username;
-                        }
-                        userInfo.style.display = 'flex';
-                        loginActions.style.display = 'none';
-                    } else {
-                        // 令牌无效
-                        userInfo.style.display = 'none';
-                        loginActions.style.display = 'block';
-                    }
-                })
-                .catch(error => {
-                    console.error('验证失败:', error);
-                    userInfo.style.display = 'none';
-                    loginActions.style.display = 'block';
-                });
-            } else {
-                // 未登录
-                userInfo.style.display = 'none';
-                loginActions.style.display = 'block';
-            }
-            
-            // 退出登录事件
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', () => {
-                    localStorage.removeItem('auth_token');
-                    localStorage.removeItem('user');
-                    userInfo.style.display = 'none';
-                    loginActions.style.display = 'block';
-                });
-            }
-        });
-    </script>
+    <script src="js/layout.js"></script>
 </body>
 </html> 
