@@ -1,0 +1,302 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+}
+
+.container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 0;
+    box-shadow: none;
+    max-width: 100%;
+    margin: 0;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    position: relative;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+button.loading {
+    color: transparent;
+}
+
+button.loading:after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin: -8px 0 0 -8px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.delete-btn {
+    background-color: #dc3545;
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
+}
+
+.update-btn {
+    background-color: #28a745;
+}
+
+.update-btn:hover {
+    background-color: #218838;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+tr:hover {
+    background-color: #f8f9fa;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.hint {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-left: 4px solid #007bff;
+    border-radius: 4px;
+}
+
+.hint h3 {
+    margin-top: 0;
+    color: #007bff;
+}
+
+.auth-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.api-key {
+    font-family: monospace;
+    background-color: #f8f9fa;
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    overflow-x: auto;
+    max-width: 100%;
+    white-space: nowrap;
+}
+
+.copy-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+.note-input {
+    width: 100%;
+    max-width: 250px;
+}
+
+.hidden {
+    display: none;
+}
+
+.message {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
+.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* 按钮样式链接 */
+.button {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.button:hover {
+    background-color: #0056b3;
+    color: white;
+    text-decoration: none;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .input-group {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    th, td {
+        padding: 8px;
+    }
+}
+
+/* 权限复选框样式 */
+.permissions-container {
+    margin: 15px 0;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+}
+
+.permissions-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.permission-item {
+    margin-bottom: 8px;
+}
+
+.permission-item label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.permission-item input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.permission-description {
+    font-size: 12px;
+    color: #666;
+    margin-left: 24px;
+    margin-top: 2px;
+}
+
+/* 响应式设计 - 移动端适配 */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    
+    /* 调整标题在移动端的显示 */
+    .auth-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    /* 表格响应式处理 */
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+    
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    
+    tr {
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+    }
+    
+    td {
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 50%;
+    }
+    
+    td:before {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: 600;
+    }
+    
+    td:nth-of-type(1):before { content: "API密钥"; }
+    td:nth-of-type(2):before { content: "备注"; }
+    td:nth-of-type(3):before { content: "创建时间"; }
+    td:nth-of-type(4):before { content: "权限"; }
+    td:nth-of-type(5):before { content: "操作"; }
+} 
