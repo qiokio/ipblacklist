@@ -371,7 +371,7 @@
         
         // 检查用户是否已登录
         function checkAuthentication() {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('auth_token');
             if (!token) {
                 window.location.href = '/login.html';
             }
@@ -411,7 +411,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                     },
                     body: JSON.stringify({ key, note, permissions })
                 });
@@ -447,7 +447,7 @@
             try {
                 const response = await fetch('/api/apikey/list', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                     }
                 });
                 
@@ -532,7 +532,7 @@
             // 获取当前权限
             fetch('/api/apikey/list', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                 }
             })
             .then(response => response.json())
@@ -620,7 +620,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                     },
                     body: JSON.stringify({ key, permissions })
                 });
@@ -647,7 +647,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                     },
                     body: JSON.stringify({ key, note })
                 });
@@ -675,7 +675,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                     },
                     body: JSON.stringify({ key })
                 });
