@@ -1,5 +1,5 @@
 # 确保用户访问管理界面时已经登录
-/admin/* /login.html 302
+# /admin/* /login.html 302  # 已禁用此规则，改为使用JavaScript验证用户登录状态
 
 # 处理旧路径到新路径的重定向（如果将来需要更改URL结构）
 # /old-path /new-path 301
