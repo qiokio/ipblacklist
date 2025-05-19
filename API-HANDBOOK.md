@@ -60,7 +60,47 @@ GET /api/blacklist/check-external
 - `400 Bad Request`: 请求参数错误
 - `500 Internal Server Error`: 服务器内部错误
 
-### 2. 获取完整黑名单
+### 2. 基于API密钥的IP黑名单查询
+
+#### 请求
+
+```
+GET /api/blacklist/check-api
+```
+
+**参数:**
+
+| 参数 | 类型 | 必须 | 描述 |
+|------|------|------|------|
+| ip | string | 否 | 要检查的IP地址，如不提供则使用访问者当前IP |
+| key | string | 是 | API密钥，用于认证请求 |
+
+#### 响应
+
+```json
+{
+  "ip": "192.168.1.1",
+  "blocked": false,
+  "message": "IP 192.168.1.1 不在黑名单中"
+}
+```
+
+**字段说明:**
+
+| 字段 | 类型 | 描述 |
+|------|------|------|
+| ip | string | 被查询的IP地址 |
+| blocked | boolean | 是否在黑名单中 |
+| message | string | 状态描述信息 |
+
+#### 状态码
+
+- `200 OK`: 请求成功
+- `400 Bad Request`: 请求参数错误，如IP格式无效
+- `401 Unauthorized`: API密钥无效
+- `500 Internal Server Error`: 服务器内部错误
+
+### 3. 获取完整黑名单
 
 #### 请求
 
@@ -79,7 +119,7 @@ GET /api/blacklist/get
 ]
 ```
 
-### 3. 添加IP到黑名单
+### 4. 添加IP到黑名单
 
 #### 请求
 
@@ -104,7 +144,7 @@ POST /api/blacklist/add
 }
 ```
 
-### 4. 从黑名单移除IP
+### 5. 从黑名单移除IP
 
 #### 请求
 
@@ -129,7 +169,7 @@ POST /api/blacklist/remove
 }
 ```
 
-### 5. 检查KV存储连接状态
+### 6. 检查KV存储连接状态
 
 #### 请求
 
@@ -199,6 +239,113 @@ GET /api/auth/verify
     "username": "admin",
     "role": "admin"
   }
+}
+```
+
+## API密钥管理
+
+### 1. 创建API密钥
+
+#### 请求
+
+```
+POST /api/apikey/create
+```
+
+**认证要求**: 需要JWT认证
+
+**参数:**
+
+| 参数 | 类型 | 必须 | 描述 |
+|------|------|------|------|
+| key | string | 是 | API密钥值 |
+| note | string | 否 | API密钥备注 |
+| createdAt | string | 否 | 创建时间(ISO格式) |
+
+#### 响应
+
+```json
+{
+  "success": true,
+  "message": "API密钥创建成功"
+}
+```
+
+### 2. 获取API密钥列表
+
+#### 请求
+
+```
+GET /api/apikey/list
+```
+
+**认证要求**: 需要JWT认证
+
+#### 响应
+
+```json
+[
+  {
+    "key": "abcdef1234567890",
+    "note": "测试API",
+    "createdAt": "2023-07-01T12:00:00.000Z"
+  },
+  {
+    "key": "zyxwvu9876543210",
+    "note": "生产环境",
+    "createdAt": "2023-07-02T15:30:00.000Z"
+  }
+]
+```
+
+### 3. 更新API密钥备注
+
+#### 请求
+
+```
+POST /api/apikey/update
+```
+
+**认证要求**: 需要JWT认证
+
+**参数:**
+
+| 参数 | 类型 | 必须 | 描述 |
+|------|------|------|------|
+| key | string | 是 | 要更新的API密钥 |
+| note | string | 是 | 新的备注内容 |
+
+#### 响应
+
+```json
+{
+  "success": true,
+  "message": "API密钥更新成功"
+}
+```
+
+### 4. 删除API密钥
+
+#### 请求
+
+```
+POST /api/apikey/delete
+```
+
+**认证要求**: 需要JWT认证
+
+**参数:**
+
+| 参数 | 类型 | 必须 | 描述 |
+|------|------|------|------|
+| key | string | 是 | 要删除的API密钥 |
+
+#### 响应
+
+```json
+{
+  "success": true,
+  "message": "API密钥删除成功"
 }
 ```
 
@@ -291,6 +438,31 @@ login('admin', 'password')
   });
 ```
 
+### 使用API密钥进行查询
+
+```javascript
+// 使用API密钥查询IP是否在黑名单中
+async function checkIPWithApiKey(ip, apiKey) {
+  const response = await fetch(`https://您的域名/api/blacklist/check-api?ip=${ip}&key=${apiKey}`);
+  const data = await response.json();
+  return data;
+}
+
+// 使用示例
+const API_KEY = '您的API密钥';
+checkIPWithApiKey('8.8.8.8', API_KEY)
+  .then(result => {
+    if (result.blocked) {
+      console.log('IP已被封禁');
+    } else {
+      console.log('IP未被封禁');
+    }
+  })
+  .catch(error => {
+    console.error('请求失败:', error);
+  });
+```
+
 ### Python
 
 ```python
@@ -302,6 +474,24 @@ def check_ip(ip):
 
 # 使用示例
 result = check_ip('8.8.8.8')
+if result['blocked']:
+    print('IP已被封禁')
+else:
+    print('IP未被封禁')
+```
+
+### Python使用API密钥
+
+```python
+import requests
+
+def check_ip_with_api_key(ip, api_key):
+    response = requests.get(f'https://您的域名/api/blacklist/check-api?ip={ip}&key={api_key}')
+    return response.json()
+
+# 使用示例
+API_KEY = '您的API密钥'
+result = check_ip_with_api_key('8.8.8.8', API_KEY)
 if result['blocked']:
     print('IP已被封禁')
 else:

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API密钥管理 - IP黑名单系统</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        
+        .update-btn {
+            background-color: #28a745;
+        }
+        
+        .update-btn:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .hint {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+        
+        .hint h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        
+        .auth-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .api-key {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+            max-width: 100%;
+            white-space: nowrap;
+        }
+        
+        .copy-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .note-input {
+            width: 100%;
+            max-width: 250px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← 返回首页</a>
+        
+        <div class="auth-header">
+            <h1>API密钥管理</h1>
+        </div>
+        
+        <div id="message" class="message hidden"></div>
+        
+        <div class="input-group">
+            <input type="text" id="noteInput" placeholder="输入API密钥备注(可选)">
+            <button id="createKeyBtn">创建新API密钥</button>
+        </div>
+
+        <table id="apiKeysTable">
+            <thead>
+                <tr>
+                    <th style="width: 30%">API密钥</th>
+                    <th style="width: 20%">创建时间</th>
+                    <th style="width: 30%">备注</th>
+                    <th style="width: 20%">操作</th>
+                </tr>
+            </thead>
+            <tbody id="apiKeysTableBody">
+                <!-- API密钥列表将通过JavaScript动态填充 -->
+            </tbody>
+        </table>
+        
+        <div class="hint">
+            <h3>使用说明</h3>
+            <p>
+                API密钥可用于在不登录系统的情况下查询IP是否在黑名单中。
+            </p>
+            <p>
+                使用方法：向 <code>/api/blacklist/check-api?ip=目标IP&key=您的API密钥</code> 发送GET请求。
+            </p>
+            <p>
+                示例：<code>https://您的域名/api/blacklist/check-api?ip=1.2.3.4&key=您的API密钥</code>
+            </p>
+            <p>
+                <strong>安全提示：</strong> 请妥善保管您的API密钥，API密钥仅支持查询操作，不能用于添加或删除黑名单。
+            </p>
+        </div>
+    </div>
+
+    <script type="module" src="./js/apiKeyManager.js"></script>
+    <script type="module">
+        import { createApiKey, getAllApiKeys, updateApiKeyNote, deleteApiKey } from './js/apiKeyManager.js';
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 检查登录状态
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            const createKeyBtn = document.getElementById('createKeyBtn');
+            const noteInput = document.getElementById('noteInput');
+            const apiKeysTableBody = document.getElementById('apiKeysTableBody');
+            const messageBox = document.getElementById('message');
+            
+            // 加载API密钥列表
+            await refreshApiKeysList();
+            
+            // 绑定创建按钮事件
+            createKeyBtn.addEventListener('click', async () => {
+                try {
+                    const note = noteInput.value.trim();
+                    const result = await createApiKey(note);
+                    noteInput.value = '';
+                    
+                    showMessage('API密钥创建成功！', 'success');
+                    await refreshApiKeysList();
+                } catch (error) {
+                    showMessage('创建API密钥失败: ' + error.message, 'error');
+                }
+            });
+            
+            // 刷新API密钥列表
+            async function refreshApiKeysList() {
+                try {
+                    const apiKeys = await getAllApiKeys();
+                    
+                    if (apiKeys.length === 0) {
+                        apiKeysTableBody.innerHTML = `
+                            <tr>
+                                <td colspan="4" style="text-align: center;">没有API密钥，请创建一个新的密钥</td>
+                            </tr>
+                        `;
+                        return;
+                    }
+                    
+                    apiKeysTableBody.innerHTML = apiKeys.map(keyData => `
+                        <tr data-key="${keyData.key}">
+                            <td>
+                                <div class="api-key">${keyData.key}</div>
+                                <button class="copy-btn" data-key="${keyData.key}">复制</button>
+                            </td>
+                            <td>${formatDate(keyData.createdAt)}</td>
+                            <td>
+                                <input type="text" class="note-input" value="${keyData.note}" data-key="${keyData.key}">
+                                <button class="update-btn" data-key="${keyData.key}">更新</button>
+                            </td>
+                            <td>
+                                <button class="delete-btn" data-key="${keyData.key}">删除</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                    
+                    // 绑定复制按钮事件
+                    document.querySelectorAll('.copy-btn').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const key = btn.getAttribute('data-key');
+                            navigator.clipboard.writeText(key)
+                                .then(() => {
+                                    const originalText = btn.textContent;
+                                    btn.textContent = '已复制!';
+                                    setTimeout(() => {
+                                        btn.textContent = originalText;
+                                    }, 2000);
+                                })
+                                .catch(err => {
+                                    console.error('复制失败:', err);
+                                });
+                        });
+                    });
+                    
+                    // 绑定更新按钮事件
+                    document.querySelectorAll('.update-btn').forEach(btn => {
+                        btn.addEventListener('click', async () => {
+                            const key = btn.getAttribute('data-key');
+                            const noteInput = document.querySelector(`.note-input[data-key="${key}"]`);
+                            const note = noteInput.value.trim();
+                            
+                            try {
+                                await updateApiKeyNote(key, note);
+                                showMessage('备注更新成功！', 'success');
+                            } catch (error) {
+                                showMessage('更新备注失败: ' + error.message, 'error');
+                            }
+                        });
+                    });
+                    
+                    // 绑定删除按钮事件
+                    document.querySelectorAll('.delete-btn').forEach(btn => {
+                        btn.addEventListener('click', async () => {
+                            const key = btn.getAttribute('data-key');
+                            
+                            if (confirm('确定要删除这个API密钥吗？此操作不可恢复。')) {
+                                try {
+                                    await deleteApiKey(key);
+                                    showMessage('API密钥已删除！', 'success');
+                                    await refreshApiKeysList();
+                                } catch (error) {
+                                    showMessage('删除API密钥失败: ' + error.message, 'error');
+                                }
+                            }
+                        });
+                    });
+                } catch (error) {
+                    showMessage('获取API密钥列表失败: ' + error.message, 'error');
+                }
+            }
+            
+            // 显示消息
+            function showMessage(text, type) {
+                messageBox.textContent = text;
+                messageBox.className = `message ${type}`;
+                
+                // 3秒后自动隐藏
+                setTimeout(() => {
+                    messageBox.className = 'message hidden';
+                }, 3000);
+            }
+            
+            // 格式化日期
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

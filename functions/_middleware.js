@@ -6,7 +6,17 @@ const AUTH_REQUIRED_PATHS = [
   '/api/blacklist/add',
   '/api/blacklist/remove',
   '/api/blacklist/get',
-  '/api/blacklist/check'
+  '/api/blacklist/check',
+  '/api/apikey/create',
+  '/api/apikey/list',
+  '/api/apikey/update',
+  '/api/apikey/delete'
+];
+
+// 不需要认证的API路径列表
+const NO_AUTH_REQUIRED_PATHS = [
+  '/api/blacklist/check-external',
+  '/api/blacklist/check-api'
 ];
 
 // 验证JWT令牌
@@ -61,8 +71,8 @@ export async function onRequest(context) {
   }
 
   try {
-    // 检查KV绑定是否可用
-    if (!env.IP_BLACKLIST && path.startsWith('/api/blacklist/')) {
+    // 检查KV绑定是否可用（仅对需要KV的路径检查）
+    if (!env.IP_BLACKLIST && (path.startsWith('/api/blacklist/') || path.startsWith('/api/apikey/'))) {
       return new Response(JSON.stringify({
         error: true,
         message: "KV绑定不可用，请确保在Cloudflare Pages中正确配置了KV命名空间绑定"
@@ -75,6 +85,16 @@ export async function onRequest(context) {
           "Access-Control-Allow-Headers": "Content-Type, Authorization"
         }
       });
+    }
+    
+    // 检查是否为无需认证的路径
+    const isNoAuthPath = NO_AUTH_REQUIRED_PATHS.some(authPath => 
+      path.startsWith(authPath)
+    );
+    
+    if (isNoAuthPath) {
+      // 直接跳过认证
+      return next();
     }
     
     // 检查是否需要认证的路径

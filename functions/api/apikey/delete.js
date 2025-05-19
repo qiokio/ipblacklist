@@ -1,0 +1,82 @@
+// API密钥删除接口
+
+// API密钥前缀(用于KV存储)
+const API_KEY_PREFIX = 'apikey:';
+
+export async function onRequestPost(context) {
+  const { request, env } = context;
+  
+  // 设置CORS头
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Content-Type': 'application/json'
+  };
+  
+  try {
+    // 解析请求体中的API密钥
+    const { key } = await request.json();
+    
+    if (!key) {
+      return new Response(JSON.stringify({
+        success: false,
+        message: '缺少API密钥'
+      }), {
+        status: 400,
+        headers
+      });
+    }
+    
+    // 检查密钥是否存在
+    const keyExists = await env.IP_BLACKLIST.get(`${API_KEY_PREFIX}${key}`);
+    if (!keyExists) {
+      return new Response(JSON.stringify({
+        success: false,
+        message: 'API密钥不存在'
+      }), {
+        status: 404,
+        headers
+      });
+    }
+    
+    // 从KV中删除密钥
+    await env.IP_BLACKLIST.delete(`${API_KEY_PREFIX}${key}`);
+    
+    // 从密钥列表中移除
+    let keysList = [];
+    const existingList = await env.IP_BLACKLIST.get(`${API_KEY_PREFIX}list`);
+    
+    if (existingList) {
+      keysList = JSON.parse(existingList);
+      keysList = keysList.filter(item => item !== key);
+      await env.IP_BLACKLIST.put(`${API_KEY_PREFIX}list`, JSON.stringify(keysList));
+    }
+    
+    return new Response(JSON.stringify({
+      success: true,
+      message: 'API密钥删除成功'
+    }), { headers });
+    
+  } catch (error) {
+    return new Response(JSON.stringify({
+      success: false,
+      message: '删除API密钥失败: ' + error.message
+    }), {
+      status: 500,
+      headers
+    });
+  }
+}
+
+// 处理预检请求
+export function onRequestOptions() {
+  return new Response(null, {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Max-Age': '86400'
+    }
+  });
+} 
