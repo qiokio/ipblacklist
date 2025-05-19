@@ -39,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInfo = document.getElementById('userInfo');
     const loginActions = document.getElementById('loginActions');
     const usernameElement = document.getElementById('username');
-    const logoutBtn = document.getElementById('logoutBtn');
     
     // 获取认证令牌
     const token = localStorage.getItem('auth_token');
@@ -77,15 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loginActions) loginActions.style.display = 'flex';
     }
     
-    // 退出登录事件
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user');
-            if (userInfo) userInfo.style.display = 'none';
-            if (loginActions) loginActions.style.display = 'flex';
-        });
-    }
+    // 注意：退出登录功能已移至logout.js
     
     // 添加侧边栏收起按钮
     function addSidebarToggle() {

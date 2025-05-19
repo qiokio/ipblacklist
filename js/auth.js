@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInfo = document.getElementById('userInfo');
     const usernameElement = document.getElementById('username');
     const loginActions = document.getElementById('loginActions');
-    const logoutBtn = document.getElementById('logoutBtn');
     const loginPageBtn = document.getElementById('loginPageBtn');
     const authMessage = document.getElementById('authMessage');
     const mainContent = document.getElementById('mainContent');
@@ -13,9 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAuth();
     
     // 事件监听
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
-    }
+    // 注意：退出登录功能已移至logout.js
     
     if (loginPageBtn) {
         loginPageBtn.addEventListener('click', () => {
@@ -111,10 +108,5 @@ document.addEventListener('DOMContentLoaded', () => {
         if (usageGuide) {
             usageGuide.style.display = 'none';
         }
-    }
-    
-    // 处理退出登录
-    function handleLogout() {
-        showUnauthenticatedUI();
     }
 }); 

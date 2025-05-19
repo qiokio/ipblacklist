@@ -6,51 +6,9 @@
     <title>IP黑名单系统 - 首页</title>
     <link rel="stylesheet" href="styles/index.css">
     <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/common.css">
     <!-- 字体图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* 顶栏按钮统一样式 */
-        .top-bar-actions .btn {
-            min-width: 80px;
-            text-align: center;
-            padding: 8px 16px;
-            height: 36px;
-            line-height: 20px;
-        }
-        
-        /* 确认弹窗样式 */
-        .confirm-modal {
-            display: none;
-            position: fixed;
-            z-index: 1100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        
-        .confirm-modal.show {
-            display: block;
-        }
-        
-        .confirm-modal-content {
-            background-color: white;
-            margin: 20% auto;
-            padding: 20px;
-            border-radius: 4px;
-            width: 300px;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        .confirm-modal-actions {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-    </style>
 </head>
 <body>
     <div class="grid-container">
@@ -203,43 +161,6 @@
     </div>
     
     <script src="js/layout.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 退出登录相关事件
-            const logoutBtn = document.getElementById('logoutBtn');
-            const logoutModal = document.getElementById('logoutConfirmModal');
-            const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
-            const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
-            
-            if(logoutBtn) {
-                logoutBtn.addEventListener('click', function() {
-                    logoutModal.style.display = 'block';
-                    logoutModal.classList.add('show');
-                });
-            }
-            
-            if(confirmLogoutBtn) {
-                confirmLogoutBtn.addEventListener('click', function() {
-                    // 清除登录信息
-                    localStorage.removeItem('auth_token');
-                    localStorage.removeItem('user');
-                    
-                    // 关闭弹窗
-                    logoutModal.style.display = 'none';
-                    logoutModal.classList.remove('show');
-                    
-                    // 重定向到首页
-                    window.location.href = '/';
-                });
-            }
-            
-            if(cancelLogoutBtn) {
-                cancelLogoutBtn.addEventListener('click', function() {
-                    logoutModal.style.display = 'none';
-                    logoutModal.classList.remove('show');
-                });
-            }
-        });
-    </script>
+    <script src="js/logout.js"></script>
 </body>
 </html> 

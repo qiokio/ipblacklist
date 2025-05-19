@@ -6,6 +6,7 @@
     <title>API密钥管理 - IP黑名单系统</title>
     <link rel="stylesheet" href="styles/apikeys.css">
     <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/common.css">
     <!-- 字体图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -74,48 +75,6 @@
         
         .edit-btn:hover {
             background-color: #218838;
-        }
-        
-        /* 顶栏按钮统一样式 */
-        .top-bar-actions .btn {
-            min-width: 80px;
-            text-align: center;
-            padding: 8px 16px;
-            height: 36px;
-            line-height: 20px;
-        }
-        
-        /* 确认弹窗样式 */
-        .confirm-modal {
-            display: none;
-            position: fixed;
-            z-index: 1100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        
-        .confirm-modal.show {
-            display: block;
-        }
-        
-        .confirm-modal-content {
-            background-color: white;
-            margin: 20% auto;
-            padding: 20px;
-            border-radius: 4px;
-            width: 300px;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        .confirm-modal-actions {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
         }
     </style>
 </head>
@@ -326,6 +285,7 @@
     </div>
 
     <script src="js/layout.js"></script>
+    <script src="js/logout.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // 检查用户是否已登录
@@ -347,352 +307,317 @@
             // 保存修改按钮事件
             document.getElementById('saveKeyBtn').addEventListener('click', updateApiKey);
             
-            // 退出登录相关事件
-            const logoutBtn = document.getElementById('logoutBtn');
-            const logoutModal = document.getElementById('logoutConfirmModal');
-            const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
-            const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
-            
-            if(logoutBtn) {
-                logoutBtn.addEventListener('click', function() {
-                    logoutModal.style.display = 'block';
-                    logoutModal.classList.add('show');
-                });
+            // 检查用户是否已登录
+            function checkAuthentication() {
+                const token = localStorage.getItem('auth_token');
+                if (!token) {
+                    window.location.href = '/login.html';
+                }
             }
             
-            if(confirmLogoutBtn) {
-                confirmLogoutBtn.addEventListener('click', function() {
-                    // 清除登录信息
-                    localStorage.removeItem('auth_token');
-                    localStorage.removeItem('user');
+            // 生成随机API密钥
+            function generateApiKey() {
+                const generateBtn = document.getElementById('generateKeyBtn');
+                generateBtn.classList.add('loading');
+                generateBtn.disabled = true;
+                
+                setTimeout(() => {
+                    const bytes = new Uint8Array(16);
+                    window.crypto.getRandomValues(bytes);
+                    const key = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
                     
-                    // 关闭弹窗
-                    logoutModal.style.display = 'none';
-                    logoutModal.classList.remove('show');
+                    document.getElementById('newApiKeyInput').value = key;
                     
-                    // 重定向到首页
-                    window.location.href = '/';
-                });
+                    // 显示权限设置和保存按钮
+                    document.getElementById('createKeyBtn').classList.remove('hidden');
+                    document.getElementById('permissionsContainer').classList.remove('hidden');
+                    
+                    // 确保权限设置可见且样式正确
+                    const permissionsContainer = document.getElementById('permissionsContainer');
+                    permissionsContainer.style.display = 'block';
+                    
+                    generateBtn.classList.remove('loading');
+                    generateBtn.disabled = false;
+                }, 500); // 添加短暂延迟以显示加载效果
             }
             
-            if(cancelLogoutBtn) {
-                cancelLogoutBtn.addEventListener('click', function() {
-                    logoutModal.style.display = 'none';
-                    logoutModal.classList.remove('show');
-                });
+            // 创建API密钥
+            async function createApiKey() {
+                const key = document.getElementById('newApiKeyInput').value;
+                const note = document.getElementById('noteInput').value;
+                const createBtn = document.getElementById('createKeyBtn');
+                
+                // 获取权限设置
+                const permissions = {
+                    read: true, // 默认都有查询权限
+                    list: document.getElementById('permissionList').checked,
+                    add: document.getElementById('permissionAdd').checked,
+                    delete: document.getElementById('permissionDelete').checked
+                };
+                
+                if (!key) {
+                    showMessage('请先生成API密钥', 'error');
+                    return;
+                }
+                
+                // 显示加载状态
+                createBtn.classList.add('loading');
+                createBtn.disabled = true;
+                
+                try {
+                    const response = await fetch('/api/apikey/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                        },
+                        body: JSON.stringify({ key, note, permissions })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showMessage('API密钥创建成功', 'success');
+                        
+                        // 清空输入框
+                        document.getElementById('newApiKeyInput').value = '';
+                        document.getElementById('noteInput').value = '';
+                        
+                        // 重置权限复选框但不隐藏
+                        document.getElementById('permissionList').checked = false;
+                        document.getElementById('permissionAdd').checked = false;
+                        document.getElementById('permissionDelete').checked = false;
+                        
+                        // 重新加载API密钥列表
+                        loadApiKeys();
+                        
+                        // 显示生成密钥按钮
+                        document.getElementById('generateKeyBtn').disabled = false;
+                    } else {
+                        showMessage('创建失败: ' + data.message, 'error');
+                    }
+                } catch (error) {
+                    showMessage('创建失败: ' + error.message, 'error');
+                } finally {
+                    // 无论成功或失败，移除加载状态
+                    createBtn.classList.remove('loading');
+                    createBtn.disabled = false;
+                }
+            }
+            
+            // 加载API密钥列表
+            async function loadApiKeys() {
+                try {
+                    const response = await fetch('/api/apikey/list', {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const tableBody = document.getElementById('apiKeysTableBody');
+                        tableBody.innerHTML = '';
+                        
+                        if (data.keys.length === 0) {
+                            const row = document.createElement('tr');
+                            row.innerHTML = '<td colspan="5" class="empty-table">暂无API密钥，请点击"生成密钥"按钮创建</td>';
+                            tableBody.appendChild(row);
+                        } else {
+                            data.keys.forEach(keyInfo => {
+                                const row = document.createElement('tr');
+                                
+                                // 格式化创建时间
+                                const createdAt = new Date(keyInfo.createdAt);
+                                const formattedDate = createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString();
+                                
+                                // 格式化权限
+                                const permissions = [];
+                                if (keyInfo.permissions.read) permissions.push('查询');
+                                if (keyInfo.permissions.list) permissions.push('列表');
+                                if (keyInfo.permissions.add) permissions.push('添加');
+                                if (keyInfo.permissions.delete) permissions.push('删除');
+                                
+                                                            row.innerHTML = `
+                                    <td data-title="API密钥">${keyInfo.key}</td>
+                                    <td data-title="备注">${keyInfo.note || '-'}</td>
+                                    <td data-title="创建时间">${formattedDate}</td>
+                                    <td data-title="权限">${permissions.join(', ')}</td>
+                                    <td data-title="操作">
+                                        <button class="edit-btn" data-key="${keyInfo.key}">修改</button>
+                                        <button class="delete-btn" data-key="${keyInfo.key}">删除</button>
+                                    </td>
+                                `;
+                                
+                                tableBody.appendChild(row);
+                            });
+                            
+                            // 为删除按钮添加事件监听
+                            document.querySelectorAll('.delete-btn').forEach(btn => {
+                                btn.addEventListener('click', function() {
+                                    const key = this.getAttribute('data-key');
+                                    deleteApiKey(key);
+                                });
+                            });
+                            
+                            // 为修改按钮添加事件监听
+                            document.querySelectorAll('.edit-btn').forEach(btn => {
+                                btn.addEventListener('click', function() {
+                                    const key = this.getAttribute('data-key');
+                                    openEditModal(key);
+                                });
+                            });
+                        }
+                    } else {
+                        showMessage('获取API密钥列表失败: ' + data.message, 'error');
+                    }
+                } catch (error) {
+                    showMessage('获取API密钥列表失败: ' + error.message, 'error');
+                }
+            }
+            
+            // 删除API密钥
+            async function deleteApiKey(key) {
+                if (!confirm('确定要删除此API密钥吗？此操作不可撤销。')) {
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/api/apikey/delete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                        },
+                        body: JSON.stringify({ key })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showMessage('API密钥删除成功', 'success');
+                        loadApiKeys();
+                    } else {
+                        showMessage('删除失败: ' + data.message, 'error');
+                    }
+                } catch (error) {
+                    showMessage('删除失败: ' + error.message, 'error');
+                }
+            }
+            
+            // 显示消息
+            function showMessage(message, type) {
+                const messageContainer = document.getElementById('messageContainer');
+                messageContainer.textContent = message;
+                messageContainer.className = `message ${type}`;
+                
+                // 自动消失
+                setTimeout(() => {
+                    messageContainer.className = 'message hidden';
+                }, 5000);
+            }
+            
+            // 打开修改弹窗
+            async function openEditModal(key) {
+                try {
+                    // 获取密钥详情
+                    const response = await fetch('/api/apikey/list', {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const keyInfo = data.keys.find(k => k.key === key);
+                        
+                        if (keyInfo) {
+                            // 填充表单数据
+                            document.getElementById('editKeyId').value = keyInfo.key;
+                            document.getElementById('editKeyNote').value = keyInfo.note || '';
+                            
+                            // 设置权限复选框
+                            document.getElementById('editPermissionList').checked = keyInfo.permissions.list || false;
+                            document.getElementById('editPermissionAdd').checked = keyInfo.permissions.add || false;
+                            document.getElementById('editPermissionDelete').checked = keyInfo.permissions.delete || false;
+                            
+                            // 显示弹窗
+                            document.getElementById('editKeyModal').classList.add('show');
+                            document.getElementById('editKeyModal').style.display = 'block';
+                        } else {
+                            showMessage('找不到指定的API密钥', 'error');
+                        }
+                    } else {
+                        showMessage('获取API密钥详情失败: ' + data.message, 'error');
+                    }
+                } catch (error) {
+                    showMessage('获取API密钥详情失败: ' + error.message, 'error');
+                }
+            }
+            
+            // 关闭修改弹窗
+            function closeEditModal() {
+                document.getElementById('editKeyModal').classList.remove('show');
+                document.getElementById('editKeyModal').style.display = 'none';
+            }
+            
+            // 更新API密钥
+            async function updateApiKey() {
+                const key = document.getElementById('editKeyId').value;
+                const note = document.getElementById('editKeyNote').value;
+                const saveBtn = document.getElementById('saveKeyBtn');
+                
+                // 获取权限设置
+                const permissions = {
+                    read: true, // 默认都有查询权限
+                    list: document.getElementById('editPermissionList').checked,
+                    add: document.getElementById('editPermissionAdd').checked,
+                    delete: document.getElementById('editPermissionDelete').checked
+                };
+                
+                if (!key) {
+                    showMessage('无效的API密钥', 'error');
+                    return;
+                }
+                
+                // 显示加载状态
+                saveBtn.classList.add('loading');
+                saveBtn.disabled = true;
+                
+                try {
+                    const response = await fetch('/api/apikey/update', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                        },
+                        body: JSON.stringify({ key, note, permissions })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showMessage('API密钥更新成功', 'success');
+                        
+                        // 关闭弹窗
+                        closeEditModal();
+                        
+                        // 重新加载API密钥列表
+                        loadApiKeys();
+                    } else {
+                        showMessage('更新失败: ' + data.message, 'error');
+                    }
+                } catch (error) {
+                    showMessage('更新失败: ' + error.message, 'error');
+                } finally {
+                    // 无论成功或失败，移除加载状态
+                    saveBtn.classList.remove('loading');
+                    saveBtn.disabled = false;
+                }
             }
         });
-        
-        // 检查用户是否已登录
-        function checkAuthentication() {
-            const token = localStorage.getItem('auth_token');
-            if (!token) {
-                window.location.href = '/login.html';
-            }
-        }
-        
-        // 生成随机API密钥
-        function generateApiKey() {
-            const generateBtn = document.getElementById('generateKeyBtn');
-            generateBtn.classList.add('loading');
-            generateBtn.disabled = true;
-            
-            setTimeout(() => {
-                const bytes = new Uint8Array(16);
-                window.crypto.getRandomValues(bytes);
-                const key = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
-                
-                document.getElementById('newApiKeyInput').value = key;
-                
-                // 显示权限设置和保存按钮
-                document.getElementById('createKeyBtn').classList.remove('hidden');
-                document.getElementById('permissionsContainer').classList.remove('hidden');
-                
-                // 确保权限设置可见且样式正确
-                const permissionsContainer = document.getElementById('permissionsContainer');
-                permissionsContainer.style.display = 'block';
-                
-                generateBtn.classList.remove('loading');
-                generateBtn.disabled = false;
-            }, 500); // 添加短暂延迟以显示加载效果
-        }
-        
-        // 创建API密钥
-        async function createApiKey() {
-            const key = document.getElementById('newApiKeyInput').value;
-            const note = document.getElementById('noteInput').value;
-            const createBtn = document.getElementById('createKeyBtn');
-            
-            // 获取权限设置
-            const permissions = {
-                read: true, // 默认都有查询权限
-                list: document.getElementById('permissionList').checked,
-                add: document.getElementById('permissionAdd').checked,
-                delete: document.getElementById('permissionDelete').checked
-            };
-            
-            if (!key) {
-                showMessage('请先生成API密钥', 'error');
-                return;
-            }
-            
-            // 显示加载状态
-            createBtn.classList.add('loading');
-            createBtn.disabled = true;
-            
-            try {
-                const response = await fetch('/api/apikey/create', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-                    },
-                    body: JSON.stringify({ key, note, permissions })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('API密钥创建成功', 'success');
-                    
-                    // 清空输入框
-                    document.getElementById('newApiKeyInput').value = '';
-                    document.getElementById('noteInput').value = '';
-                    
-                    // 重置权限复选框但不隐藏
-                    document.getElementById('permissionList').checked = false;
-                    document.getElementById('permissionAdd').checked = false;
-                    document.getElementById('permissionDelete').checked = false;
-                    
-                    // 重新加载API密钥列表
-                    loadApiKeys();
-                    
-                    // 显示生成密钥按钮
-                    document.getElementById('generateKeyBtn').disabled = false;
-                } else {
-                    showMessage('创建失败: ' + data.message, 'error');
-                }
-            } catch (error) {
-                showMessage('创建失败: ' + error.message, 'error');
-            } finally {
-                // 无论成功或失败，移除加载状态
-                createBtn.classList.remove('loading');
-                createBtn.disabled = false;
-            }
-        }
-        
-        // 加载API密钥列表
-        async function loadApiKeys() {
-            try {
-                const response = await fetch('/api/apikey/list', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    const tableBody = document.getElementById('apiKeysTableBody');
-                    tableBody.innerHTML = '';
-                    
-                    if (data.keys.length === 0) {
-                        const row = document.createElement('tr');
-                        row.innerHTML = '<td colspan="5" class="empty-table">暂无API密钥，请点击"生成密钥"按钮创建</td>';
-                        tableBody.appendChild(row);
-                    } else {
-                        data.keys.forEach(keyInfo => {
-                            const row = document.createElement('tr');
-                            
-                            // 格式化创建时间
-                            const createdAt = new Date(keyInfo.createdAt);
-                            const formattedDate = createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString();
-                            
-                            // 格式化权限
-                            const permissions = [];
-                            if (keyInfo.permissions.read) permissions.push('查询');
-                            if (keyInfo.permissions.list) permissions.push('列表');
-                            if (keyInfo.permissions.add) permissions.push('添加');
-                            if (keyInfo.permissions.delete) permissions.push('删除');
-                            
-                                                        row.innerHTML = `
-                                <td data-title="API密钥">${keyInfo.key}</td>
-                                <td data-title="备注">${keyInfo.note || '-'}</td>
-                                <td data-title="创建时间">${formattedDate}</td>
-                                <td data-title="权限">${permissions.join(', ')}</td>
-                                <td data-title="操作">
-                                    <button class="edit-btn" data-key="${keyInfo.key}">修改</button>
-                                    <button class="delete-btn" data-key="${keyInfo.key}">删除</button>
-                                </td>
-                            `;
-                            
-                            tableBody.appendChild(row);
-                        });
-                        
-                        // 为删除按钮添加事件监听
-                        document.querySelectorAll('.delete-btn').forEach(btn => {
-                            btn.addEventListener('click', function() {
-                                const key = this.getAttribute('data-key');
-                                deleteApiKey(key);
-                            });
-                        });
-                        
-                        // 为修改按钮添加事件监听
-                        document.querySelectorAll('.edit-btn').forEach(btn => {
-                            btn.addEventListener('click', function() {
-                                const key = this.getAttribute('data-key');
-                                openEditModal(key);
-                            });
-                        });
-                    }
-                } else {
-                    showMessage('获取API密钥列表失败: ' + data.message, 'error');
-                }
-            } catch (error) {
-                showMessage('获取API密钥列表失败: ' + error.message, 'error');
-            }
-        }
-        
-        // 删除API密钥
-        async function deleteApiKey(key) {
-            if (!confirm('确定要删除此API密钥吗？此操作不可撤销。')) {
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/apikey/delete', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-                    },
-                    body: JSON.stringify({ key })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('API密钥删除成功', 'success');
-                    loadApiKeys();
-                } else {
-                    showMessage('删除失败: ' + data.message, 'error');
-                }
-            } catch (error) {
-                showMessage('删除失败: ' + error.message, 'error');
-            }
-        }
-        
-        // 显示消息
-        function showMessage(message, type) {
-            const messageContainer = document.getElementById('messageContainer');
-            messageContainer.textContent = message;
-            messageContainer.className = `message ${type}`;
-            
-            // 自动消失
-            setTimeout(() => {
-                messageContainer.className = 'message hidden';
-            }, 5000);
-        }
-        
-        // 打开修改弹窗
-        async function openEditModal(key) {
-            try {
-                // 获取密钥详情
-                const response = await fetch('/api/apikey/list', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    const keyInfo = data.keys.find(k => k.key === key);
-                    
-                    if (keyInfo) {
-                        // 填充表单数据
-                        document.getElementById('editKeyId').value = keyInfo.key;
-                        document.getElementById('editKeyNote').value = keyInfo.note || '';
-                        
-                        // 设置权限复选框
-                        document.getElementById('editPermissionList').checked = keyInfo.permissions.list || false;
-                        document.getElementById('editPermissionAdd').checked = keyInfo.permissions.add || false;
-                        document.getElementById('editPermissionDelete').checked = keyInfo.permissions.delete || false;
-                        
-                        // 显示弹窗
-                        document.getElementById('editKeyModal').classList.add('show');
-                        document.getElementById('editKeyModal').style.display = 'block';
-                    } else {
-                        showMessage('找不到指定的API密钥', 'error');
-                    }
-                } else {
-                    showMessage('获取API密钥详情失败: ' + data.message, 'error');
-                }
-            } catch (error) {
-                showMessage('获取API密钥详情失败: ' + error.message, 'error');
-            }
-        }
-        
-        // 关闭修改弹窗
-        function closeEditModal() {
-            document.getElementById('editKeyModal').classList.remove('show');
-            document.getElementById('editKeyModal').style.display = 'none';
-        }
-        
-        // 更新API密钥
-        async function updateApiKey() {
-            const key = document.getElementById('editKeyId').value;
-            const note = document.getElementById('editKeyNote').value;
-            const saveBtn = document.getElementById('saveKeyBtn');
-            
-            // 获取权限设置
-            const permissions = {
-                read: true, // 默认都有查询权限
-                list: document.getElementById('editPermissionList').checked,
-                add: document.getElementById('editPermissionAdd').checked,
-                delete: document.getElementById('editPermissionDelete').checked
-            };
-            
-            if (!key) {
-                showMessage('无效的API密钥', 'error');
-                return;
-            }
-            
-            // 显示加载状态
-            saveBtn.classList.add('loading');
-            saveBtn.disabled = true;
-            
-            try {
-                const response = await fetch('/api/apikey/update', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-                    },
-                    body: JSON.stringify({ key, note, permissions })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('API密钥更新成功', 'success');
-                    
-                    // 关闭弹窗
-                    closeEditModal();
-                    
-                    // 重新加载API密钥列表
-                    loadApiKeys();
-                } else {
-                    showMessage('更新失败: ' + data.message, 'error');
-                }
-            } catch (error) {
-                showMessage('更新失败: ' + error.message, 'error');
-            } finally {
-                // 无论成功或失败，移除加载状态
-                saveBtn.classList.remove('loading');
-                saveBtn.disabled = false;
-            }
-        }
     </script>
 </body>
 </html> 
