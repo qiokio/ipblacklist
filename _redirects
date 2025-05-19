@@ -1,0 +1,17 @@
+# 重定向所有HTTP请求到HTTPS
+http://:project.pages.dev/* https://:project.pages.dev/:splat 301!
+
+# 确保用户访问管理界面时已经登录
+/admin/* /login.html 302
+
+# 处理旧路径到新路径的重定向（如果将来需要更改URL结构）
+# /old-path /new-path 301
+
+# 确保API文档可通过简短URL访问
+/docs /API-HANDBOOK.md 302
+
+# 设置首页别名
+/home / 302
+
+# 任何未匹配的路径会显示自定义404页面
+/* /404.html 404 
