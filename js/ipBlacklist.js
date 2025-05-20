@@ -169,7 +169,7 @@ async function getBlacklist() {
 // 检查IP是否在黑名单中
 async function checkIP(ip) {
     try {
-        const response = await fetch(`/api/blacklist/check-external?ip=${encodeURIComponent(ip)}`);
+        const response = await fetch(`/api/blacklist/check-api?ip=${encodeURIComponent(ip)}`);
         
         if (!response.ok) {
             console.error('检查IP状态失败:', response.statusText);

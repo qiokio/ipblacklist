@@ -132,9 +132,10 @@
                         系统提供多种API端点，用于查询和管理IP黑名单：
                     </p>
                     <ul>
-                        <li><strong>公开查询：</strong> <code>/api/blacklist/check-external?ip=1.2.3.4</code></li>
-                        <li><strong>API密钥查询：</strong> <code>/api/blacklist/check-api?ip=1.2.3.4&key=您的API密钥</code></li>
-                        <li><strong>认证API：</strong> 添加、删除和管理黑名单（需要JWT认证）</li>
+                        <li><strong>查询IP：</strong> <code>/api/blacklist/check-api?ip=1.2.3.4&key=您的API密钥</code></li>
+                        <li><strong>获取列表：</strong> <code>/api/blacklist/get-api?key=您的API密钥</code></li>
+                        <li><strong>添加IP：</strong> <code>/api/blacklist/add-api</code> (POST)</li>
+                        <li><strong>删除IP：</strong> <code>/api/blacklist/remove-api</code> (POST)</li>
                     </ul>
                     <p>
                         <a href="/api-docs.html" target="_blank">查看完整API文档</a> | 
