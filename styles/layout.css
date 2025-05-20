@@ -34,12 +34,14 @@ body {
     align-items: center;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     z-index: 100;
+    position: relative;
 }
 
 .top-bar-title {
     font-size: 1.2rem;
     font-weight: bold;
     margin-left: 10px;
+    flex: 1;
 }
 
 .top-bar-actions {
@@ -250,18 +252,18 @@ body {
     background: none;
     border: none;
     color: white;
-    font-size: 1.5rem;
+    font-size: 24px;
     cursor: pointer;
-    padding: 0;
+    padding: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    margin-right: 10px;
 }
 
 .mobile-menu-toggle:hover {
     background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
 }
 
 /* 内容卡片 */
