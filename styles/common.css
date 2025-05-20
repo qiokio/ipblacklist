@@ -144,10 +144,11 @@
     transition: all 0.3s;
 }
 
-.sidebar-collapsed .sidebar-toggle {
-    transform: rotate(180deg);
-}
-
+/* 只让图标旋转 */
 .sidebar-collapsed .sidebar-toggle .sidebar-toggle-icon {
     transform: rotate(180deg);
-} 
+    transition: transform 0.3s;
+}
+
+/* 移除按钮本身的transform */
+/* .sidebar-collapsed .sidebar-toggle { transform: rotate(180deg); } 这行不要 */ 
