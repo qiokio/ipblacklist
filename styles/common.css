@@ -44,7 +44,7 @@
 .confirm-modal {
     display: none;
     position: fixed;
-    z-index: 1100;
+    z-index: 9999;
     left: 0;
     top: 0;
     width: 100%;
@@ -53,10 +53,11 @@
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
+    overflow-y: auto;
 }
 
 .confirm-modal.show {
-    display: block;
+    display: block !important;
     opacity: 1;
     visibility: visible;
 }
@@ -67,10 +68,12 @@
     padding: 25px;
     border-radius: 6px;
     width: 350px;
+    max-width: 90%;
     text-align: center;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     transform: translateY(-20px);
     transition: transform 0.3s ease;
+    position: relative;
 }
 
 .confirm-modal.show .confirm-modal-content {
@@ -82,4 +85,9 @@
     display: flex;
     justify-content: center;
     gap: 15px;
+}
+
+.confirm-modal-actions .btn {
+    min-width: 80px;
+    cursor: pointer;
 } 
