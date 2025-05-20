@@ -4,14 +4,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const sidebar = document.querySelector('.sidebar');
     const gridContainer = document.querySelector('.grid-container');
-    
-    // 添加侧边栏收起按钮
-    addSidebarToggle();
+    const sidebarToggle = document.querySelector('.sidebar-toggle');
     
     // 处理移动端菜单切换
     if (mobileMenuToggle && sidebar) {
         mobileMenuToggle.addEventListener('click', () => {
             sidebar.classList.toggle('active');
+        });
+    }
+    
+    // 处理侧边栏收起按钮点击
+    if (sidebarToggle && gridContainer) {
+        sidebarToggle.addEventListener('click', () => {
+            toggleSidebar();
         });
     }
     
@@ -91,47 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // 注意：退出登录功能已移至logout.js
-    
-    // 添加侧边栏收起按钮
-    function addSidebarToggle() {
-        if (!sidebar) return;
-        
-        // 移除已存在的按钮（防止重复）
-        const existingToggle = document.querySelector('.sidebar-toggle-container');
-        if (existingToggle) {
-            existingToggle.remove();
-        }
-        
-        // 创建一个容器div来放置按钮
-        const toggleContainer = document.createElement('div');
-        toggleContainer.className = 'sidebar-toggle-container';
-        
-        const toggleButton = document.createElement('button');
-        toggleButton.className = 'sidebar-toggle';
-        toggleButton.setAttribute('aria-label', '收起侧边栏');
-        toggleButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
-        
-        toggleButton.addEventListener('click', () => {
-            toggleSidebar();
-        });
-        
-        toggleContainer.appendChild(toggleButton);
-        
-        // 将按钮添加到顶栏
-        const topBar = document.querySelector('.top-bar');
-        if (topBar) {
-            // 在移动端菜单按钮之前插入
-            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-            if (mobileMenuToggle) {
-                topBar.insertBefore(toggleContainer, mobileMenuToggle);
-            } else {
-                topBar.insertBefore(toggleContainer, topBar.firstChild);
-            }
-        }
-
-        // 确保按钮在电脑端显示
-        console.log('侧边栏收起按钮已添加');
-    }
     
     // 切换侧边栏状态
     function toggleSidebar() {
