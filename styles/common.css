@@ -23,20 +23,19 @@
 
 /* 侧边栏折叠按钮增强样式 */
 .sidebar-toggle-container {
-    position: fixed;
-    z-index: 200 !important;
-    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 10px;
 }
 
 .sidebar-toggle {
-    background-color: #3498db !important;
+    background: none !important;
     color: white !important;
-    width: 40px !important;
-    height: 40px !important;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5) !important;
-    border: 2px solid #ffffff !important;
-    z-index: 200 !important;
-    border-radius: 50% !important;
+    width: 32px !important;
+    height: 32px !important;
+    border: none !important;
+    border-radius: 4px !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
@@ -47,9 +46,9 @@
 }
 
 .sidebar-toggle:hover {
-    background-color: #2980b9 !important;
-    transform: scale(1.1);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6) !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    transform: none;
+    box-shadow: none !important;
 }
 
 /* 移动设备上隐藏按钮 */

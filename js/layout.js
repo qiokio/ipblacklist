@@ -105,10 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // 创建一个容器div来放置按钮
         const toggleContainer = document.createElement('div');
         toggleContainer.className = 'sidebar-toggle-container';
-        toggleContainer.style.position = 'fixed';
-        toggleContainer.style.bottom = '80px';
-        toggleContainer.style.left = '210px';
-        toggleContainer.style.zIndex = '200';
         
         const toggleButton = document.createElement('button');
         toggleButton.className = 'sidebar-toggle';
@@ -120,10 +116,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         toggleContainer.appendChild(toggleButton);
-        document.body.appendChild(toggleContainer);
         
-        // 根据侧边栏状态调整按钮位置
-        updateToggleButtonPosition();
+        // 将按钮添加到顶栏
+        const topBar = document.querySelector('.top-bar');
+        if (topBar) {
+            topBar.insertBefore(toggleContainer, topBar.firstChild);
+        }
     }
     
     // 切换侧边栏状态
@@ -132,7 +130,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const isCollapsed = gridContainer.classList.toggle('sidebar-collapsed');
         const toggleButton = document.querySelector('.sidebar-toggle');
-        const toggleContainer = document.querySelector('.sidebar-toggle-container');
         
         if (toggleButton) {
             toggleButton.innerHTML = isCollapsed ? 
@@ -143,23 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 isCollapsed ? '展开侧边栏' : '收起侧边栏');
         }
         
-        // 更新按钮位置
-        updateToggleButtonPosition(isCollapsed);
-        
         // 保存状态到本地存储
         localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
-    }
-    
-    // 更新折叠按钮位置
-    function updateToggleButtonPosition(isCollapsed) {
-        const toggleContainer = document.querySelector('.sidebar-toggle-container');
-        if (toggleContainer) {
-            if (isCollapsed) {
-                toggleContainer.style.left = '40px';
-            } else {
-                toggleContainer.style.left = '210px';
-            }
-        }
     }
     
     // 初始化侧边栏状态
@@ -174,12 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
                 toggleButton.setAttribute('aria-label', '展开侧边栏');
             }
-            
-            // 更新按钮位置
-            updateToggleButtonPosition(true);
-        } else {
-            // 确保按钮位置正确（未折叠状态）
-            updateToggleButtonPosition(false);
         }
     }
 }); 
