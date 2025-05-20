@@ -16,7 +16,7 @@ export async function onRequestPost(context) {
   
   try {
     // 解析请求体中的API密钥数据
-    const { key, note, permissions, expiresAt } = await request.json();
+    const { key, note, permissions, expiryDate } = await request.json();
     
     if (!key) {
       return new Response(JSON.stringify({
@@ -62,53 +62,8 @@ export async function onRequestPost(context) {
     }
     
     // 更新过期时间
-    if (expiresAt !== undefined) {
-      try {
-        const expiryTime = new Date(expiresAt).getTime();
-        if (isNaN(expiryTime)) {
-          return new Response(JSON.stringify({
-            success: false,
-            message: '过期时间格式无效'
-          }), {
-            status: 400,
-            headers
-          });
-        }
-        
-        // 检查是否早于当前时间
-        const currentTime = new Date().getTime();
-        if (expiryTime <= currentTime) {
-          return new Response(JSON.stringify({
-            success: false,
-            message: '过期时间不能早于当前时间'
-          }), {
-            status: 400,
-            headers
-          });
-        }
-        
-        // 检查是否早于创建时间
-        const createdAt = new Date(keyData.createdAt).getTime();
-        if (expiryTime <= createdAt) {
-          return new Response(JSON.stringify({
-            success: false,
-            message: '过期时间不能早于创建时间'
-          }), {
-            status: 400,
-            headers
-          });
-        }
-        
-        keyData.expiresAt = expiresAt;
-      } catch (error) {
-        return new Response(JSON.stringify({
-          success: false,
-          message: '过期时间格式无效'
-        }), {
-          status: 400,
-          headers
-        });
-      }
+    if (expiryDate !== undefined) {
+      keyData.expiryDate = expiryDate;
     }
     
     // 保存到新的KV命名空间

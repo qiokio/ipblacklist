@@ -32,6 +32,14 @@ export async function onRequestGet(context) {
       if (keyDataStr) {
         try {
           const keyData = JSON.parse(keyDataStr);
+          // 检查密钥是否过期
+          if (keyData.expiryDate) {
+            const now = new Date();
+            const expiryDate = new Date(keyData.expiryDate);
+            keyData.isExpired = now > expiryDate;
+          } else {
+            keyData.isExpired = false;
+          }
           apiKeysData.push(keyData);
         } catch (error) {
           console.error(`解析API密钥数据失败: ${key}`, error);

@@ -18,7 +18,7 @@ export async function onRequestPost(context) {
   
   try {
     // 解析请求体中的API密钥数据
-    const { key, note, permissions, createdAt, expiresAt } = await request.json();
+    const { key, note, permissions, createdAt, expiryDate } = await request.json();
     
     if (!key) {
       return new Response(JSON.stringify({
@@ -28,45 +28,6 @@ export async function onRequestPost(context) {
         status: 400,
         headers
       });
-    }
-    
-    // 验证过期时间格式
-    let validatedExpiresAt = null;
-    if (expiresAt) {
-      try {
-        const expiryTime = new Date(expiresAt).getTime();
-        if (isNaN(expiryTime)) {
-          return new Response(JSON.stringify({
-            success: false,
-            message: '过期时间格式无效'
-          }), {
-            status: 400,
-            headers
-          });
-        }
-        
-        // 检查是否早于当前时间
-        const currentTime = new Date().getTime();
-        if (expiryTime <= currentTime) {
-          return new Response(JSON.stringify({
-            success: false,
-            message: '过期时间不能早于当前时间'
-          }), {
-            status: 400,
-            headers
-          });
-        }
-        
-        validatedExpiresAt = expiresAt;
-      } catch (error) {
-        return new Response(JSON.stringify({
-          success: false,
-          message: '过期时间格式无效'
-        }), {
-          status: 400,
-          headers
-        });
-      }
     }
     
     // 验证权限格式
@@ -86,7 +47,7 @@ export async function onRequestPost(context) {
       note: note || '',
       permissions: keyPermissions,
       createdAt: createdAt || new Date().toISOString(),
-      expiresAt: validatedExpiresAt
+      expiryDate: expiryDate || null // 添加过期时间字段
     };
     
     await env.API_KEYS.put(`${API_KEY_PREFIX}${key}`, JSON.stringify(keyData));

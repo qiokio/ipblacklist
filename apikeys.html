@@ -76,6 +76,30 @@
         .edit-btn:hover {
             background-color: #218838;
         }
+        
+        /* 添加新的样式 */
+        .expiry-settings {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .expiry-options {
+            margin: 10px 0;
+        }
+        
+        .expiry-options label {
+            margin-right: 20px;
+        }
+        
+        #customExpiryContainer {
+            margin-top: 10px;
+        }
+        
+        #customExpiryContainer.hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -126,161 +150,149 @@
             </div>
             
             <div id="mainContent" style="display: none;">
-                <div class="card">
-                    <h2>创建API密钥</h2>
-                    <div class="input-group">
-                        <input type="text" id="newApiKeyInput" placeholder="生成新的API密钥" readonly>
-                        <button id="generateKeyBtn" class="btn">生成密钥</button>
+            <div class="card">
+                <h2>创建API密钥</h2>
+                <div class="input-group">
+                    <input type="text" id="newApiKeyInput" placeholder="生成新的API密钥" readonly>
+                    <button id="generateKeyBtn" class="btn">生成密钥</button>
+                </div>
+                
+                <div id="permissionsContainer" class="permissions-container hidden">
+                    <div class="permissions-title">设置API密钥权限：</div>
+                    <div class="permission-item">
+                        <label>
+                            <input type="checkbox" id="permissionRead" checked disabled>
+                            查询IP
+                        </label>
+                        <div class="permission-description">允许查询IP是否在黑名单中（默认允许且不可更改）</div>
+                    </div>
+                    <div class="permission-item">
+                        <label>
+                            <input type="checkbox" id="permissionList">
+                            获取IP列表
+                        </label>
+                        <div class="permission-description">允许获取完整的IP黑名单列表</div>
+                    </div>
+                    <div class="permission-item">
+                        <label>
+                            <input type="checkbox" id="permissionAdd">
+                            添加IP
+                        </label>
+                        <div class="permission-description">允许向黑名单添加IP地址</div>
+                    </div>
+                    <div class="permission-item">
+                        <label>
+                            <input type="checkbox" id="permissionDelete">
+                            删除IP
+                        </label>
+                        <div class="permission-description">允许从黑名单删除IP地址</div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" id="noteInput" placeholder="备注（可选）" class="note-input">
+                    <button id="createKeyBtn" class="hidden btn">保存密钥</button>
+                </div>
+
+                <div class="expiry-settings">
+                    <div class="form-group">
+                        <label>过期时间设置：</label>
+                        <div class="expiry-options">
+                            <label>
+                                <input type="radio" name="expiryType" value="never" checked>
+                                永不过期
+                            </label>
+                            <label>
+                                <input type="radio" name="expiryType" value="custom">
+                                自定义过期时间
+                            </label>
+                        </div>
+                        <div id="customExpiryContainer" class="hidden">
+                            <input type="datetime-local" id="expiryDateInput" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>我的API密钥</h2>
+                <table id="apiKeysTable">
+                    <thead>
+                        <tr>
+                            <th>API密钥</th>
+                            <th>备注</th>
+                            <th>创建时间</th>
+                            <th>权限</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="apiKeysTableBody">
+                        <!-- 表格内容由JavaScript填充 -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 修改API密钥的弹窗 -->
+            <div id="editKeyModal" class="modal hidden">
+                <div class="modal-content">
+                    <span class="close-button">&times;</span>
+                    <h3>修改API密钥</h3>
+                    <input type="hidden" id="editKeyId">
+                    
+                    <div class="form-group">
+                        <label for="editKeyNote">备注：</label>
+                        <input type="text" id="editKeyNote" class="form-control" placeholder="输入备注">
                     </div>
                     
-                    <div id="permissionsContainer" class="permissions-container hidden">
-                        <div class="permissions-title">设置API密钥权限：</div>
+                    <div class="form-group">
+                        <label>权限设置：</label>
                         <div class="permission-item">
                             <label>
-                                <input type="checkbox" id="permissionRead" checked disabled>
+                                <input type="checkbox" id="editPermissionRead" checked disabled>
                                 查询IP
                             </label>
                             <div class="permission-description">允许查询IP是否在黑名单中（默认允许且不可更改）</div>
                         </div>
                         <div class="permission-item">
                             <label>
-                                <input type="checkbox" id="permissionList">
+                                <input type="checkbox" id="editPermissionList">
                                 获取IP列表
                             </label>
                             <div class="permission-description">允许获取完整的IP黑名单列表</div>
                         </div>
                         <div class="permission-item">
                             <label>
-                                <input type="checkbox" id="permissionAdd">
+                                <input type="checkbox" id="editPermissionAdd">
                                 添加IP
                             </label>
                             <div class="permission-description">允许向黑名单添加IP地址</div>
                         </div>
                         <div class="permission-item">
                             <label>
-                                <input type="checkbox" id="permissionDelete">
+                                <input type="checkbox" id="editPermissionDelete">
                                 删除IP
                             </label>
                             <div class="permission-description">允许从黑名单删除IP地址</div>
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="expiryType">过期时间：</label>
-                        <select id="expiryType" class="form-control">
-                            <option value="never">永不过期</option>
-                            <option value="custom">自定义过期时间</option>
-                        </select>
-                    </div>
-                    
-                    <div id="customExpiryContainer" class="form-group" style="display: none;">
-                        <label for="expiryDate">过期日期：</label>
-                        <input type="date" id="expiryDate" class="form-control">
-                        <label for="expiryTime">过期时间：</label>
-                        <input type="time" id="expiryTime" class="form-control">
-                    </div>
-                    
-                    <div class="input-group">
-                        <input type="text" id="noteInput" placeholder="备注（可选）" class="note-input">
-                        <button id="createKeyBtn" class="hidden btn">保存密钥</button>
+                    <div class="form-actions">
+                        <button id="saveKeyBtn" class="btn">保存更改</button>
+                        <button id="cancelEditBtn" class="btn btn-secondary">取消</button>
                     </div>
                 </div>
-                
-                <div class="card">
-                    <h2>我的API密钥</h2>
-                    <table id="apiKeysTable">
-                        <thead>
-                            <tr>
-                                <th>API密钥</th>
-                                <th>备注</th>
-                                <th>创建时间</th>
-                                <th>过期时间</th>
-                                <th>权限</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="apiKeysTableBody">
-                            <!-- 表格内容由JavaScript填充 -->
-                        </tbody>
-                    </table>
-                </div>
-                
-                <!-- 修改API密钥的弹窗 -->
-                <div id="editKeyModal" class="modal hidden">
-                    <div class="modal-content">
-                        <span class="close-button">&times;</span>
-                        <h3>修改API密钥</h3>
-                        <input type="hidden" id="editKeyId">
-                        
-                        <div class="form-group">
-                            <label for="editKeyNote">备注：</label>
-                            <input type="text" id="editKeyNote" class="form-control" placeholder="输入备注">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="editExpiryType">过期时间：</label>
-                            <select id="editExpiryType" class="form-control">
-                                <option value="never">永不过期</option>
-                                <option value="custom">自定义过期时间</option>
-                            </select>
-                        </div>
-                        
-                        <div id="editCustomExpiryContainer" class="form-group" style="display: none;">
-                            <label for="editExpiryDate">过期日期：</label>
-                            <input type="date" id="editExpiryDate" class="form-control">
-                            <label for="editExpiryTime">过期时间：</label>
-                            <input type="time" id="editExpiryTime" class="form-control">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>权限设置：</label>
-                            <div class="permission-item">
-                                <label>
-                                    <input type="checkbox" id="editPermissionRead" checked disabled>
-                                    查询IP
-                                </label>
-                                <div class="permission-description">允许查询IP是否在黑名单中（默认允许且不可更改）</div>
-                            </div>
-                            <div class="permission-item">
-                                <label>
-                                    <input type="checkbox" id="editPermissionList">
-                                    获取IP列表
-                                </label>
-                                <div class="permission-description">允许获取完整的IP黑名单列表</div>
-                            </div>
-                            <div class="permission-item">
-                                <label>
-                                    <input type="checkbox" id="editPermissionAdd">
-                                    添加IP
-                                </label>
-                                <div class="permission-description">允许向黑名单添加IP地址</div>
-                            </div>
-                            <div class="permission-item">
-                                <label>
-                                    <input type="checkbox" id="editPermissionDelete">
-                                    删除IP
-                                </label>
-                                <div class="permission-description">允许从黑名单删除IP地址</div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button id="saveKeyBtn" class="btn">保存更改</button>
-                            <button id="cancelEditBtn" class="btn btn-secondary">取消</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card hint">
-                    <h3>API密钥使用说明</h3>
-                    <p>API密钥可以用于以下API端点：</p>
-                    <ul>
-                        <li><strong>查询IP</strong>: <code>/api/blacklist/check-api?key=YOUR_API_KEY&ip=1.2.3.4</code></li>
-                        <li><strong>获取IP列表</strong>: <code>/api/blacklist/get-api?key=YOUR_API_KEY</code></li>
-                        <li><strong>添加IP</strong>: <code>/api/blacklist/add-api</code> (POST, 需要在body中提供IP和API密钥)</li>
-                        <li><strong>删除IP</strong>: <code>/api/blacklist/remove-api</code> (POST, 需要在body中提供IP和API密钥)</li>
-                    </ul>
-                    <p>请保管好您的API密钥，泄露可能导致他人能操作您的IP黑名单。</p>
+            </div>
+            
+            <div class="card hint">
+                <h3>API密钥使用说明</h3>
+                <p>API密钥可以用于以下API端点：</p>
+                <ul>
+                    <li><strong>查询IP</strong>: <code>/api/blacklist/check-api?key=YOUR_API_KEY&ip=1.2.3.4</code></li>
+                    <li><strong>获取IP列表</strong>: <code>/api/blacklist/get-api?key=YOUR_API_KEY</code></li>
+                    <li><strong>添加IP</strong>: <code>/api/blacklist/add-api</code> (POST, 需要在body中提供IP和API密钥)</li>
+                    <li><strong>删除IP</strong>: <code>/api/blacklist/remove-api</code> (POST, 需要在body中提供IP和API密钥)</li>
+                </ul>
+                <p>请保管好您的API密钥，泄露可能导致他人能操作您的IP黑名单。</p>
                 </div>
             </div>
         </div>
@@ -331,15 +343,16 @@
             // 保存修改按钮事件
             document.getElementById('saveKeyBtn').addEventListener('click', updateApiKey);
             
-            // 过期时间类型切换事件
-            document.getElementById('expiryType').addEventListener('change', function() {
-                const customExpiryContainer = document.getElementById('customExpiryContainer');
-                customExpiryContainer.style.display = this.value === 'custom' ? 'block' : 'none';
-            });
-            
-            document.getElementById('editExpiryType').addEventListener('change', function() {
-                const editCustomExpiryContainer = document.getElementById('editCustomExpiryContainer');
-                editCustomExpiryContainer.style.display = this.value === 'custom' ? 'block' : 'none';
+            // 添加过期时间设置的事件监听
+            document.querySelectorAll('input[name="expiryType"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const customExpiryContainer = document.getElementById('customExpiryContainer');
+                    if (this.value === 'custom') {
+                        customExpiryContainer.classList.remove('hidden');
+                    } else {
+                        customExpiryContainer.classList.add('hidden');
+                    }
+                });
             });
             
             // 生成随机API密钥
@@ -381,17 +394,17 @@
                     add: document.getElementById('permissionAdd').checked,
                     delete: document.getElementById('permissionDelete').checked
                 };
-                
+
                 // 获取过期时间设置
-                const expiryType = document.getElementById('expiryType').value;
-                let expiresAt = null;
-                
+                const expiryType = document.querySelector('input[name="expiryType"]:checked').value;
+                let expiryDate = null;
                 if (expiryType === 'custom') {
-                    const date = document.getElementById('expiryDate').value;
-                    const time = document.getElementById('expiryTime').value;
-                    if (date && time) {
-                        expiresAt = new Date(`${date}T${time}`).toISOString();
+                    const expiryInput = document.getElementById('expiryDateInput').value;
+                    if (!expiryInput) {
+                        showMessage('请选择过期时间', 'error');
+                        return;
                     }
+                    expiryDate = new Date(expiryInput).toISOString();
                 }
                 
                 if (!key) {
@@ -410,7 +423,12 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                         },
-                        body: JSON.stringify({ key, note, permissions, expiresAt })
+                        body: JSON.stringify({ 
+                            key, 
+                            note, 
+                            permissions,
+                            expiryDate 
+                        })
                     });
                     
                     const data = await response.json();
@@ -421,6 +439,7 @@
                         // 清空输入框
                         document.getElementById('newApiKeyInput').value = '';
                         document.getElementById('noteInput').value = '';
+                        document.getElementById('expiryDateInput').value = '';
                         
                         // 重置权限复选框
                         document.getElementById('permissionList').checked = false;
@@ -428,8 +447,8 @@
                         document.getElementById('permissionDelete').checked = false;
                         
                         // 重置过期时间设置
-                        document.getElementById('expiryType').value = 'never';
-                        document.getElementById('customExpiryContainer').style.display = 'none';
+                        document.querySelector('input[name="expiryType"][value="never"]').checked = true;
+                        document.getElementById('customExpiryContainer').classList.add('hidden');
                         
                         // 重新加载API密钥列表
                         loadApiKeys();
@@ -465,7 +484,7 @@
                         
                         if (data.keys.length === 0) {
                             const row = document.createElement('tr');
-                            row.innerHTML = '<td colspan="6" class="empty-table">暂无API密钥，请点击"生成密钥"按钮创建</td>';
+                            row.innerHTML = '<td colspan="5" class="empty-table">暂无API密钥，请点击"生成密钥"按钮创建</td>';
                             tableBody.appendChild(row);
                         } else {
                             data.keys.forEach(keyInfo => {
@@ -475,13 +494,6 @@
                                 const createdAt = new Date(keyInfo.createdAt);
                                 const formattedDate = createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString();
                                 
-                                // 格式化过期时间
-                                let expiryText = '永不过期';
-                                if (keyInfo.expiresAt) {
-                                    const expiryDate = new Date(keyInfo.expiresAt);
-                                    expiryText = expiryDate.toLocaleDateString() + ' ' + expiryDate.toLocaleTimeString();
-                                }
-                                
                                 // 格式化权限
                                 const permissions = [];
                                 if (keyInfo.permissions.read) permissions.push('查询');
@@ -489,11 +501,10 @@
                                 if (keyInfo.permissions.add) permissions.push('添加');
                                 if (keyInfo.permissions.delete) permissions.push('删除');
                                 
-                                row.innerHTML = `
+                                                            row.innerHTML = `
                                     <td data-title="API密钥">${keyInfo.key}</td>
                                     <td data-title="备注">${keyInfo.note || '-'}</td>
                                     <td data-title="创建时间">${formattedDate}</td>
-                                    <td data-title="过期时间">${expiryText}</td>
                                     <td data-title="权限">${permissions.join(', ')}</td>
                                     <td data-title="操作">
                                         <button class="edit-btn" data-key="${keyInfo.key}">修改</button>
@@ -594,18 +605,6 @@
                             document.getElementById('editPermissionAdd').checked = keyInfo.permissions.add || false;
                             document.getElementById('editPermissionDelete').checked = keyInfo.permissions.delete || false;
                             
-                            // 设置过期时间
-                            if (keyInfo.expiresAt) {
-                                const expiryDate = new Date(keyInfo.expiresAt);
-                                document.getElementById('editExpiryType').value = 'custom';
-                                document.getElementById('editExpiryDate').value = expiryDate.toISOString().split('T')[0];
-                                document.getElementById('editExpiryTime').value = expiryDate.toTimeString().slice(0, 5);
-                                document.getElementById('editCustomExpiryContainer').style.display = 'block';
-                            } else {
-                                document.getElementById('editExpiryType').value = 'never';
-                                document.getElementById('editCustomExpiryContainer').style.display = 'none';
-                            }
-                            
                             // 显示弹窗
                             document.getElementById('editKeyModal').classList.add('show');
                             document.getElementById('editKeyModal').style.display = 'block';
@@ -640,18 +639,6 @@
                     delete: document.getElementById('editPermissionDelete').checked
                 };
                 
-                // 获取过期时间设置
-                const expiryType = document.getElementById('editExpiryType').value;
-                let expiresAt = null;
-                
-                if (expiryType === 'custom') {
-                    const date = document.getElementById('editExpiryDate').value;
-                    const time = document.getElementById('editExpiryTime').value;
-                    if (date && time) {
-                        expiresAt = new Date(`${date}T${time}`).toISOString();
-                    }
-                }
-                
                 if (!key) {
                     showMessage('无效的API密钥', 'error');
                     return;
@@ -668,7 +655,7 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                         },
-                        body: JSON.stringify({ key, note, permissions, expiresAt })
+                        body: JSON.stringify({ key, note, permissions })
                     });
                     
                     const data = await response.json();
