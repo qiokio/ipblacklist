@@ -120,130 +120,137 @@
         <div class="main-content">
             <div id="messageContainer" class="hidden message"></div>
             
-            <div class="card">
-                <h2>创建API密钥</h2>
-                <div class="input-group">
-                    <input type="text" id="newApiKeyInput" placeholder="生成新的API密钥" readonly>
-                    <button id="generateKeyBtn" class="btn">生成密钥</button>
-                </div>
-                
-                <div id="permissionsContainer" class="permissions-container hidden">
-                    <div class="permissions-title">设置API密钥权限：</div>
-                    <div class="permission-item">
-                        <label>
-                            <input type="checkbox" id="permissionRead" checked disabled>
-                            查询IP
-                        </label>
-                        <div class="permission-description">允许查询IP是否在黑名单中（默认允许且不可更改）</div>
-                    </div>
-                    <div class="permission-item">
-                        <label>
-                            <input type="checkbox" id="permissionList">
-                            获取IP列表
-                        </label>
-                        <div class="permission-description">允许获取完整的IP黑名单列表</div>
-                    </div>
-                    <div class="permission-item">
-                        <label>
-                            <input type="checkbox" id="permissionAdd">
-                            添加IP
-                        </label>
-                        <div class="permission-description">允许向黑名单添加IP地址</div>
-                    </div>
-                    <div class="permission-item">
-                        <label>
-                            <input type="checkbox" id="permissionDelete">
-                            删除IP
-                        </label>
-                        <div class="permission-description">允许从黑名单删除IP地址</div>
-                    </div>
-                </div>
-                
-                <div class="input-group">
-                    <input type="text" id="noteInput" placeholder="备注（可选）" class="note-input">
-                    <button id="createKeyBtn" class="hidden btn">保存密钥</button>
-                </div>
+            <!-- 认证信息提示 -->
+            <div id="authMessage" class="card" style="display: none;">
+                您需要登录才能管理API密钥
             </div>
             
-            <div class="card">
-                <h2>我的API密钥</h2>
-                <table id="apiKeysTable">
-                    <thead>
-                        <tr>
-                            <th>API密钥</th>
-                            <th>备注</th>
-                            <th>创建时间</th>
-                            <th>权限</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="apiKeysTableBody">
-                        <!-- 表格内容由JavaScript填充 -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- 修改API密钥的弹窗 -->
-            <div id="editKeyModal" class="modal hidden">
-                <div class="modal-content">
-                    <span class="close-button">&times;</span>
-                    <h3>修改API密钥</h3>
-                    <input type="hidden" id="editKeyId">
-                    
-                    <div class="form-group">
-                        <label for="editKeyNote">备注：</label>
-                        <input type="text" id="editKeyNote" class="form-control" placeholder="输入备注">
+            <div id="mainContent" style="display: none;">
+                <div class="card">
+                    <h2>创建API密钥</h2>
+                    <div class="input-group">
+                        <input type="text" id="newApiKeyInput" placeholder="生成新的API密钥" readonly>
+                        <button id="generateKeyBtn" class="btn">生成密钥</button>
                     </div>
                     
-                    <div class="form-group">
-                        <label>权限设置：</label>
+                    <div id="permissionsContainer" class="permissions-container hidden">
+                        <div class="permissions-title">设置API密钥权限：</div>
                         <div class="permission-item">
                             <label>
-                                <input type="checkbox" id="editPermissionRead" checked disabled>
+                                <input type="checkbox" id="permissionRead" checked disabled>
                                 查询IP
                             </label>
                             <div class="permission-description">允许查询IP是否在黑名单中（默认允许且不可更改）</div>
                         </div>
                         <div class="permission-item">
                             <label>
-                                <input type="checkbox" id="editPermissionList">
+                                <input type="checkbox" id="permissionList">
                                 获取IP列表
                             </label>
                             <div class="permission-description">允许获取完整的IP黑名单列表</div>
                         </div>
                         <div class="permission-item">
                             <label>
-                                <input type="checkbox" id="editPermissionAdd">
+                                <input type="checkbox" id="permissionAdd">
                                 添加IP
                             </label>
                             <div class="permission-description">允许向黑名单添加IP地址</div>
                         </div>
                         <div class="permission-item">
                             <label>
-                                <input type="checkbox" id="editPermissionDelete">
+                                <input type="checkbox" id="permissionDelete">
                                 删除IP
                             </label>
                             <div class="permission-description">允许从黑名单删除IP地址</div>
                         </div>
                     </div>
                     
-                    <div class="form-actions">
-                        <button id="saveKeyBtn" class="btn">保存更改</button>
-                        <button id="cancelEditBtn" class="btn btn-secondary">取消</button>
+                    <div class="input-group">
+                        <input type="text" id="noteInput" placeholder="备注（可选）" class="note-input">
+                        <button id="createKeyBtn" class="hidden btn">保存密钥</button>
                     </div>
                 </div>
-            </div>
-            
-            <div class="card hint">
-                <h3>API密钥使用说明</h3>
-                <p>API密钥可以用于以下API端点：</p>
-                <ul>
-                    <li><strong>查询IP</strong>: <code>/api/blacklist/check-api?key=YOUR_API_KEY&ip=1.2.3.4</code></li>
-                    <li><strong>获取IP列表</strong>: <code>/api/blacklist/get-api?key=YOUR_API_KEY</code></li>
-                    <li><strong>添加IP</strong>: <code>/api/blacklist/add-api</code> (POST, 需要在body中提供IP和API密钥)</li>
-                    <li><strong>删除IP</strong>: <code>/api/blacklist/remove-api</code> (POST, 需要在body中提供IP和API密钥)</li>
-                </ul>
-                <p>请保管好您的API密钥，泄露可能导致他人能操作您的IP黑名单。</p>
+                
+                <div class="card">
+                    <h2>我的API密钥</h2>
+                    <table id="apiKeysTable">
+                        <thead>
+                            <tr>
+                                <th>API密钥</th>
+                                <th>备注</th>
+                                <th>创建时间</th>
+                                <th>权限</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="apiKeysTableBody">
+                            <!-- 表格内容由JavaScript填充 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 修改API密钥的弹窗 -->
+                <div id="editKeyModal" class="modal hidden">
+                    <div class="modal-content">
+                        <span class="close-button">&times;</span>
+                        <h3>修改API密钥</h3>
+                        <input type="hidden" id="editKeyId">
+                        
+                        <div class="form-group">
+                            <label for="editKeyNote">备注：</label>
+                            <input type="text" id="editKeyNote" class="form-control" placeholder="输入备注">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>权限设置：</label>
+                            <div class="permission-item">
+                                <label>
+                                    <input type="checkbox" id="editPermissionRead" checked disabled>
+                                    查询IP
+                                </label>
+                                <div class="permission-description">允许查询IP是否在黑名单中（默认允许且不可更改）</div>
+                            </div>
+                            <div class="permission-item">
+                                <label>
+                                    <input type="checkbox" id="editPermissionList">
+                                    获取IP列表
+                                </label>
+                                <div class="permission-description">允许获取完整的IP黑名单列表</div>
+                            </div>
+                            <div class="permission-item">
+                                <label>
+                                    <input type="checkbox" id="editPermissionAdd">
+                                    添加IP
+                                </label>
+                                <div class="permission-description">允许向黑名单添加IP地址</div>
+                            </div>
+                            <div class="permission-item">
+                                <label>
+                                    <input type="checkbox" id="editPermissionDelete">
+                                    删除IP
+                                </label>
+                                <div class="permission-description">允许从黑名单删除IP地址</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button id="saveKeyBtn" class="btn">保存更改</button>
+                            <button id="cancelEditBtn" class="btn btn-secondary">取消</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card hint">
+                    <h3>API密钥使用说明</h3>
+                    <p>API密钥可以用于以下API端点：</p>
+                    <ul>
+                        <li><strong>查询IP</strong>: <code>/api/blacklist/check-api?key=YOUR_API_KEY&ip=1.2.3.4</code></li>
+                        <li><strong>获取IP列表</strong>: <code>/api/blacklist/get-api?key=YOUR_API_KEY</code></li>
+                        <li><strong>添加IP</strong>: <code>/api/blacklist/add-api</code> (POST, 需要在body中提供IP和API密钥)</li>
+                        <li><strong>删除IP</strong>: <code>/api/blacklist/remove-api</code> (POST, 需要在body中提供IP和API密钥)</li>
+                    </ul>
+                    <p>请保管好您的API密钥，泄露可能导致他人能操作您的IP黑名单。</p>
+                </div>
             </div>
         </div>
     </div>
@@ -264,7 +271,18 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // 检查用户是否已登录
-            checkAuthentication();
+            const token = localStorage.getItem('auth_token');
+            const authMessage = document.getElementById('authMessage');
+            const mainContent = document.getElementById('mainContent');
+            
+            if (!token) {
+                authMessage.style.display = 'block';
+                mainContent.style.display = 'none';
+                return;
+            }
+            
+            authMessage.style.display = 'none';
+            mainContent.style.display = 'block';
             
             // 获取API密钥列表
             loadApiKeys();
@@ -281,14 +299,6 @@
             
             // 保存修改按钮事件
             document.getElementById('saveKeyBtn').addEventListener('click', updateApiKey);
-            
-            // 检查用户是否已登录
-            function checkAuthentication() {
-                const token = localStorage.getItem('auth_token');
-                if (!token) {
-                    window.location.href = '/login.html';
-                }
-            }
             
             // 生成随机API密钥
             function generateApiKey() {

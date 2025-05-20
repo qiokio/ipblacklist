@@ -40,91 +40,98 @@
         <div class="main-content">
             <div id="messageContainer" class="hidden message"></div>
             
-            <div class="card">
-                <div class="card-header">设置API密钥</div>
-                <div class="card-body">
-                    <div class="input-group">
-                        <input type="text" id="apiKeyInput" placeholder="输入您的API密钥">
-                        <button id="verifyKeyBtn">验证密钥</button>
-                    </div>
-                    <div id="keyStatusContainer" class="hidden"></div>
-                </div>
+            <!-- 认证信息提示 -->
+            <div id="authMessage" class="card" style="display: none;">
+                您需要登录才能使用API测试工具
             </div>
             
-            <div id="permissionsContainer" class="hidden">
-                <h2>可用的API功能</h2>
-                <div id="permissionsList"></div>
-                
-                <!-- 查询IP功能卡片 -->
-                <div class="card" id="checkIpCard">
-                    <div class="card-header">
-                        查询IP是否在黑名单
-                        <span class="badge badge-primary">需要read权限</span>
-                    </div>
+            <div id="mainContent" style="display: none;">
+                <div class="card">
+                    <div class="card-header">设置API密钥</div>
                     <div class="card-body">
                         <div class="input-group">
-                            <input type="text" id="checkIpInput" placeholder="输入要查询的IP地址">
-                            <button id="checkIpBtn">查询</button>
+                            <input type="text" id="apiKeyInput" placeholder="输入您的API密钥">
+                            <button id="verifyKeyBtn">验证密钥</button>
                         </div>
-                        <div id="checkIpResult" class="result hidden"></div>
+                        <div id="keyStatusContainer" class="hidden"></div>
                     </div>
                 </div>
                 
-                <!-- 获取IP列表功能卡片 -->
-                <div class="card" id="listIpsCard">
-                    <div class="card-header">
-                        获取完整IP黑名单
-                        <span class="badge badge-success">需要list权限</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="input-group">
-                            <button id="listIpsBtn">获取列表</button>
+                <div id="permissionsContainer" class="hidden">
+                    <h2>可用的API功能</h2>
+                    <div id="permissionsList"></div>
+                    
+                    <!-- 查询IP功能卡片 -->
+                    <div class="card" id="checkIpCard">
+                        <div class="card-header">
+                            查询IP是否在黑名单
+                            <span class="badge badge-primary">需要read权限</span>
                         </div>
-                        <div id="listIpsResult" class="result hidden"></div>
+                        <div class="card-body">
+                            <div class="input-group">
+                                <input type="text" id="checkIpInput" placeholder="输入要查询的IP地址">
+                                <button id="checkIpBtn">查询</button>
+                            </div>
+                            <div id="checkIpResult" class="result hidden"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 获取IP列表功能卡片 -->
+                    <div class="card" id="listIpsCard">
+                        <div class="card-header">
+                            获取完整IP黑名单
+                            <span class="badge badge-success">需要list权限</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="input-group">
+                                <button id="listIpsBtn">获取列表</button>
+                            </div>
+                            <div id="listIpsResult" class="result hidden"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 添加IP功能卡片 -->
+                    <div class="card" id="addIpCard">
+                        <div class="card-header">
+                            添加IP到黑名单
+                            <span class="badge badge-warning">需要add权限</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="input-group">
+                                <input type="text" id="addIpInput" placeholder="输入要添加的IP地址">
+                                <button id="addIpBtn">添加</button>
+                            </div>
+                            <div id="addIpResult" class="result hidden"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 删除IP功能卡片 -->
+                    <div class="card" id="removeIpCard">
+                        <div class="card-header">
+                            从黑名单删除IP
+                            <span class="badge badge-danger">需要delete权限</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="input-group">
+                                <input type="text" id="removeIpInput" placeholder="输入要删除的IP地址">
+                                <button id="removeIpBtn">删除</button>
+                            </div>
+                            <div id="removeIpResult" class="result hidden"></div>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- 添加IP功能卡片 -->
-                <div class="card" id="addIpCard">
-                    <div class="card-header">
-                        添加IP到黑名单
-                        <span class="badge badge-warning">需要add权限</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="input-group">
-                            <input type="text" id="addIpInput" placeholder="输入要添加的IP地址">
-                            <button id="addIpBtn">添加</button>
-                        </div>
-                        <div id="addIpResult" class="result hidden"></div>
-                    </div>
+                <div class="card hint">
+                    <h3>使用说明</h3>
+                    <p>此工具用于测试API密钥的有效性和权限范围。</p>
+                    <ol>
+                        <li>输入API密钥并点击"验证密钥"按钮</li>
+                        <li>系统将显示此密钥拥有的权限</li>
+                        <li>根据权限，您可以使用相应的功能测试API</li>
+                        <li>请注意，执行增删操作会实际修改您的黑名单数据</li>
+                    </ol>
+                    <p>如果您需要创建或修改API密钥，请前往<a href="/apikeys.html">API密钥管理页面</a>。</p>
                 </div>
-                
-                <!-- 删除IP功能卡片 -->
-                <div class="card" id="removeIpCard">
-                    <div class="card-header">
-                        从黑名单删除IP
-                        <span class="badge badge-danger">需要delete权限</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="input-group">
-                            <input type="text" id="removeIpInput" placeholder="输入要删除的IP地址">
-                            <button id="removeIpBtn">删除</button>
-                        </div>
-                        <div id="removeIpResult" class="result hidden"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card hint">
-                <h3>使用说明</h3>
-                <p>此工具用于测试API密钥的有效性和权限范围。</p>
-                <ol>
-                    <li>输入API密钥并点击"验证密钥"按钮</li>
-                    <li>系统将显示此密钥拥有的权限</li>
-                    <li>根据权限，您可以使用相应的功能测试API</li>
-                    <li>请注意，执行增删操作会实际修改您的黑名单数据</li>
-                </ol>
-                <p>如果您需要创建或修改API密钥，请前往<a href="/apikeys.html">API密钥管理页面</a>。</p>
             </div>
         </div>
     </div>
@@ -144,6 +151,20 @@
     <script src="js/logout.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // 检查用户是否已登录
+            const token = localStorage.getItem('auth_token');
+            const authMessage = document.getElementById('authMessage');
+            const mainContent = document.getElementById('mainContent');
+            
+            if (!token) {
+                authMessage.style.display = 'block';
+                mainContent.style.display = 'none';
+                return;
+            }
+            
+            authMessage.style.display = 'none';
+            mainContent.style.display = 'block';
+
             // 获取元素引用
             const apiKeyInput = document.getElementById('apiKeyInput');
             const verifyKeyBtn = document.getElementById('verifyKeyBtn');
