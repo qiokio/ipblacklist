@@ -131,4 +131,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
+    // 添加菜单项
+    const menuItems = [
+        { icon: 'fas fa-home', text: '首页', href: 'index.html' },
+        { icon: 'fas fa-tachometer-alt', text: '控制台', href: 'dashboard.html' },
+        { icon: 'fas fa-key', text: 'API密钥', href: 'apikeys.html' },
+        { icon: 'fas fa-vial', text: 'API测试', href: 'key-test.html' },
+        { icon: 'fas fa-book', text: 'API文档', href: 'api-docs.html' }
+    ];
 }); 
