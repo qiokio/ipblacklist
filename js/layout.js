@@ -105,45 +105,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // 创建一个容器div来放置按钮
         const toggleContainer = document.createElement('div');
         toggleContainer.className = 'sidebar-toggle-container';
-        toggleContainer.style.position = 'fixed';  // 改为fixed定位
-        toggleContainer.style.bottom = '80px';     // 位置上移，避开footer
-        toggleContainer.style.left = '210px';      // 调整水平位置
-        toggleContainer.style.display = 'flex';
-        toggleContainer.style.justifyContent = 'center';
-        toggleContainer.style.padding = '10px 0';
-        toggleContainer.style.zIndex = '200';      // 确保高z-index
+        toggleContainer.style.position = 'fixed';
+        toggleContainer.style.bottom = '80px';
+        toggleContainer.style.left = '210px';
+        toggleContainer.style.zIndex = '200';
         
         const toggleButton = document.createElement('button');
         toggleButton.className = 'sidebar-toggle';
         toggleButton.setAttribute('aria-label', '收起侧边栏');
         toggleButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
         
-        // 增强按钮可见性
-        toggleButton.style.backgroundColor = '#3498db';
-        toggleButton.style.color = 'white';
-        toggleButton.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.4)';
-        toggleButton.style.border = '2px solid #fff';
-        toggleButton.style.width = '40px';
-        toggleButton.style.height = '40px';
-        toggleButton.style.borderRadius = '50%';
-        toggleButton.style.display = 'flex';
-        toggleButton.style.justifyContent = 'center';
-        toggleButton.style.alignItems = 'center';
-        toggleButton.style.cursor = 'pointer';
-        toggleButton.style.fontSize = '16px';
-        
         toggleButton.addEventListener('click', () => {
             toggleSidebar();
         });
         
         toggleContainer.appendChild(toggleButton);
-        document.body.appendChild(toggleContainer);  // 添加到body而不是sidebar
+        document.body.appendChild(toggleContainer);
         
         // 根据侧边栏状态调整按钮位置
         updateToggleButtonPosition();
-        
-        // 确认按钮已添加的控制台日志
-        console.log('侧边栏折叠按钮已添加');
     }
     
     // 切换侧边栏状态
@@ -168,9 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 保存状态到本地存储
         localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
-        
-        // 记录切换状态的控制台日志
-        console.log('侧边栏状态切换为:', isCollapsed ? '收起' : '展开');
     }
     
     // 更新折叠按钮位置
