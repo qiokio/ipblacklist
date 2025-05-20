@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>操作日志 - IP黑名单系统</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/common.css">
+    <link rel="stylesheet" href="styles/logs.css">
+    <!-- 字体图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .log-item {
             border-left: 4px solid #ddd;
@@ -80,84 +83,98 @@
     </style>
 </head>
 <body>
-    <!-- 导航栏 -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">IP黑名单系统</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">首页</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/logs.html">操作日志</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="logout()">退出登录</a>
-                    </li>
-                </ul>
+    <div class="grid-container">
+        <!-- 顶栏 -->
+        <div class="top-bar">
+            <div class="sidebar-toggle-container">
+                <button class="sidebar-toggle" aria-label="收起侧边栏">
+                    <span class="sidebar-toggle-icon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                </button>
             </div>
-        </div>
-    </nav>
-
-    <div class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>操作日志</h1>
-            <button class="btn btn-outline-primary" onclick="refreshLogs()">
-                <i class="bi bi-arrow-clockwise"></i> 刷新
+            <button id="mobileMenuToggle" class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
             </button>
+            <div class="top-bar-title">IP黑名单系统 - 操作日志</div>
         </div>
         
-        <!-- 筛选部分 -->
-        <div class="filter-section">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">开始时间</label>
-                    <input type="datetime-local" class="form-control" id="startTime">
+        <!-- 侧栏导航 -->
+        <div class="sidebar">
+            <ul class="sidebar-menu">
+                <!-- 菜单项将由JavaScript动态生成 -->
+            </ul>
+            
+            <!-- 用户信息区域（现在移动到侧栏底部） -->
+            <div class="sidebar-footer">
+                <div id="userInfo" class="user-info" style="display: none;">
+                    <span>用户：</span>
+                    <span id="username" class="username">管理员</span>
+                    <button id="logoutBtn" class="btn btn-secondary" type="button">退出登录</button>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">结束时间</label>
-                    <input type="datetime-local" class="form-control" id="endTime">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">操作类型</label>
-                    <select class="form-select" id="operationType">
-                        <option value="">全部</option>
-                        <option value="blacklist_add">添加黑名单</option>
-                        <option value="blacklist_remove">删除黑名单</option>
-                        <option value="apikey_create">创建API密钥</option>
-                        <option value="apikey_delete">删除API密钥</option>
-                        <option value="authentication">用户认证</option>
-                        <option value="api_key_verification">API密钥验证</option>
-                        <option value="permission_check">权限检查</option>
-                        <option value="system_error">系统错误</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">操作者</label>
-                    <input type="text" class="form-control" id="operator" placeholder="操作者ID">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">&nbsp;</label>
-                    <button class="btn btn-primary w-100" onclick="searchLogs()">
-                        <i class="bi bi-search"></i> 查询
-                    </button>
+                <div id="loginActions" style="display: flex;">
+                    <a href="/login.html" class="btn btn-secondary">登录</a>
                 </div>
             </div>
         </div>
+        
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>操作日志</h1>
+                <button class="btn btn-outline-primary" onclick="refreshLogs()">
+                    <i class="fas fa-sync-alt"></i> 刷新
+                </button>
+            </div>
+            
+            <!-- 筛选部分 -->
+            <div class="filter-section">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">开始时间</label>
+                        <input type="datetime-local" class="form-control" id="startTime">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">结束时间</label>
+                        <input type="datetime-local" class="form-control" id="endTime">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">操作类型</label>
+                        <select class="form-select" id="operationType">
+                            <option value="">全部</option>
+                            <option value="blacklist_add">添加黑名单</option>
+                            <option value="blacklist_remove">删除黑名单</option>
+                            <option value="apikey_create">创建API密钥</option>
+                            <option value="apikey_delete">删除API密钥</option>
+                            <option value="authentication">用户认证</option>
+                            <option value="api_key_verification">API密钥验证</option>
+                            <option value="permission_check">权限检查</option>
+                            <option value="system_error">系统错误</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">操作者</label>
+                        <input type="text" class="form-control" id="operator" placeholder="操作者ID">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-primary w-100" onclick="searchLogs()">
+                            <i class="fas fa-search"></i> 查询
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-        <!-- 日志列表 -->
-        <div id="logList"></div>
+            <!-- 日志列表 -->
+            <div id="logList"></div>
 
-        <!-- 分页 -->
-        <nav aria-label="日志分页" class="mt-4">
-            <ul class="pagination justify-content-center" id="pagination"></ul>
-        </nav>
+            <!-- 分页 -->
+            <nav aria-label="日志分页" class="mt-4">
+                <ul class="pagination justify-content-center" id="pagination"></ul>
+            </nav>
+        </div>
     </div>
 
     <!-- 加载动画 -->
@@ -167,7 +184,20 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 确认退出弹窗 -->
+    <div id="logoutConfirmModal" class="confirm-modal">
+        <div class="confirm-modal-content">
+            <p>确定要退出登录吗？</p>
+            <div class="confirm-modal-actions">
+                <button id="confirmLogoutBtn" class="btn">确定</button>
+                <button id="cancelLogoutBtn" class="btn btn-secondary">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/logout.js"></script>
+    <script type="module" src="js/auth.js"></script>
     <script>
         let currentPage = 1;
         const pageSize = 20;
