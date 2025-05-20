@@ -175,7 +175,7 @@
 
         // 检查登录状态
         function checkAuth() {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('auth_token');
             if (!token) {
                 window.location.href = '/login.html';
                 return false;
@@ -185,7 +185,7 @@
 
         // 退出登录
         function logout() {
-            localStorage.removeItem('token');
+            localStorage.removeItem('auth_token');
             window.location.href = '/login.html';
         }
 
@@ -201,7 +201,7 @@
 
         // 页面加载完成后获取日志
         document.addEventListener('DOMContentLoaded', async () => {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('auth_token');
             if (!token) {
                 window.location.href = '/login.html';
                 return;
@@ -216,7 +216,7 @@
                 });
                 
                 if (response.status === 401) {
-                    localStorage.removeItem('token');
+                    localStorage.removeItem('auth_token');
                     window.location.href = '/login.html';
                     return;
                 }
@@ -225,7 +225,7 @@
                 searchLogs();
             } catch (error) {
                 console.error('验证token失败:', error);
-                localStorage.removeItem('token');
+                localStorage.removeItem('auth_token');
                 window.location.href = '/login.html';
             }
         });
@@ -249,7 +249,7 @@
             const operator = document.getElementById('operator').value;
 
             try {
-                const token = localStorage.getItem('token');
+                const token = localStorage.getItem('auth_token');
                 const queryParams = new URLSearchParams({
                     page: page,
                     pageSize: pageSize,
@@ -270,7 +270,7 @@
                 });
 
                 if (response.status === 401) {
-                    localStorage.removeItem('token');
+                    localStorage.removeItem('auth_token');
                     window.location.href = '/login.html';
                     return;
                 }
