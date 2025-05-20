@@ -401,7 +401,7 @@
             // 上一页
             const prevLi = document.createElement('li');
             prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
-            prevLi.innerHTML = `<a class="page-link" href="#" onclick="event.preventDefault(); searchLogs(${currentPage - 1})">上一页</a>`;
+            prevLi.innerHTML = `<button class="page-link" ${currentPage === 1 ? 'disabled' : ''} onclick="searchLogs(${currentPage - 1})">上一页</button>`;
             paginationElement.appendChild(prevLi);
 
             // 页码
@@ -409,12 +409,12 @@
                 if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
                     const li = document.createElement('li');
                     li.className = `page-item ${i === currentPage ? 'active' : ''}`;
-                    li.innerHTML = `<a class="page-link" href="#" onclick="event.preventDefault(); searchLogs(${i})">${i}</a>`;
+                    li.innerHTML = `<button class="page-link" ${i === currentPage ? 'disabled' : ''} onclick="searchLogs(${i})">${i}</button>`;
                     paginationElement.appendChild(li);
                 } else if (i === currentPage - 3 || i === currentPage + 3) {
                     const li = document.createElement('li');
                     li.className = 'page-item disabled';
-                    li.innerHTML = '<a class="page-link">...</a>';
+                    li.innerHTML = '<span class="page-link">...</span>';
                     paginationElement.appendChild(li);
                 }
             }
@@ -422,7 +422,7 @@
             // 下一页
             const nextLi = document.createElement('li');
             nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
-            nextLi.innerHTML = `<a class="page-link" href="#" onclick="event.preventDefault(); searchLogs(${currentPage + 1})">下一页</a>`;
+            nextLi.innerHTML = `<button class="page-link" ${currentPage === totalPages ? 'disabled' : ''} onclick="searchLogs(${currentPage + 1})">下一页</button>`;
             paginationElement.appendChild(nextLi);
 
             // 添加总页数显示
