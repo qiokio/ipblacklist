@@ -55,19 +55,19 @@ export const onRequestGet = async (context) => {
     <body>
         <h1>IP黑名单API使用示例</h1>
         
-        <h2>API端点</h2>
-        <pre><code>GET ${domain}/api/blacklist/check-external?ip=要检查的IP地址</code></pre>
+        <h2>API调用示例</h2>
+        <pre><code>GET /api/blacklist/check-api?ip=要检查的IP地址&key=您的API密钥</code></pre>
         
         <h2>示例响应</h2>
         <pre><code>{
   "ip": "192.168.1.1",
   "blocked": false,
-  "message": "此IP未被封禁"
+  "message": "IP 192.168.1.1 不在黑名单中"
 }</code></pre>
         
         <h2>JavaScript调用示例</h2>
         <pre><code>async function checkIP(ip) {
-  const response = await fetch('${domain}/api/blacklist/check-external?ip=' + ip);
+  const response = await fetch('${domain}/api/blacklist/check-api?ip=' + ip + '&key=您的API密钥');
   const data = await response.json();
   return data;
 }</code></pre>
@@ -75,6 +75,7 @@ export const onRequestGet = async (context) => {
         <h2>测试API</h2>
         <div>
             <input type="text" id="ipInput" placeholder="输入IP地址" value="">
+            <input type="text" id="apiKeyInput" placeholder="输入API密钥" value="">
             <button onclick="testAPI()">检查IP</button>
         </div>
         
@@ -85,15 +86,22 @@ export const onRequestGet = async (context) => {
         <script>
             async function testAPI() {
                 const ip = document.getElementById('ipInput').value.trim();
+                const apiKey = document.getElementById('apiKeyInput').value.trim();
+                
                 if (!ip) {
                     document.getElementById('result').innerHTML = '<p>请输入IP地址</p>';
+                    return;
+                }
+                
+                if (!apiKey) {
+                    document.getElementById('result').innerHTML = '<p>请输入API密钥</p>';
                     return;
                 }
                 
                 try {
                     document.getElementById('result').innerHTML = '<p>正在检查...</p>';
                     
-                    const response = await fetch('${domain}/api/blacklist/check-external?ip=' + ip);
+                    const response = await fetch('${domain}/api/blacklist/check-api?ip=' + ip + '&key=' + apiKey);
                     const data = await response.json();
                     
                     document.getElementById('result').innerHTML = 
@@ -105,7 +113,7 @@ export const onRequestGet = async (context) => {
             }
             
             // 使用当前IP自动填充
-            fetch('${domain}/api/blacklist/check-external')
+            fetch('${domain}/api/blacklist/check-api')
                 .then(response => response.json())
                 .then(data => {
                     if (data.ip) {
