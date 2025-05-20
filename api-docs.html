@@ -357,6 +357,119 @@
 
             <h2 id="错误处理">错误处理</h2>
 
+            <h2 id="ip黑名单管理api">IP黑名单管理API</h2>
+            
+            <h3>1. 获取黑名单列表</h3>
+            <h4>请求</h4>
+            <pre><code>GET /api/blacklist/get</code></pre>
+            <p><strong>请求头:</strong></p>
+            <table>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>必须</th>
+                    <th>描述</th>
+                </tr>
+                <tr>
+                    <td>Authorization</td>
+                    <td>string</td>
+                    <td>是</td>
+                    <td>JWT认证令牌，格式为: <code>Bearer &lt;token&gt;</code></td>
+                </tr>
+            </table>
+            <h4>响应</h4>
+            <pre><code>[
+  "192.168.1.1",
+  "10.0.0.1",
+  "172.16.0.1"
+]</code></pre>
+            <p><strong>状态码</strong></p>
+            <ul>
+                <li><code>200 OK</code>: 请求成功</li>
+                <li><code>401 Unauthorized</code>: JWT认证失败或令牌无效</li>
+                <li><code>500 Internal Server Error</code>: 服务器内部错误</li>
+            </ul>
+            
+            <h3>2. 添加IP到黑名单</h3>
+            <h4>请求</h4>
+            <pre><code>POST /api/blacklist/add</code></pre>
+            <p><strong>请求头:</strong></p>
+            <table>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>必须</th>
+                    <th>描述</th>
+                </tr>
+                <tr>
+                    <td>Authorization</td>
+                    <td>string</td>
+                    <td>是</td>
+                    <td>JWT认证令牌，格式为: <code>Bearer &lt;token&gt;</code></td>
+                </tr>
+                <tr>
+                    <td>Content-Type</td>
+                    <td>string</td>
+                    <td>是</td>
+                    <td><code>application/json</code></td>
+                </tr>
+            </table>
+            <p><strong>请求体:</strong></p>
+            <pre><code>{
+  "ip": "192.168.1.1"
+}</code></pre>
+            <h4>响应</h4>
+            <pre><code>{
+  "success": true
+}</code></pre>
+            <p><strong>状态码</strong></p>
+            <ul>
+                <li><code>200 OK</code>: 请求成功</li>
+                <li><code>400 Bad Request</code>: 缺少必要参数</li>
+                <li><code>401 Unauthorized</code>: JWT认证失败或令牌无效</li>
+                <li><code>500 Internal Server Error</code>: 服务器内部错误</li>
+            </ul>
+            
+            <h3>3. 从黑名单删除IP</h3>
+            <h4>请求</h4>
+            <pre><code>POST /api/blacklist/remove</code></pre>
+            <p><strong>请求头:</strong></p>
+            <table>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>必须</th>
+                    <th>描述</th>
+                </tr>
+                <tr>
+                    <td>Authorization</td>
+                    <td>string</td>
+                    <td>是</td>
+                    <td>JWT认证令牌，格式为: <code>Bearer &lt;token&gt;</code></td>
+                </tr>
+                <tr>
+                    <td>Content-Type</td>
+                    <td>string</td>
+                    <td>是</td>
+                    <td><code>application/json</code></td>
+                </tr>
+            </table>
+            <p><strong>请求体:</strong></p>
+            <pre><code>{
+  "ip": "192.168.1.1"
+}</code></pre>
+            <h4>响应</h4>
+            <pre><code>{
+  "success": true
+}</code></pre>
+            <p><strong>状态码</strong></p>
+            <ul>
+                <li><code>200 OK</code>: 请求成功</li>
+                <li><code>400 Bad Request</code>: 缺少必要参数</li>
+                <li><code>401 Unauthorized</code>: JWT认证失败或令牌无效</li>
+                <li><code>500 Internal Server Error</code>: 服务器内部错误</li>
+            </ul>
+
             <footer>
                 <p>IP黑名单系统 &copy; 2023 | <a href="https://github.com/qiokio/ipblacklist" target="_blank">GitHub 项目</a></p>
             </footer>
