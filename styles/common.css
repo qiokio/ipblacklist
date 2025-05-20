@@ -27,6 +27,7 @@
     align-items: center;
     height: 100%;
     padding: 0 10px;
+    margin-right: 10px;
 }
 
 .sidebar-toggle {
@@ -43,12 +44,12 @@
     font-size: 16px !important;
     transition: all 0.3s ease;
     padding: 0 !important;
+    opacity: 0.8;
 }
 
 .sidebar-toggle:hover {
     background-color: rgba(255, 255, 255, 0.1) !important;
-    transform: none;
-    box-shadow: none !important;
+    opacity: 1;
 }
 
 /* 移动设备上隐藏按钮 */

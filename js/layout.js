@@ -120,7 +120,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // 将按钮添加到顶栏
         const topBar = document.querySelector('.top-bar');
         if (topBar) {
-            topBar.insertBefore(toggleContainer, topBar.firstChild);
+            // 在移动端菜单按钮之前插入
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            if (mobileMenuToggle) {
+                topBar.insertBefore(toggleContainer, mobileMenuToggle);
+            } else {
+                topBar.insertBefore(toggleContainer, topBar.firstChild);
+            }
         }
     }
     
