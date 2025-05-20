@@ -144,9 +144,9 @@
     transition: all 0.3s;
 }
 
-/* 只让图标旋转 */
+/* 收起侧边栏时，三条线旋转90度变成竖线 */
 .sidebar-collapsed .sidebar-toggle .sidebar-toggle-icon {
-    transform: rotate(180deg);
+    transform: rotate(90deg);
     transition: transform 0.3s;
 }
 
