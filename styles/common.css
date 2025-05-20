@@ -142,4 +142,12 @@
     background: white;
     border-radius: 2px;
     transition: all 0.3s;
+}
+
+.sidebar-collapsed .sidebar-toggle {
+    transform: rotate(180deg);
+}
+
+.sidebar-collapsed .sidebar-toggle .sidebar-toggle-icon {
+    transform: rotate(180deg);
 } 
