@@ -1,36 +1,62 @@
 // Cloudflare Pages Functions - 添加IP到黑名单
-export const onRequestPost = async (context) => {
+export async function onRequest(context) {
     const { request, env } = context;
     
     try {
-        const data = await request.json();
-        const ip = data.ip;
+        const { ip, reason } = await request.json();
+        const requestIp = request.headers.get('CF-Connecting-IP') || 'unknown';
         
-        if (!ip) {
-            return new Response(JSON.stringify({ error: '缺少IP参数' }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
+        // 获取操作者信息
+        const operator = context.data?.user?.id || context.data?.apiKey?.id || 'system';
         
-        const currentList = await env.IP_BLACKLIST.get('blacklist');
-        let blacklistArray = currentList ? JSON.parse(currentList) : [];
+        // 添加到黑名单
+        await env.IP_BLACKLIST.put(ip, JSON.stringify({
+            reason,
+            addedAt: Date.now(),
+            addedBy: operator
+        }));
         
-        if (!blacklistArray.includes(ip)) {
-            blacklistArray.push(ip);
-            await env.IP_BLACKLIST.put('blacklist', JSON.stringify(blacklistArray));
-        }
+        // 记录操作日志
+        await logOperation(env, {
+            operationType: 'blacklist_add',
+            operator,
+            details: { ip, reason },
+            requestIp,
+            requestPath: '/api/blacklist/add',
+            status: 'success'
+        });
         
-        return new Response(JSON.stringify({ success: true }), {
-            headers: { 'Content-Type': 'application/json' }
+        return new Response(JSON.stringify({
+            success: true,
+            message: 'IP已添加到黑名单'
+        }), {
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            }
         });
     } catch (error) {
-        return new Response(JSON.stringify({ 
-            error: error.message,
-            message: '添加IP失败'
+        // 记录错误日志
+        await logOperation(env, {
+            operationType: 'blacklist_add',
+            operator: context.data?.user?.id || context.data?.apiKey?.id || 'system',
+            details: { error: error.message },
+            requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
+            requestPath: '/api/blacklist/add',
+            status: 'failed',
+            error: error.message
+        });
+        
+        return new Response(JSON.stringify({
+            success: false,
+            error: '添加黑名单失败',
+            message: error.message
         }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' }
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            }
         });
     }
-}; 
+} 

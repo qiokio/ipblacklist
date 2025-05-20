@@ -95,4 +95,78 @@ export function onRequestOptions() {
       'Access-Control-Max-Age': '86400'
     }
   });
+}
+
+// 创建API密钥
+export async function onRequest(context) {
+  const { request, env } = context;
+  
+  try {
+    const { name, permissions, expiryDate } = await request.json();
+    const requestIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+    
+    // 获取操作者信息
+    const operator = context.data?.user?.id || 'system';
+    
+    // 生成API密钥
+    const apiKey = crypto.randomUUID();
+    
+    // 存储API密钥信息
+    const keyData = {
+      id: apiKey,
+      name,
+      permissions,
+      expiryDate,
+      createdAt: Date.now(),
+      createdBy: operator
+    };
+    
+    await env.API_KEYS.put(`${API_KEY_PREFIX}${apiKey}`, JSON.stringify(keyData));
+    
+    // 记录操作日志
+    await logOperation(env, {
+      operationType: 'apikey_create',
+      operator,
+      details: { name, permissions, expiryDate },
+      requestIp,
+      requestPath: '/api/apikey/create',
+      status: 'success'
+    });
+    
+    return new Response(JSON.stringify({
+      success: true,
+      data: {
+        apiKey,
+        ...keyData
+      }
+    }), {
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
+    });
+  } catch (error) {
+    // 记录错误日志
+    await logOperation(env, {
+      operationType: 'apikey_create',
+      operator: context.data?.user?.id || 'system',
+      details: { error: error.message },
+      requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
+      requestPath: '/api/apikey/create',
+      status: 'failed',
+      error: error.message
+    });
+    
+    return new Response(JSON.stringify({
+      success: false,
+      error: '创建API密钥失败',
+      message: error.message
+    }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
+    });
+  }
 } 

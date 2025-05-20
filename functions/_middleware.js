@@ -3,6 +3,8 @@ import { verify } from '../js/jwt.js';
 
 // API密钥前缀(用于KV存储)
 const API_KEY_PREFIX = 'apikey:';
+// 日志记录前缀
+const LOG_PREFIX = 'log:';
 
 // 需要认证的API路径列表
 const AUTH_REQUIRED_PATHS = [
@@ -13,7 +15,9 @@ const AUTH_REQUIRED_PATHS = [
   '/api/apikey/create',
   '/api/apikey/list',
   '/api/apikey/update',
-  '/api/apikey/delete'
+  '/api/apikey/delete',
+  '/api/logs/list',
+  '/api/logs/cleanup'
 ];
 
 // 不需要认证的API路径列表
@@ -117,6 +121,37 @@ function handleOptions(request) {
   });
 }
 
+// 记录操作日志
+async function logOperation(env, {
+  operationType,
+  operator,
+  details,
+  requestIp,
+  requestPath,
+  status,
+  error = null
+}) {
+  try {
+    const timestamp = Date.now();
+    const logEntry = {
+      timestamp,
+      operationType,
+      operator,
+      details,
+      requestIp,
+      requestPath,
+      status,
+      error
+    };
+
+    // 使用时间戳作为键的一部分，便于按时间查询
+    const logKey = `${LOG_PREFIX}${timestamp}`;
+    await env.API_LOGS.put(logKey, JSON.stringify(logEntry));
+  } catch (error) {
+    console.error('记录日志失败:', error);
+  }
+}
+
 // 中间件主函数
 export async function onRequest(context) {
   const { request, env, next } = context;
@@ -129,7 +164,7 @@ export async function onRequest(context) {
   }
 
   try {
-    // 检查KV绑定是否可用（仅对需要KV的路径检查）
+    // 检查KV绑定是否可用
     if (!env.IP_BLACKLIST && (path.startsWith('/api/blacklist/') || path.startsWith('/api/apikey/'))) {
       return new Response(JSON.stringify({
         error: true,
@@ -144,6 +179,9 @@ export async function onRequest(context) {
         }
       });
     }
+
+    // 获取请求IP
+    const requestIp = request.headers.get('CF-Connecting-IP') || 'unknown';
     
     // 检查是否为通过API密钥访问的API端点
     const isApiKeyPath = Object.keys(API_KEY_PATHS).some(apiPath => 
@@ -154,6 +192,17 @@ export async function onRequest(context) {
       // 验证API密钥
       const keyAuth = await verifyApiKey(request, env);
       if (!keyAuth.valid) {
+        // 记录失败的API密钥验证
+        await logOperation(env, {
+          operationType: 'api_key_verification',
+          operator: 'unknown',
+          details: { path },
+          requestIp,
+          requestPath: path,
+          status: 'failed',
+          error: keyAuth.message
+        });
+
         return new Response(JSON.stringify({
           error: 'Unauthorized',
           message: keyAuth.message
@@ -169,6 +218,17 @@ export async function onRequest(context) {
       // 检查API密钥权限
       const hasPermission = checkApiKeyPermission(keyAuth.key, path);
       if (!hasPermission) {
+        // 记录权限验证失败
+        await logOperation(env, {
+          operationType: 'permission_check',
+          operator: keyAuth.key.id,
+          details: { path, requiredPermission: API_KEY_PATHS[path] },
+          requestIp,
+          requestPath: path,
+          status: 'failed',
+          error: '权限不足'
+        });
+
         return new Response(JSON.stringify({
           error: 'Forbidden',
           message: '此API密钥没有所需权限'
@@ -206,6 +266,17 @@ export async function onRequest(context) {
       const auth = await verifyToken(request, env);
       
       if (!auth.valid) {
+        // 记录认证失败
+        await logOperation(env, {
+          operationType: 'authentication',
+          operator: 'unknown',
+          details: { path },
+          requestIp,
+          requestPath: path,
+          status: 'failed',
+          error: auth.message
+        });
+
         return new Response(JSON.stringify({
           error: 'Unauthorized',
           message: auth.message
@@ -225,6 +296,17 @@ export async function onRequest(context) {
     // 继续处理请求
     return next();
   } catch (error) {
+    // 记录系统错误
+    await logOperation(env, {
+      operationType: 'system_error',
+      operator: 'system',
+      details: { path },
+      requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
+      requestPath: path,
+      status: 'failed',
+      error: error.message
+    });
+
     return new Response(JSON.stringify({
       error: true,
       message: `处理请求时出错: ${error.message}`
