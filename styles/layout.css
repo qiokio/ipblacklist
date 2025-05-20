@@ -53,7 +53,8 @@ body {
     grid-area: sidebar;
     background-color: #34495e;
     color: white;
-    padding: 20px 0;
+    padding-top: 20px;
+    padding-bottom: 0;
     box-shadow: 2px 0 5px rgba(0,0,0,0.1);
     overflow-y: auto;
     position: relative;
@@ -174,10 +175,11 @@ body {
         height: calc(100vh - 60px);
         width: 250px;
         z-index: 99;
+        padding-bottom: 0;
     }
     
     .sidebar.active {
-        display: block;
+        display: flex;  /* 确保使用flex布局 */
     }
     
     .mobile-menu-toggle {
@@ -186,6 +188,12 @@ body {
     
     .sidebar-toggle {
         display: none;
+    }
+
+    /* 在移动设备上确保footer在底部 */
+    .sidebar-footer {
+        position: sticky;
+        bottom: 0;
     }
 }
 
@@ -290,6 +298,11 @@ code {
     padding: 15px 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     background-color: #2c3e50;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 10;
 }
 
 .sidebar-footer .user-info {
