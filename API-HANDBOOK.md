@@ -16,51 +16,13 @@ IP黑名单系统提供一组API，允许外部应用程序查询和管理IP黑�
 ## 基本信息
 
 - **基础URL**: `https://您的域名`
-- **认证方式**: JWT认证，通过`Authorization`头传递令牌
+- **认证方式**: API密钥认证，通过URL参数`key`传递
 - **响应格式**: 所有API返回JSON格式
 - **跨域支持**: 所有API支持CORS跨域请求
 
 ## API端点
 
 ### 1. 检查IP黑名单状态
-
-#### 请求
-
-```
-GET /api/blacklist/check-external
-```
-
-**参数:**
-
-| 参数 | 类型 | 必须 | 描述 |
-|------|------|------|------|
-| ip | string | 否 | 要检查的IP地址，如不提供则使用访问者当前IP |
-
-#### 响应
-
-```json
-{
-  "ip": "192.168.1.1",
-  "blocked": false,
-  "message": "此IP未被封禁"
-}
-```
-
-**字段说明:**
-
-| 字段 | 类型 | 描述 |
-|------|------|------|
-| ip | string | 被查询的IP地址 |
-| blocked | boolean | 是否在黑名单中 |
-| message | string | 状态描述信息 |
-
-#### 状态码
-
-- `200 OK`: 请求成功
-- `400 Bad Request`: 请求参数错误
-- `500 Internal Server Error`: 服务器内部错误
-
-### 2. 基于API密钥的IP黑名单查询
 
 #### 请求
 
@@ -73,7 +35,7 @@ GET /api/blacklist/check-api
 | 参数 | 类型 | 必须 | 描述 |
 |------|------|------|------|
 | ip | string | 否 | 要检查的IP地址，如不提供则使用访问者当前IP |
-| key | string | 是 | API密钥，用于认证请求 |
+| key | string | 是 | API密钥，用于认证请求（必须具有读取权限） |
 
 #### 响应
 
@@ -96,11 +58,11 @@ GET /api/blacklist/check-api
 #### 状态码
 
 - `200 OK`: 请求成功
-- `400 Bad Request`: 请求参数错误，如IP格式无效
-- `401 Unauthorized`: API密钥无效
+- `400 Bad Request`: 请求参数错误
+- `401 Unauthorized`: API密钥无效或权限不足
 - `500 Internal Server Error`: 服务器内部错误
 
-### 3. 获取完整黑名单
+### 2. 获取完整黑名单
 
 #### 请求
 
@@ -476,7 +438,7 @@ POST /api/blacklist/remove-api
 ```javascript
 // 检查IP是否在黑名单中
 async function checkIP(ip) {
-  const response = await fetch('https://您的域名/api/blacklist/check-external?ip=' + ip);
+  const response = await fetch('https://您的域名/api/blacklist/check-api?ip=' + ip);
   const data = await response.json();
   return data;
 }
@@ -570,7 +532,7 @@ checkIPWithApiKey('8.8.8.8', API_KEY)
 import requests
 
 def check_ip(ip):
-    response = requests.get(f'https://您的域名/api/blacklist/check-external?ip={ip}')
+    response = requests.get(f'https://您的域名/api/blacklist/check-api?ip={ip}')
     return response.json()
 
 # 使用示例

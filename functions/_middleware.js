@@ -18,7 +18,6 @@ const AUTH_REQUIRED_PATHS = [
 
 // 不需要认证的API路径列表
 const NO_AUTH_REQUIRED_PATHS = [
-  '/api/blacklist/check-external',
   '/api/blacklist/check-api',
   '/api/blacklist/get-api',
   '/api/blacklist/add-api',
