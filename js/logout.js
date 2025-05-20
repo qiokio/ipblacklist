@@ -11,9 +11,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 退出按钮点击事件 - 显示确认弹窗
     if(logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // 阻止默认行为
+            console.log('退出按钮被点击');
             logoutModal.style.display = 'block';
-            logoutModal.classList.add('show');
+            
+            // 使用setTimeout确保DOM更新后再添加show类，触发CSS过渡效果
+            setTimeout(() => {
+                logoutModal.classList.add('show');
+            }, 10);
         });
     }
     
@@ -25,8 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.removeItem('user');
             
             // 关闭弹窗
-            logoutModal.style.display = 'none';
-            logoutModal.classList.remove('show');
+            closeModal();
             
             // 重定向到首页
             window.location.href = '/';
@@ -36,8 +41,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // 取消退出按钮点击事件 - 关闭弹窗
     if(cancelLogoutBtn) {
         cancelLogoutBtn.addEventListener('click', function() {
-            logoutModal.style.display = 'none';
-            logoutModal.classList.remove('show');
+            closeModal();
         });
+    }
+    
+    // 点击弹窗背景关闭弹窗
+    if(logoutModal) {
+        logoutModal.addEventListener('click', function(e) {
+            if(e.target === logoutModal) {
+                closeModal();
+            }
+        });
+    }
+    
+    // 关闭弹窗的统一函数
+    function closeModal() {
+        logoutModal.classList.remove('show');
+        // 等待过渡效果完成后隐藏弹窗
+        setTimeout(() => {
+            logoutModal.style.display = 'none';
+        }, 300);
     }
 }); 
