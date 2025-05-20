@@ -86,17 +86,6 @@
                 <i class="fas fa-bars"></i>
             </button>
             <div class="top-bar-title">API密钥管理</div>
-            <div class="top-bar-actions">
-                <div id="userInfo" class="user-info" style="display: none;">
-                    <span>用户：</span>
-                    <span id="username" class="username">未登录</span>
-                    <a href="/dashboard.html" class="btn btn-secondary">控制台</a>
-                    <button id="logoutBtn" class="btn btn-secondary">退出登录</button>
-                </div>
-                <div id="loginActions" style="display: flex;">
-                    <a href="/login.html" class="btn btn-secondary">登录</a>
-                </div>
-            </div>
         </div>
         
         <!-- 侧栏导航 -->
@@ -139,6 +128,18 @@
                     </a>
                 </li>
             </ul>
+            
+            <!-- 用户信息区域（移动到侧栏底部） -->
+            <div class="sidebar-footer">
+                <div id="userInfo" class="user-info" style="display: none;">
+                    <span>用户：</span>
+                    <span id="username" class="username">未登录</span>
+                    <button id="logoutBtn" class="btn btn-secondary">退出登录</button>
+                </div>
+                <div id="loginActions" style="display: flex;">
+                    <a href="/login.html" class="btn btn-secondary">登录</a>
+                </div>
+            </div>
         </div>
         
         <!-- 主内容区域 -->
