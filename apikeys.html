@@ -165,6 +165,21 @@
                         </div>
                     </div>
                     
+                    <div class="form-group">
+                        <label for="expiryType">过期时间：</label>
+                        <select id="expiryType" class="form-control">
+                            <option value="never">永不过期</option>
+                            <option value="custom">自定义过期时间</option>
+                        </select>
+                    </div>
+                    
+                    <div id="customExpiryContainer" class="form-group" style="display: none;">
+                        <label for="expiryDate">过期日期：</label>
+                        <input type="date" id="expiryDate" class="form-control">
+                        <label for="expiryTime">过期时间：</label>
+                        <input type="time" id="expiryTime" class="form-control">
+                    </div>
+                    
                     <div class="input-group">
                         <input type="text" id="noteInput" placeholder="备注（可选）" class="note-input">
                         <button id="createKeyBtn" class="hidden btn">保存密钥</button>
@@ -179,6 +194,7 @@
                                 <th>API密钥</th>
                                 <th>备注</th>
                                 <th>创建时间</th>
+                                <th>过期时间</th>
                                 <th>权限</th>
                                 <th>操作</th>
                             </tr>
@@ -199,6 +215,21 @@
                         <div class="form-group">
                             <label for="editKeyNote">备注：</label>
                             <input type="text" id="editKeyNote" class="form-control" placeholder="输入备注">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editExpiryType">过期时间：</label>
+                            <select id="editExpiryType" class="form-control">
+                                <option value="never">永不过期</option>
+                                <option value="custom">自定义过期时间</option>
+                            </select>
+                        </div>
+                        
+                        <div id="editCustomExpiryContainer" class="form-group" style="display: none;">
+                            <label for="editExpiryDate">过期日期：</label>
+                            <input type="date" id="editExpiryDate" class="form-control">
+                            <label for="editExpiryTime">过期时间：</label>
+                            <input type="time" id="editExpiryTime" class="form-control">
                         </div>
                         
                         <div class="form-group">
@@ -300,6 +331,17 @@
             // 保存修改按钮事件
             document.getElementById('saveKeyBtn').addEventListener('click', updateApiKey);
             
+            // 过期时间类型切换事件
+            document.getElementById('expiryType').addEventListener('change', function() {
+                const customExpiryContainer = document.getElementById('customExpiryContainer');
+                customExpiryContainer.style.display = this.value === 'custom' ? 'block' : 'none';
+            });
+            
+            document.getElementById('editExpiryType').addEventListener('change', function() {
+                const editCustomExpiryContainer = document.getElementById('editCustomExpiryContainer');
+                editCustomExpiryContainer.style.display = this.value === 'custom' ? 'block' : 'none';
+            });
+            
             // 生成随机API密钥
             function generateApiKey() {
                 const generateBtn = document.getElementById('generateKeyBtn');
@@ -323,7 +365,7 @@
                     
                     generateBtn.classList.remove('loading');
                     generateBtn.disabled = false;
-                }, 500); // 添加短暂延迟以显示加载效果
+                }, 500);
             }
             
             // 创建API密钥
@@ -339,6 +381,18 @@
                     add: document.getElementById('permissionAdd').checked,
                     delete: document.getElementById('permissionDelete').checked
                 };
+                
+                // 获取过期时间设置
+                const expiryType = document.getElementById('expiryType').value;
+                let expiresAt = null;
+                
+                if (expiryType === 'custom') {
+                    const date = document.getElementById('expiryDate').value;
+                    const time = document.getElementById('expiryTime').value;
+                    if (date && time) {
+                        expiresAt = new Date(`${date}T${time}`).toISOString();
+                    }
+                }
                 
                 if (!key) {
                     showMessage('请先生成API密钥', 'error');
@@ -356,7 +410,7 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                         },
-                        body: JSON.stringify({ key, note, permissions })
+                        body: JSON.stringify({ key, note, permissions, expiresAt })
                     });
                     
                     const data = await response.json();
@@ -368,10 +422,14 @@
                         document.getElementById('newApiKeyInput').value = '';
                         document.getElementById('noteInput').value = '';
                         
-                        // 重置权限复选框但不隐藏
+                        // 重置权限复选框
                         document.getElementById('permissionList').checked = false;
                         document.getElementById('permissionAdd').checked = false;
                         document.getElementById('permissionDelete').checked = false;
+                        
+                        // 重置过期时间设置
+                        document.getElementById('expiryType').value = 'never';
+                        document.getElementById('customExpiryContainer').style.display = 'none';
                         
                         // 重新加载API密钥列表
                         loadApiKeys();
@@ -407,7 +465,7 @@
                         
                         if (data.keys.length === 0) {
                             const row = document.createElement('tr');
-                            row.innerHTML = '<td colspan="5" class="empty-table">暂无API密钥，请点击"生成密钥"按钮创建</td>';
+                            row.innerHTML = '<td colspan="6" class="empty-table">暂无API密钥，请点击"生成密钥"按钮创建</td>';
                             tableBody.appendChild(row);
                         } else {
                             data.keys.forEach(keyInfo => {
@@ -417,6 +475,13 @@
                                 const createdAt = new Date(keyInfo.createdAt);
                                 const formattedDate = createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString();
                                 
+                                // 格式化过期时间
+                                let expiryText = '永不过期';
+                                if (keyInfo.expiresAt) {
+                                    const expiryDate = new Date(keyInfo.expiresAt);
+                                    expiryText = expiryDate.toLocaleDateString() + ' ' + expiryDate.toLocaleTimeString();
+                                }
+                                
                                 // 格式化权限
                                 const permissions = [];
                                 if (keyInfo.permissions.read) permissions.push('查询');
@@ -424,10 +489,11 @@
                                 if (keyInfo.permissions.add) permissions.push('添加');
                                 if (keyInfo.permissions.delete) permissions.push('删除');
                                 
-                                                            row.innerHTML = `
+                                row.innerHTML = `
                                     <td data-title="API密钥">${keyInfo.key}</td>
                                     <td data-title="备注">${keyInfo.note || '-'}</td>
                                     <td data-title="创建时间">${formattedDate}</td>
+                                    <td data-title="过期时间">${expiryText}</td>
                                     <td data-title="权限">${permissions.join(', ')}</td>
                                     <td data-title="操作">
                                         <button class="edit-btn" data-key="${keyInfo.key}">修改</button>
@@ -528,6 +594,18 @@
                             document.getElementById('editPermissionAdd').checked = keyInfo.permissions.add || false;
                             document.getElementById('editPermissionDelete').checked = keyInfo.permissions.delete || false;
                             
+                            // 设置过期时间
+                            if (keyInfo.expiresAt) {
+                                const expiryDate = new Date(keyInfo.expiresAt);
+                                document.getElementById('editExpiryType').value = 'custom';
+                                document.getElementById('editExpiryDate').value = expiryDate.toISOString().split('T')[0];
+                                document.getElementById('editExpiryTime').value = expiryDate.toTimeString().slice(0, 5);
+                                document.getElementById('editCustomExpiryContainer').style.display = 'block';
+                            } else {
+                                document.getElementById('editExpiryType').value = 'never';
+                                document.getElementById('editCustomExpiryContainer').style.display = 'none';
+                            }
+                            
                             // 显示弹窗
                             document.getElementById('editKeyModal').classList.add('show');
                             document.getElementById('editKeyModal').style.display = 'block';
@@ -562,6 +640,18 @@
                     delete: document.getElementById('editPermissionDelete').checked
                 };
                 
+                // 获取过期时间设置
+                const expiryType = document.getElementById('editExpiryType').value;
+                let expiresAt = null;
+                
+                if (expiryType === 'custom') {
+                    const date = document.getElementById('editExpiryDate').value;
+                    const time = document.getElementById('editExpiryTime').value;
+                    if (date && time) {
+                        expiresAt = new Date(`${date}T${time}`).toISOString();
+                    }
+                }
+                
                 if (!key) {
                     showMessage('无效的API密钥', 'error');
                     return;
@@ -578,7 +668,7 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                         },
-                        body: JSON.stringify({ key, note, permissions })
+                        body: JSON.stringify({ key, note, permissions, expiresAt })
                     });
                     
                     const data = await response.json();

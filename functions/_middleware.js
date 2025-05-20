@@ -77,6 +77,25 @@ async function verifyApiKey(request, env) {
     }
     
     const keyData = JSON.parse(keyDataStr);
+    
+    // 检查密钥是否过期
+    if (keyData.expiresAt) {
+      try {
+        const expiryTime = new Date(keyData.expiresAt).getTime();
+        // 检查是否为有效日期
+        if (isNaN(expiryTime)) {
+          return { valid: false, message: 'API密钥过期时间格式无效' };
+        }
+        
+        const currentTime = new Date().getTime();
+        if (currentTime > expiryTime) {
+          return { valid: false, message: 'API密钥已过期' };
+        }
+      } catch (error) {
+        return { valid: false, message: 'API密钥过期时间格式无效' };
+      }
+    }
+    
     return { valid: true, key: keyData };
   } catch (error) {
     return { valid: false, message: '验证API密钥失败' };
