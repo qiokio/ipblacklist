@@ -149,18 +149,45 @@ class BlacklistManager {
             return;
         }
 
+        // 检查认证状态
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+            alert('您需要登录才能添加IP到黑名单');
+            window.location.href = '/login.html';
+            return;
+        }
+
         try {
-            const success = await addToBlacklist(ip);
-            if (success) {
+            const response = await fetch('/api/blacklist/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ ip })
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    alert('您的登录已过期，请重新登录');
+                    window.location.href = '/login.html';
+                    return;
+                }
+                const errorData = await response.json();
+                throw new Error(errorData.message || '添加IP失败');
+            }
+
+            const data = await response.json();
+            if (data.success) {
                 ipInput.value = '';
                 await this.refreshBlacklist();
                 alert('IP已添加到黑名单');
             } else {
-                alert('添加IP失败，请重试');
+                throw new Error(data.message || '添加IP失败');
             }
         } catch (error) {
             console.error('添加IP时出错:', error);
-            alert('添加IP时发生错误，请查看控制台');
+            alert(error.message || '添加IP时发生错误，请查看控制台');
         }
     }
 

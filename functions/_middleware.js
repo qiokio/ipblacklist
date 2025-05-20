@@ -64,7 +64,7 @@ async function verifyToken(request, env) {
   }
 }
 
-// 验证API密钥并检查权限
+// 验证API密钥
 async function verifyApiKey(request, env) {
   const url = new URL(request.url);
   const apiKey = url.searchParams.get('key');
@@ -74,13 +74,12 @@ async function verifyApiKey(request, env) {
   }
   
   try {
-    // 从KV获取API密钥数据 - 使用新的API_KEYS命名空间
-    const keyDataStr = await env.API_KEYS.get(`${API_KEY_PREFIX}${apiKey}`);
-    if (!keyDataStr) {
+    const keyDataString = await env.API_KEYS.get(`${API_KEY_PREFIX}${apiKey}`);
+    if (!keyDataString) {
       return { valid: false, message: '无效的API密钥' };
     }
     
-    const keyData = JSON.parse(keyDataStr);
+    const keyData = JSON.parse(keyDataString);
     
     // 检查密钥是否过期
     if (keyData.expiryDate) {
@@ -93,97 +92,52 @@ async function verifyApiKey(request, env) {
     
     return { valid: true, key: keyData };
   } catch (error) {
+    console.error('验证API密钥失败:', error);
     return { valid: false, message: '验证API密钥失败' };
   }
 }
 
 // 检查API密钥权限
 function checkApiKeyPermission(keyData, path) {
-  // 获取该路径所需的权限
   const requiredPermission = API_KEY_PATHS[path];
   if (!requiredPermission) {
     return false;
   }
   
-  // 检查API密钥是否有所需权限
   return keyData.permissions && keyData.permissions[requiredPermission] === true;
 }
 
-// 处理CORS预检请求
-function handleOptions(request) {
-  return new Response(null, {
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET,HEAD,POST,OPTIONS',
-      'Access-Control-Max-Age': '86400',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-    }
-  });
-}
-
 // 记录操作日志
-async function logOperation(env, {
-  operationType,
-  operator,
-  details,
-  requestIp,
-  requestPath,
-  status,
-  error = null
-}) {
+async function logOperation(env, data) {
   try {
-    const timestamp = Date.now();
-    const logEntry = {
-      timestamp,
-      operationType,
-      operator,
-      details,
-      requestIp,
-      requestPath,
-      status,
-      error
-    };
-
-    // 使用时间戳作为键的一部分，便于按时间查询
-    const logKey = `${LOG_PREFIX}${timestamp}`;
-    await env.API_LOGS.put(logKey, JSON.stringify(logEntry));
+    const logKey = `${LOG_PREFIX}${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    await env.IP_BLACKLIST.put(logKey, JSON.stringify(data));
   } catch (error) {
-    console.error('记录日志失败:', error);
+    console.error('记录操作日志失败:', error);
   }
 }
 
-// 中间件主函数
 export async function onRequest(context) {
   const { request, env, next } = context;
   const url = new URL(request.url);
   const path = url.pathname;
+  const requestIp = request.headers.get('CF-Connecting-IP') || 'unknown';
   
-  // 处理CORS预检请求
+  // 设置CORS头
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400'
+  };
+  
+  // 处理预检请求
   if (request.method === 'OPTIONS') {
-    return handleOptions(request);
+    return new Response(null, { headers: corsHeaders });
   }
-
+  
   try {
-    // 检查KV绑定是否可用
-    if (!env.IP_BLACKLIST && (path.startsWith('/api/blacklist/') || path.startsWith('/api/apikey/'))) {
-      return new Response(JSON.stringify({
-        error: true,
-        message: "KV绑定不可用，请确保在Cloudflare Pages中正确配置了KV命名空间绑定"
-      }), {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization"
-        }
-      });
-    }
-
-    // 获取请求IP
-    const requestIp = request.headers.get('CF-Connecting-IP') || 'unknown';
-    
-    // 检查是否为通过API密钥访问的API端点
+    // 检查是否为API密钥路径
     const isApiKeyPath = Object.keys(API_KEY_PATHS).some(apiPath => 
       path.startsWith(apiPath)
     );
@@ -210,7 +164,7 @@ export async function onRequest(context) {
           status: 401,
           headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            ...corsHeaders
           }
         });
       }
@@ -236,7 +190,7 @@ export async function onRequest(context) {
           status: 403,
           headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            ...corsHeaders
           }
         });
       }
@@ -284,7 +238,7 @@ export async function onRequest(context) {
           status: 401,
           headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            ...corsHeaders
           }
         });
       }
@@ -301,7 +255,7 @@ export async function onRequest(context) {
       operationType: 'system_error',
       operator: 'system',
       details: { path },
-      requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
+      requestIp,
       requestPath: path,
       status: 'failed',
       error: error.message
@@ -313,8 +267,8 @@ export async function onRequest(context) {
     }), {
       status: 500,
       headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
+        'Content-Type': 'application/json',
+        ...corsHeaders
       }
     });
   }
