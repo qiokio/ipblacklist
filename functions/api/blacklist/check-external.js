@@ -1,4 +1,35 @@
 // Cloudflare Pages Functions - 外部API检查IP是否在黑名单中
+
+// API密钥前缀(用于KV存储)
+const API_KEY_PREFIX = 'apikey:';
+
+// 验证API密钥
+async function validateApiKey(key, env, requiredPermission = 'read') {
+    if (!key) {
+        return { valid: false, message: '未提供API密钥' };
+    }
+    
+    try {
+        const keyDataString = await env.API_KEYS.get(`${API_KEY_PREFIX}${key}`);
+        if (!keyDataString) {
+            return { valid: false, message: '无效的API密钥' };
+        }
+        
+        // 解析API密钥数据
+        const keyData = JSON.parse(keyDataString);
+        
+        // 验证权限
+        if (!keyData.permissions || keyData.permissions[requiredPermission] !== true) {
+            return { valid: false, message: `API密钥没有所需的 ${requiredPermission} 权限` };
+        }
+        
+        return { valid: true, keyData };
+    } catch (error) {
+        console.error('验证API密钥失败:', error);
+        return { valid: false, message: '验证API密钥失败' };
+    }
+}
+
 export const onRequestGet = async (context) => {
     const { env, request } = context;
     
@@ -11,9 +42,22 @@ export const onRequestGet = async (context) => {
     };
     
     try {
-        // 获取请求的IP
+        // 获取请求的IP和API密钥
         const url = new URL(request.url);
         const ip = url.searchParams.get('ip') || request.headers.get('CF-Connecting-IP');
+        const apiKey = url.searchParams.get('key');
+        
+        // 验证API密钥
+        const keyValidation = await validateApiKey(apiKey, env, 'read');
+        if (!keyValidation.valid) {
+            return new Response(JSON.stringify({
+                error: true,
+                message: keyValidation.message
+            }), {
+                status: 401,
+                headers
+            });
+        }
         
         if (!ip) {
             return new Response(JSON.stringify({
