@@ -29,6 +29,7 @@
     padding: 0;
     margin: 0;
     justify-content: flex-start;
+    order: -1; /* 确保始终在最左侧 */
 }
 
 .sidebar-toggle {
@@ -46,6 +47,7 @@
     transition: all 0.3s ease;
     padding: 0 !important;
     opacity: 1;
+    transform-origin: center;
 }
 
 .sidebar-toggle:hover {

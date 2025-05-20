@@ -67,33 +67,9 @@ body {
     height: calc(100vh - 60px);
 }
 
-/* 侧栏收起按钮 */
-.sidebar-toggle {
-    position: absolute;
-    bottom: 20px;
-    right: 10px;
-    background-color: #2c3e50;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    z-index: 101;
-    transition: all 0.3s ease;
-}
-
-.sidebar-toggle:hover {
-    background-color: #3498db;
-}
-
 /* 当侧边栏收起时的样式 */
 .sidebar-collapsed .sidebar-toggle {
-    right: 50%;
-    transform: translateX(50%);
+    transform: rotate(180deg);
 }
 
 .sidebar-menu {
@@ -188,10 +164,6 @@ body {
     .mobile-menu-toggle {
         display: block;
     }
-    
-    .sidebar-toggle {
-        display: none;
-    }
 
     /* 在移动设备上确保footer在底部 */
     .sidebar-footer {
@@ -203,10 +175,6 @@ body {
 @media screen and (min-width: 769px) {
     .mobile-menu-toggle {
         display: none;
-    }
-    
-    .sidebar-toggle-container {
-        display: flex !important;
     }
 }
 
