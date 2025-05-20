@@ -3,100 +3,98 @@
  * 处理退出按钮点击、确认和取消事件
  */
 document.addEventListener('DOMContentLoaded', function() {
-    // 获取元素引用
-    const logoutBtn = document.getElementById('logoutBtn');
-    const logoutModal = document.getElementById('logoutConfirmModal');
-    const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
-    const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
-    
-    // 确保页面上有这些元素才继续执行
-    if (!logoutBtn || !logoutModal || !confirmLogoutBtn || !cancelLogoutBtn) {
-        console.log('退出功能所需元素不存在，退出JS初始化');
-        return;
-    }
-    
-    console.log('找到退出按钮，初始化退出功能');
-    
-    // 退出按钮点击事件 - 显示确认弹窗
-    logoutBtn.addEventListener('click', function(e) {
-        e.preventDefault(); // 阻止默认行为
-        e.stopPropagation(); // 阻止事件冒泡
+    // 初始化函数
+    function initLogout() {
+        console.log('初始化退出登录功能');
         
-        console.log('退出按钮被点击');
+        // 获取DOM元素
+        const logoutBtn = document.getElementById('logoutBtn');
+        const logoutModal = document.getElementById('logoutConfirmModal');
+        const confirmBtn = document.getElementById('confirmLogoutBtn');
+        const cancelBtn = document.getElementById('cancelLogoutBtn');
         
-        // 显示弹窗
-        logoutModal.style.display = 'block';
-        
-        // 使用setTimeout确保DOM更新后再添加show类，触发CSS过渡效果
-        setTimeout(() => {
-            logoutModal.classList.add('show');
-        }, 10);
-        
-        // 阻止退出操作继续
-        return false;
-    });
-    
-    // 确认退出按钮点击事件 - 执行退出操作
-    confirmLogoutBtn.addEventListener('click', function(e) {
-        e.preventDefault(); // 阻止默认行为
-        e.stopPropagation(); // 阻止事件冒泡
-        
-        console.log('确认退出按钮被点击');
-        
-        // 清除登录信息
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user');
-        
-        // 关闭弹窗
-        closeModal();
-        
-        // 跳转到首页
-        console.log('正在跳转到首页...');
-        window.location.href = '/';
-        
-        return false;
-    });
-    
-    // 取消退出按钮点击事件 - 关闭弹窗
-    cancelLogoutBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('取消退出按钮被点击');
-        closeModal();
-        return false;
-    });
-    
-    // 点击弹窗背景关闭弹窗
-    logoutModal.addEventListener('click', function(e) {
-        if(e.target === logoutModal) {
-            console.log('点击了弹窗背景');
-            closeModal();
+        // 检查必要元素是否存在
+        if (!logoutBtn || !logoutModal || !confirmBtn || !cancelBtn) {
+            console.warn('退出功能缺少必要的DOM元素');
+            return;
         }
-    });
-    
-    // 阻止弹窗内容点击事件冒泡
-    document.querySelector('.confirm-modal-content').addEventListener('click', function(e) {
-        e.stopPropagation();
-    });
-    
-    // 关闭弹窗的统一函数
-    function closeModal() {
-        console.log('关闭弹窗');
-        logoutModal.classList.remove('show');
-        // 等待过渡效果完成后隐藏弹窗
-        setTimeout(() => {
-            logoutModal.style.display = 'none';
-        }, 300);
-    }
-    
-    // 禁用表单默认提交行为
-    const form = logoutBtn.closest('form');
-    if (form) {
-        console.log('找到包含退出按钮的表单，禁用默认提交');
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
+        
+        // 退出按钮点击 - 显示确认弹窗
+        logoutBtn.onclick = function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            console.log('退出按钮被点击');
+            showModal();
             return false;
-        });
+        };
+        
+        // 确认退出 - 执行退出操作
+        confirmBtn.onclick = function(event) {
+            event.preventDefault();
+            console.log('确认退出');
+            logout();
+            return false;
+        };
+        
+        // 取消退出 - 关闭弹窗
+        cancelBtn.onclick = function(event) {
+            event.preventDefault();
+            console.log('取消退出');
+            hideModal();
+            return false;
+        };
+        
+        // 点击弹窗背景关闭弹窗
+        logoutModal.onclick = function(event) {
+            if (event.target === logoutModal) {
+                console.log('点击弹窗背景');
+                hideModal();
+            }
+        };
+        
+        // 阻止弹窗内容点击事件冒泡
+        const modalContent = logoutModal.querySelector('.confirm-modal-content');
+        if (modalContent) {
+            modalContent.onclick = function(event) {
+                event.stopPropagation();
+            };
+        }
+        
+        // 显示确认弹窗
+        function showModal() {
+            console.log('显示确认弹窗');
+            logoutModal.style.display = 'block';
+            setTimeout(function() {
+                logoutModal.classList.add('show');
+            }, 10);
+        }
+        
+        // 隐藏确认弹窗
+        function hideModal() {
+            console.log('隐藏确认弹窗');
+            logoutModal.classList.remove('show');
+            setTimeout(function() {
+                logoutModal.style.display = 'none';
+            }, 300);
+        }
+        
+        // 执行退出登录
+        function logout() {
+            console.log('执行退出登录操作');
+            // 清除登录信息
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            
+            // 隐藏弹窗
+            hideModal();
+            
+            // 延迟跳转到首页
+            setTimeout(function() {
+                window.location.href = '/';
+            }, 100);
+        }
     }
+    
+    // 执行初始化
+    initLogout();
 }); 
