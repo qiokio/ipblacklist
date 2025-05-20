@@ -158,6 +158,16 @@ class BlacklistManager {
         }
 
         try {
+            console.log('发送添加IP请求:', {
+                url: '/functions/api/blacklist/add',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: { ip }
+            });
+
             const response = await fetch('/functions/api/blacklist/add', {
                 method: 'POST',
                 headers: {
@@ -167,17 +177,43 @@ class BlacklistManager {
                 body: JSON.stringify({ ip })
             });
 
+            console.log('收到响应:', {
+                status: response.status,
+                statusText: response.statusText,
+                headers: Object.fromEntries(response.headers.entries())
+            });
+
+            // 检查响应状态
             if (!response.ok) {
                 if (response.status === 401) {
                     alert('您的登录已过期，请重新登录');
                     window.location.href = '/login.html';
                     return;
                 }
-                const errorData = await response.json();
-                throw new Error(errorData.message || '添加IP失败');
+
+                // 尝试读取错误信息
+                let errorMessage = '添加IP失败';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message || errorMessage;
+                } catch (e) {
+                    console.error('解析错误响应失败:', e);
+                    errorMessage = `添加IP失败 (${response.status} ${response.statusText})`;
+                }
+                throw new Error(errorMessage);
             }
 
-            const data = await response.json();
+            // 尝试解析响应数据
+            let data;
+            try {
+                const text = await response.text();
+                console.log('响应内容:', text);
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('解析响应数据失败:', e);
+                throw new Error('服务器返回的数据格式无效');
+            }
+
             if (data.success) {
                 ipInput.value = '';
                 await this.refreshBlacklist();

@@ -25,9 +25,33 @@ export async function onRequest(context) {
                 headers
             });
         }
+
+        // 验证认证信息
+        if (!context.data?.user) {
+            return new Response(JSON.stringify({
+                success: false,
+                message: '未授权访问'
+            }), {
+                status: 401,
+                headers
+            });
+        }
         
         // 解析请求体
-        const { ip } = await request.json();
+        let ip;
+        try {
+            const body = await request.json();
+            ip = body.ip;
+        } catch (e) {
+            return new Response(JSON.stringify({
+                success: false,
+                message: '无效的请求数据格式'
+            }), {
+                status: 400,
+                headers
+            });
+        }
+        
         const requestIp = request.headers.get('CF-Connecting-IP') || 'unknown';
         
         // 验证IP参数
@@ -66,14 +90,24 @@ export async function onRequest(context) {
         }
         
         // 获取操作者信息
-        const operator = context.data?.user?.id || context.data?.apiKey?.id || 'system';
+        const operator = context.data.user.id || 'system';
         
         // 获取当前黑名单
-        const blacklist = await env.IP_BLACKLIST.get('blacklist');
         let blacklistArray = [];
-        
-        if (blacklist) {
-            blacklistArray = JSON.parse(blacklist);
+        try {
+            const blacklist = await env.IP_BLACKLIST.get('blacklist');
+            if (blacklist) {
+                blacklistArray = JSON.parse(blacklist);
+            }
+        } catch (e) {
+            console.error('读取黑名单失败:', e);
+            return new Response(JSON.stringify({
+                success: false,
+                message: '读取黑名单失败'
+            }), {
+                status: 500,
+                headers
+            });
         }
         
         // 检查IP是否已在黑名单中
@@ -91,17 +125,33 @@ export async function onRequest(context) {
         blacklistArray.push(ip);
         
         // 保存黑名单
-        await env.IP_BLACKLIST.put('blacklist', JSON.stringify(blacklistArray));
+        try {
+            await env.IP_BLACKLIST.put('blacklist', JSON.stringify(blacklistArray));
+        } catch (e) {
+            console.error('保存黑名单失败:', e);
+            return new Response(JSON.stringify({
+                success: false,
+                message: '保存黑名单失败'
+            }), {
+                status: 500,
+                headers
+            });
+        }
         
         // 记录操作日志
-        await logOperation(env, {
-            operationType: 'blacklist_add',
-            operator,
-            details: { ip },
-            requestIp,
-            requestPath: '/api/blacklist/add',
-            status: 'success'
-        });
+        try {
+            await logOperation(env, {
+                operationType: 'blacklist_add',
+                operator,
+                details: { ip },
+                requestIp,
+                requestPath: '/api/blacklist/add',
+                status: 'success'
+            });
+        } catch (e) {
+            console.error('记录操作日志失败:', e);
+            // 日志记录失败不影响主流程
+        }
         
         return new Response(JSON.stringify({
             success: true,
@@ -110,16 +160,22 @@ export async function onRequest(context) {
         }), { headers });
         
     } catch (error) {
+        console.error('添加IP到黑名单失败:', error);
+        
         // 记录错误日志
-        await logOperation(env, {
-            operationType: 'blacklist_add',
-            operator: context.data?.user?.id || context.data?.apiKey?.id || 'system',
-            details: { error: error.message },
-            requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
-            requestPath: '/api/blacklist/add',
-            status: 'failed',
-            error: error.message
-        });
+        try {
+            await logOperation(env, {
+                operationType: 'blacklist_add',
+                operator: context.data?.user?.id || 'system',
+                details: { error: error.message },
+                requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
+                requestPath: '/api/blacklist/add',
+                status: 'failed',
+                error: error.message
+            });
+        } catch (e) {
+            console.error('记录错误日志失败:', e);
+        }
         
         return new Response(JSON.stringify({
             success: false,
