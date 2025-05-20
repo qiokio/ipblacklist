@@ -128,6 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 topBar.insertBefore(toggleContainer, topBar.firstChild);
             }
         }
+
+        // 确保按钮在电脑端显示
+        console.log('侧边栏收起按钮已添加');
     }
     
     // 切换侧边栏状态

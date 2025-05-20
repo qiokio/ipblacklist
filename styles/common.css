@@ -23,7 +23,7 @@
 
 /* 侧边栏折叠按钮增强样式 */
 .sidebar-toggle-container {
-    display: flex;
+    display: flex !important;
     align-items: center;
     height: 100%;
     padding: 0 10px;
@@ -55,6 +55,17 @@
 /* 移动设备上隐藏按钮 */
 @media screen and (max-width: 768px) {
     .sidebar-toggle-container {
+        display: none !important;
+    }
+}
+
+/* 确保在电脑端显示 */
+@media screen and (min-width: 769px) {
+    .sidebar-toggle-container {
+        display: flex !important;
+    }
+    
+    .mobile-menu-toggle {
         display: none !important;
     }
 }
