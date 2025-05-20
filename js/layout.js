@@ -96,15 +96,22 @@ document.addEventListener('DOMContentLoaded', () => {
     function addSidebarToggle() {
         if (!sidebar) return;
         
+        // 移除已存在的按钮（防止重复）
+        const existingToggle = document.querySelector('.sidebar-toggle-container');
+        if (existingToggle) {
+            existingToggle.remove();
+        }
+        
         // 创建一个容器div来放置按钮
         const toggleContainer = document.createElement('div');
         toggleContainer.className = 'sidebar-toggle-container';
-        toggleContainer.style.position = 'absolute';
-        toggleContainer.style.bottom = '20px';
-        toggleContainer.style.width = '100%';
+        toggleContainer.style.position = 'fixed';  // 改为fixed定位
+        toggleContainer.style.bottom = '80px';     // 位置上移，避开footer
+        toggleContainer.style.left = '210px';      // 调整水平位置
         toggleContainer.style.display = 'flex';
         toggleContainer.style.justifyContent = 'center';
         toggleContainer.style.padding = '10px 0';
+        toggleContainer.style.zIndex = '200';      // 确保高z-index
         
         const toggleButton = document.createElement('button');
         toggleButton.className = 'sidebar-toggle';
@@ -112,15 +119,28 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
         
         // 增强按钮可见性
-        toggleButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-        toggleButton.style.border = '1px solid #2c3e50';
+        toggleButton.style.backgroundColor = '#3498db';
+        toggleButton.style.color = 'white';
+        toggleButton.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.4)';
+        toggleButton.style.border = '2px solid #fff';
+        toggleButton.style.width = '40px';
+        toggleButton.style.height = '40px';
+        toggleButton.style.borderRadius = '50%';
+        toggleButton.style.display = 'flex';
+        toggleButton.style.justifyContent = 'center';
+        toggleButton.style.alignItems = 'center';
+        toggleButton.style.cursor = 'pointer';
+        toggleButton.style.fontSize = '16px';
         
         toggleButton.addEventListener('click', () => {
             toggleSidebar();
         });
         
         toggleContainer.appendChild(toggleButton);
-        sidebar.appendChild(toggleContainer);
+        document.body.appendChild(toggleContainer);  // 添加到body而不是sidebar
+        
+        // 根据侧边栏状态调整按钮位置
+        updateToggleButtonPosition();
         
         // 确认按钮已添加的控制台日志
         console.log('侧边栏折叠按钮已添加');
@@ -132,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const isCollapsed = gridContainer.classList.toggle('sidebar-collapsed');
         const toggleButton = document.querySelector('.sidebar-toggle');
+        const toggleContainer = document.querySelector('.sidebar-toggle-container');
         
         if (toggleButton) {
             toggleButton.innerHTML = isCollapsed ? 
@@ -142,11 +163,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 isCollapsed ? '展开侧边栏' : '收起侧边栏');
         }
         
+        // 更新按钮位置
+        updateToggleButtonPosition(isCollapsed);
+        
         // 保存状态到本地存储
         localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
         
         // 记录切换状态的控制台日志
         console.log('侧边栏状态切换为:', isCollapsed ? '收起' : '展开');
+    }
+    
+    // 更新折叠按钮位置
+    function updateToggleButtonPosition(isCollapsed) {
+        const toggleContainer = document.querySelector('.sidebar-toggle-container');
+        if (toggleContainer) {
+            if (isCollapsed) {
+                toggleContainer.style.left = '40px';
+            } else {
+                toggleContainer.style.left = '210px';
+            }
+        }
     }
     
     // 初始化侧边栏状态
@@ -161,6 +197,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
                 toggleButton.setAttribute('aria-label', '展开侧边栏');
             }
+            
+            // 更新按钮位置
+            updateToggleButtonPosition(true);
+        } else {
+            // 确保按钮位置正确（未折叠状态）
+            updateToggleButtonPosition(false);
         }
     }
 }); 
