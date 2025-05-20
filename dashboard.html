@@ -53,13 +53,13 @@
         <!-- 主内容区域 -->
         <div class="main-content">
             <!-- 认证信息提示 -->
-            <div id="authMessage" class="card" style="display: block;">
+            <div id="authMessage" class="card" style="display: none;">
                 您需要登录才能管理IP黑名单
             </div>
             
-            <div id="kvStatus" class="card">正在检查KV连接状态...</div>
-            
             <div id="mainContent" style="display: none;">
+                <div id="kvStatus" class="card">正在检查KV连接状态...</div>
+                
                 <div class="card">
                     <h2>管理IP黑名单</h2>
                     <div class="input-group">
@@ -137,8 +137,21 @@
     
     <!-- 调整JavaScript使其支持移动端表格 -->
     <script>
-        // 动态添加表格数据标题
         document.addEventListener('DOMContentLoaded', () => {
+            // 检查用户是否已登录
+            const token = localStorage.getItem('auth_token');
+            const authMessage = document.getElementById('authMessage');
+            const mainContent = document.getElementById('mainContent');
+            
+            if (!token) {
+                authMessage.style.display = 'block';
+                mainContent.style.display = 'none';
+                return;
+            }
+            
+            authMessage.style.display = 'none';
+            mainContent.style.display = 'block';
+            
             if (window.innerWidth <= 768) {
                 // 为黑名单表格添加数据标题属性
                 const observer = new MutationObserver((mutations) => {
