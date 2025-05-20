@@ -127,10 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const toggleButton = document.querySelector('.sidebar-toggle');
         
         if (toggleButton) {
-            toggleButton.innerHTML = isCollapsed ? 
-                '<i class="fas fa-chevron-right"></i>' : 
-                '<i class="fas fa-chevron-left"></i>';
-            
             toggleButton.setAttribute('aria-label', 
                 isCollapsed ? '展开侧边栏' : '收起侧边栏');
         }
@@ -148,7 +144,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const toggleButton = document.querySelector('.sidebar-toggle');
             if (toggleButton) {
-                toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
                 toggleButton.setAttribute('aria-label', '展开侧边栏');
             }
         }
