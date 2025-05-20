@@ -95,7 +95,7 @@ export function onRequestOptions() {
       'Access-Control-Max-Age': '86400'
     }
   });
-}
+} 
 
 // 创建API密钥
 export async function onRequest(context) {
