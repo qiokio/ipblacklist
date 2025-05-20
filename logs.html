@@ -200,9 +200,33 @@
         }
 
         // 页面加载完成后获取日志
-        document.addEventListener('DOMContentLoaded', () => {
-            if (checkAuth()) {
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // 验证token是否有效
+            try {
+                const response = await fetch('/api/logs/list?page=1&pageSize=1', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                // token有效，加载日志
                 searchLogs();
+            } catch (error) {
+                console.error('验证token失败:', error);
+                localStorage.removeItem('token');
+                window.location.href = '/login.html';
             }
         });
 
