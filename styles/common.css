@@ -151,4 +151,13 @@
 }
 
 /* 移除按钮本身的transform */
-/* .sidebar-collapsed .sidebar-toggle { transform: rotate(180deg); } 这行不要 */ 
+/* .sidebar-collapsed .sidebar-toggle { transform: rotate(180deg); } 这行不要 */
+
+.auth-error {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+    border-left: 4px solid #dc3545 !important;
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 4px;
+} 
