@@ -223,6 +223,7 @@
                             <th>备注</th>
                             <th>创建时间</th>
                             <th>权限</th>
+                            <th>过期时间</th>
                             <th>操作</th>
                         </tr>
                     </thead>
@@ -242,6 +243,23 @@
                     <div class="form-group">
                         <label for="editKeyNote">备注：</label>
                         <input type="text" id="editKeyNote" class="form-control" placeholder="输入备注">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>过期时间设置：</label>
+                        <div class="expiry-options">
+                            <label>
+                                <input type="radio" name="editExpiryType" value="never" checked>
+                                永不过期
+                            </label>
+                            <label>
+                                <input type="radio" name="editExpiryType" value="custom">
+                                自定义过期时间
+                            </label>
+                        </div>
+                        <div id="editCustomExpiryContainer" class="hidden">
+                            <input type="datetime-local" id="editExpiryDateInput" class="form-control">
+                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -501,11 +519,22 @@
                                 if (keyInfo.permissions.add) permissions.push('添加');
                                 if (keyInfo.permissions.delete) permissions.push('删除');
                                 
-                                                            row.innerHTML = `
+                                // 格式化过期时间
+                                let expiryText = '永不过期';
+                                if (keyInfo.expiryDate) {
+                                    const expiryDate = new Date(keyInfo.expiryDate);
+                                    expiryText = expiryDate.toLocaleString();
+                                    if (keyInfo.isExpired) {
+                                        expiryText += '（已过期）';
+                                    }
+                                }
+                                
+                                row.innerHTML = `
                                     <td data-title="API密钥">${keyInfo.key}</td>
                                     <td data-title="备注">${keyInfo.note || '-'}</td>
                                     <td data-title="创建时间">${formattedDate}</td>
                                     <td data-title="权限">${permissions.join(', ')}</td>
+                                    <td data-title="过期时间">${expiryText}</td>
                                     <td data-title="操作">
                                         <button class="edit-btn" data-key="${keyInfo.key}">修改</button>
                                         <button class="delete-btn" data-key="${keyInfo.key}">删除</button>
@@ -605,6 +634,29 @@
                             document.getElementById('editPermissionAdd').checked = keyInfo.permissions.add || false;
                             document.getElementById('editPermissionDelete').checked = keyInfo.permissions.delete || false;
                             
+                            // 设置过期时间
+                            if (keyInfo.expiryDate) {
+                                document.querySelector('input[name="editExpiryType"][value="custom"]').checked = true;
+                                document.getElementById('editCustomExpiryContainer').classList.remove('hidden');
+                                // 转换为input的本地时间格式
+                                const dt = new Date(keyInfo.expiryDate);
+                                const local = dt.toISOString().slice(0,16);
+                                document.getElementById('editExpiryDateInput').value = local;
+                            } else {
+                                document.querySelector('input[name="editExpiryType"][value="never"]').checked = true;
+                                document.getElementById('editCustomExpiryContainer').classList.add('hidden');
+                                document.getElementById('editExpiryDateInput').value = '';
+                            }
+                            // 监听单选框切换
+                            document.querySelectorAll('input[name="editExpiryType"]').forEach(radio => {
+                                radio.addEventListener('change', function() {
+                                    if (this.value === 'custom') {
+                                        document.getElementById('editCustomExpiryContainer').classList.remove('hidden');
+                                    } else {
+                                        document.getElementById('editCustomExpiryContainer').classList.add('hidden');
+                                    }
+                                });
+                            });
                             // 显示弹窗
                             document.getElementById('editKeyModal').classList.add('show');
                             document.getElementById('editKeyModal').style.display = 'block';
@@ -639,6 +691,18 @@
                     delete: document.getElementById('editPermissionDelete').checked
                 };
                 
+                // 获取过期时间设置
+                const expiryType = document.querySelector('input[name="editExpiryType"]:checked').value;
+                let expiryDate = null;
+                if (expiryType === 'custom') {
+                    const expiryInput = document.getElementById('editExpiryDateInput').value;
+                    if (!expiryInput) {
+                        showMessage('请选择过期时间', 'error');
+                        return;
+                    }
+                    expiryDate = new Date(expiryInput).toISOString();
+                }
+                
                 if (!key) {
                     showMessage('无效的API密钥', 'error');
                     return;
@@ -655,7 +719,7 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                         },
-                        body: JSON.stringify({ key, note, permissions })
+                        body: JSON.stringify({ key, note, permissions, expiryDate })
                     });
                     
                     const data = await response.json();
