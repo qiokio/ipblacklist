@@ -18,6 +18,15 @@ async function validateApiKey(key, env, requiredPermission = 'add') {
     // 解析API密钥数据
     const keyData = JSON.parse(keyDataString);
     
+    // 检查密钥是否过期
+    if (keyData.expiryDate) {
+      const now = new Date();
+      const expiryDate = new Date(keyData.expiryDate);
+      if (now > expiryDate) {
+        return { valid: false, message: 'API密钥已过期' };
+      }
+    }
+    
     // 验证权限
     if (!keyData.permissions || keyData.permissions[requiredPermission] !== true) {
       return { valid: false, message: `API密钥没有所需的 ${requiredPermission} 权限` };
