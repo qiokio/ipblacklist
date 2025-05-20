@@ -6,6 +6,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const gridContainer = document.querySelector('.grid-container');
     const sidebarToggle = document.querySelector('.sidebar-toggle');
     
+    // 定义菜单项
+    const menuItems = [
+        { icon: 'fas fa-home', text: '首页', href: 'index.html' },
+        { icon: 'fas fa-tachometer-alt', text: '控制台', href: 'dashboard.html' },
+        { icon: 'fas fa-key', text: 'API密钥', href: 'apikeys.html' },
+        { icon: 'fas fa-vial', text: 'API测试', href: 'key-test.html' },
+        { icon: 'fas fa-book', text: 'API文档', href: 'api-docs.html' }
+    ];
+
+    // 生成侧边栏菜单
+    const sidebarMenu = document.querySelector('.sidebar-menu');
+    if (sidebarMenu) {
+        sidebarMenu.innerHTML = menuItems.map(item => `
+            <li>
+                <a href="${item.href}" class="sidebar-menu-link">
+                    <span class="sidebar-menu-icon"><i class="${item.icon}"></i></span>
+                    <span class="sidebar-menu-text">${item.text}</span>
+                </a>
+            </li>
+        `).join('');
+    }
+    
     // 处理移动端菜单切换
     if (mobileMenuToggle && sidebar) {
         mobileMenuToggle.addEventListener('click', () => {
