@@ -9,13 +9,13 @@ function getAuthToken() {
     return localStorage.getItem('auth_token');
 }
 
-// 创建带认证的请求头
+// 创建认证头信息
 function createAuthHeaders() {
-    const token = getAuthToken();
     const headers = {
         'Content-Type': 'application/json'
     };
     
+    const token = getAuthToken();
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     }
@@ -81,7 +81,7 @@ async function isIPBlacklisted(ip) {
  */
 async function addToBlacklist(ip) {
     try {
-        const response = await fetch('/api/blacklist/add', {
+        const response = await fetch(`${API_BASE}/add`, {
             method: 'POST',
             headers: createAuthHeaders(),
             body: JSON.stringify({ ip })

@@ -158,7 +158,7 @@ class BlacklistManager {
         }
 
         try {
-            const response = await fetch('/api/blacklist/add', {
+            const response = await fetch('/functions/api/blacklist/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
