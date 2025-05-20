@@ -12,6 +12,10 @@
             margin-bottom: 10px;
             padding: 10px;
             background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        .log-item:hover {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .log-item.success {
             border-left-color: #28a745;
@@ -28,12 +32,86 @@
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
+        }
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .log-type-badge {
+            font-size: 0.8em;
+            padding: 0.25em 0.6em;
+        }
+        .log-time {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+        .log-operator {
+            font-weight: 500;
+        }
+        .log-ip {
+            font-family: monospace;
+        }
+        .log-details pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .log-error {
+            color: #dc3545;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">IP黑名单系统</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/logs.html">操作日志</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()">退出登录</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
     <div class="container py-4">
-        <h1 class="mb-4">操作日志</h1>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>操作日志</h1>
+            <button class="btn btn-outline-primary" onclick="refreshLogs()">
+                <i class="bi bi-arrow-clockwise"></i> 刷新
+            </button>
+        </div>
         
         <!-- 筛选部分 -->
         <div class="filter-section">
@@ -54,6 +132,10 @@
                         <option value="blacklist_remove">删除黑名单</option>
                         <option value="apikey_create">创建API密钥</option>
                         <option value="apikey_delete">删除API密钥</option>
+                        <option value="authentication">用户认证</option>
+                        <option value="api_key_verification">API密钥验证</option>
+                        <option value="permission_check">权限检查</option>
+                        <option value="system_error">系统错误</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -62,7 +144,9 @@
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">&nbsp;</label>
-                    <button class="btn btn-primary w-100" onclick="searchLogs()">查询</button>
+                    <button class="btn btn-primary w-100" onclick="searchLogs()">
+                        <i class="bi bi-search"></i> 查询
+                    </button>
                 </div>
             </div>
         </div>
@@ -76,17 +160,64 @@
         </nav>
     </div>
 
+    <!-- 加载动画 -->
+    <div class="loading" id="loading" style="display: none;">
+        <div class="spinner-border loading-spinner text-primary" role="status">
+            <span class="visually-hidden">加载中...</span>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let currentPage = 1;
         const pageSize = 20;
+        let currentCursor = null;
+
+        // 检查登录状态
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        }
+
+        // 显示加载动画
+        function showLoading() {
+            document.getElementById('loading').style.display = 'flex';
+        }
+
+        // 隐藏加载动画
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
 
         // 页面加载完成后获取日志
         document.addEventListener('DOMContentLoaded', () => {
-            searchLogs();
+            if (checkAuth()) {
+                searchLogs();
+            }
         });
+
+        // 刷新日志
+        function refreshLogs() {
+            currentPage = 1;
+            currentCursor = null;
+            searchLogs();
+        }
 
         // 搜索日志
         async function searchLogs(page = 1) {
+            if (!checkAuth()) return;
+
+            showLoading();
             currentPage = page;
             const startTime = document.getElementById('startTime').value;
             const endTime = document.getElementById('endTime').value;
@@ -94,32 +225,45 @@
             const operator = document.getElementById('operator').value;
 
             try {
-                // 从localStorage获取token
                 const token = localStorage.getItem('token');
-                if (!token) {
-                    window.location.href = '/login.html';
-                    return;
+                const queryParams = new URLSearchParams({
+                    page: page,
+                    pageSize: pageSize,
+                    startTime: startTime ? new Date(startTime).getTime() : '',
+                    endTime: endTime ? new Date(endTime).getTime() : '',
+                    operationType: operationType,
+                    operator: operator
+                });
+
+                if (currentCursor) {
+                    queryParams.append('cursor', currentCursor);
                 }
 
-                const response = await fetch(`/api/logs/list?page=${page}&pageSize=${pageSize}&startTime=${startTime ? new Date(startTime).getTime() : ''}&endTime=${endTime ? new Date(endTime).getTime() : ''}&operationType=${operationType}&operator=${operator}`, {
+                const response = await fetch(`/api/logs/list?${queryParams}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = '/login.html';
+                    return;
+                }
+
                 const data = await response.json();
 
                 if (data.success) {
                     displayLogs(data.data.logs);
                     displayPagination(data.data.pagination);
+                    currentCursor = data.data.pagination.cursor;
                 } else {
-                    if (data.error === 'Unauthorized') {
-                        window.location.href = '/login.html';
-                    } else {
-                        alert('获取日志失败：' + data.message);
-                    }
+                    alert('获取日志失败：' + data.message);
                 }
             } catch (error) {
                 alert('获取日志失败：' + error.message);
+            } finally {
+                hideLoading();
             }
         }
 
@@ -127,6 +271,11 @@
         function displayLogs(logs) {
             const logList = document.getElementById('logList');
             logList.innerHTML = '';
+
+            if (logs.length === 0) {
+                logList.innerHTML = '<div class="alert alert-info">暂无日志记录</div>';
+                return;
+            }
 
             logs.forEach(log => {
                 const logItem = document.createElement('div');
@@ -136,16 +285,19 @@
                 const details = JSON.stringify(log.details, null, 2);
                 
                 logItem.innerHTML = `
-                    <div class="d-flex justify-content-between">
-                        <strong>${getOperationTypeName(log.operationType)}</strong>
-                        <span class="badge ${log.status === 'success' ? 'bg-success' : 'bg-danger'}">${log.status}</span>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="badge bg-secondary log-type-badge">${getOperationTypeName(log.operationType)}</span>
+                            <span class="badge ${log.status === 'success' ? 'bg-success' : 'bg-danger'} log-type-badge">${log.status}</span>
+                        </div>
+                        <span class="log-time">${time}</span>
                     </div>
-                    <div class="log-details">
-                        <div>时间：${time}</div>
-                        <div>操作者：${log.operator}</div>
-                        <div>IP：${log.requestIp}</div>
-                        <div>详情：<pre class="mb-0">${details}</pre></div>
-                        ${log.error ? `<div class="text-danger">错误：${log.error}</div>` : ''}
+                    <div class="log-details mt-2">
+                        <div><strong>操作者：</strong><span class="log-operator">${log.operator}</span></div>
+                        <div><strong>IP：</strong><span class="log-ip">${log.requestIp}</span></div>
+                        <div><strong>详情：</strong></div>
+                        <pre>${details}</pre>
+                        ${log.error ? `<div class="log-error">错误：${log.error}</div>` : ''}
                     </div>
                 `;
                 
