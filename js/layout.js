@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
         { icon: 'fas fa-tachometer-alt', text: '控制台', href: 'dashboard.html' },
         { icon: 'fas fa-key', text: 'API密钥', href: 'apikeys.html' },
         { icon: 'fas fa-vial', text: 'API测试', href: 'key-test.html' },
-        { icon: 'fas fa-book', text: 'API文档', href: 'api-docs.html' }
+        { icon: 'fas fa-book', text: 'API文档', href: 'api-docs.html' },
+        { icon: 'fas fa-history', text: '操作日志', href: 'logs.html' }
     ];
 
     // 生成侧边栏菜单
