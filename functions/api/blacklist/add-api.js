@@ -62,8 +62,12 @@ export async function onRequestPost(context) {
   };
   
   try {
-    // 解析请求体
-    const { ip, key } = await request.json();
+    // 从URL参数中获取key
+    const url = new URL(request.url);
+    const key = url.searchParams.get('key');
+    
+    // 从请求体中获取ip
+    const { ip } = await request.json();
     
     // 验证API密钥
     const keyValidation = await validateApiKey(key, env, 'add');
