@@ -9,6 +9,18 @@
     <link rel="stylesheet" href="styles/common.css">
     <!-- 字体图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .permission-msg {
+            margin-top: 10px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            background-color: rgba(255, 0, 0, 0.05);
+        }
+        .permission-msg .error {
+            color: #dc3545;
+            font-size: 0.9em;
+        }
+    </style>
 </head>
 <body>
     <div class="grid-container">
@@ -382,6 +394,11 @@
                 } else {
                     permissionsList.innerHTML = '<p>此密钥没有任何有效的权限。</p>';
                 }
+                
+                // 确保所有功能卡片显示
+                for (const card of Object.values(permissionCardMap)) {
+                    card.classList.remove('hidden');
+                }
             }
             
             // 根据权限更新功能可用性
@@ -390,11 +407,20 @@
                 
                 // 更新每个功能卡片的可用状态
                 for (const [permission, card] of Object.entries(permissionCardMap)) {
+                    const button = card.querySelector('button');
+                    let permMsg = card.querySelector('.permission-msg');
+                    
+                    if (!permMsg) {
+                        permMsg = document.createElement('div');
+                        permMsg.className = 'permission-msg';
+                        card.querySelector('.card-body').appendChild(permMsg);
+                    }
+                    
                     if (perm[permission]) {
-                        card.classList.remove('hidden');
-                        card.querySelector('button').disabled = false;
+                        permMsg.classList.add('hidden');
                     } else {
-                        card.classList.add('hidden');
+                        permMsg.classList.remove('hidden');
+                        permMsg.innerHTML = `<span class="error">权限不足：此功能需要 ${permission} 权限</span>`;
                     }
                 }
             }
