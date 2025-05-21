@@ -38,8 +38,28 @@ const API_KEY_PATHS = {
 
 // 验证JWT令牌
 async function verifyToken(request, env) {
-  const authHeader = request.headers.get('Authorization') || '';
-  const token = authHeader.replace('Bearer ', '');
+  let token = '';
+  
+  // 尝试从请求体中获取token
+  try {
+    // 克隆请求以避免多次读取请求体导致的错误
+    const clonedRequest = request.clone();
+    const contentType = request.headers.get('Content-Type') || '';
+    
+    if (contentType.includes('application/json')) {
+      const body = await clonedRequest.json();
+      token = body.token || '';
+    }
+  } catch (e) {
+    // 如果从请求体获取失败，继续尝试从请求头获取
+    console.error('从请求体获取token失败:', e);
+  }
+  
+  // 如果请求体中没有token，则尝试从请求头获取（向后兼容）
+  if (!token) {
+    const authHeader = request.headers.get('Authorization') || '';
+    token = authHeader.replace('Bearer ', '');
+  }
   
   if (!token) {
     return { valid: false, message: '未提供认证令牌' };
@@ -66,8 +86,28 @@ async function verifyToken(request, env) {
 
 // 验证API密钥
 async function verifyApiKey(request, env) {
-  const url = new URL(request.url);
-  const apiKey = url.searchParams.get('key');
+  let apiKey = '';
+  
+  // 尝试从请求体中获取API密钥
+  try {
+    // 克隆请求以避免多次读取请求体导致的错误
+    const clonedRequest = request.clone();
+    const contentType = request.headers.get('Content-Type') || '';
+    
+    if (contentType.includes('application/json')) {
+      const body = await clonedRequest.json();
+      apiKey = body.key || '';
+    }
+  } catch (e) {
+    // 如果从请求体获取失败，继续尝试从URL参数获取
+    console.error('从请求体获取API密钥失败:', e);
+  }
+  
+  // 如果请求体中没有API密钥，则尝试从URL参数获取（向后兼容）
+  if (!apiKey) {
+    const url = new URL(request.url);
+    apiKey = url.searchParams.get('key');
+  }
   
   if (!apiKey) {
     return { valid: false, message: '未提供API密钥' };
@@ -303,4 +343,4 @@ export async function onRequest(context) {
       }
     });
   }
-} 
+}

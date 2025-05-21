@@ -1,13 +1,22 @@
 // JWT验证接口
 import { verify } from '../../../js/jwt.js';
 
+// 为了保持向后兼容性，同时支持GET和POST请求
 export async function onRequestGet(context) {
+  return handleRequest(context);
+}
+
+export async function onRequestPost(context) {
+  return handleRequest(context);
+}
+
+async function handleRequest(context) {
   const { request, env } = context;
   
   // 设置CORS头
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Content-Type': 'application/json'
   };
@@ -16,9 +25,21 @@ export async function onRequestGet(context) {
     // 从环境变量获取JWT密钥
     const jwtSecret = env.JWT_SECRET || 'your-secret-key';
     
-    // 从请求头中获取认证令牌
-    const authHeader = request.headers.get('Authorization') || '';
-    const token = authHeader.replace('Bearer ', '');
+    let token = '';
+    
+    // 尝试从请求体中获取令牌
+    try {
+      const body = await request.json();
+      token = body.token || '';
+    } catch (e) {
+      console.error('从请求体获取令牌失败:', e);
+    }
+    
+    // 如果请求体中没有令牌，则尝试从请求头获取（向后兼容）
+    if (!token) {
+      const authHeader = request.headers.get('Authorization') || '';
+      token = authHeader.replace('Bearer ', '');
+    }
     
     if (!token) {
       return new Response(JSON.stringify({
@@ -84,4 +105,4 @@ export function onRequestOptions() {
       'Access-Control-Max-Age': '86400',
     }
   });
-} 
+}

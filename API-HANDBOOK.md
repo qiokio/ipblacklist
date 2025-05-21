@@ -16,7 +16,9 @@ IP黑名单系统提供一组API，允许外部应用程序查询和管理IP黑�
 ## 基本信息
 
 - **基础URL**: `https://您的域名`
-- **认证方式**: API密钥认证，通过URL参数`key`传递
+- **认证方式**: 
+  - API密钥认证：可通过请求体的`key`字段传递（推荐）或通过URL参数`key`传递（向后兼容）
+  - JWT认证：可通过请求体的`token`字段传递（推荐）或通过`Authorization: Bearer <token>`头传递（向后兼容）
 - **响应格式**: 所有API返回JSON格式
 - **跨域支持**: 所有API支持CORS跨域请求
 
@@ -30,7 +32,26 @@ IP黑名单系统提供一组API，允许外部应用程序查询和管理IP黑�
 GET /api/blacklist/check-api
 ```
 
-**参数:**
+或（推荐）
+
+```
+POST /api/blacklist/check-api
+Content-Type: application/json
+
+{
+  "key": "your-api-key",
+  "ip": "192.168.1.1"
+}
+```
+
+**URL参数:** (GET方法或向后兼容)
+
+| 参数 | 类型 | 必须 | 描述 |
+|------|------|------|------|
+| ip | string | 否 | 要检查的IP地址，如不提供则使用访问者当前IP |
+| key | string | 是 | API密钥，用于认证请求（必须具有读取权限） |
+
+**请求体参数:** (POST方法，推荐)
 
 | 参数 | 类型 | 必须 | 描述 |
 |------|------|------|------|
@@ -183,13 +204,31 @@ POST /api/auth/login
 
 ```
 GET /api/auth/verify
+Authorization: Bearer {token}
 ```
 
-**头部:**
+或（推荐）
+
+```
+POST /api/auth/verify
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**请求头:** (GET方法或向后兼容)
 
 | 头部 | 值 | 描述 |
 |------|------|------|
 | Authorization | Bearer {token} | JWT认证令牌 |
+
+**请求体参数:** (POST方法，推荐)
+
+| 参数 | 类型 | 必须 | 描述 |
+|------|------|------|------|
+| token | string | 是 | JWT认证令牌 |
 
 #### 响应
 
@@ -693,4 +732,4 @@ npx wrangler pages publish
 ---
 
 API文档版本: 1.2  
-最后更新: 2023年7月 
+最后更新: 2023年7月

@@ -62,15 +62,22 @@ export async function onRequestPost(context) {
   };
   
   try {
-    // 从URL参数中获取key
-    const url = new URL(request.url);
-    const key = url.searchParams.get('key');
+    // 克隆请求以避免多次读取请求体导致的错误
+    const clonedRequest = request.clone();
     
-    // 从请求体中获取ip
-    const { ip } = await request.json();
+    // 从请求体中获取数据
+    const requestData = await clonedRequest.json();
+    const { ip, key } = requestData;
+    
+    // 如果请求体中没有key，则尝试从URL参数获取（向后兼容）
+    let apiKey = key;
+    if (!apiKey) {
+      const url = new URL(request.url);
+      apiKey = url.searchParams.get('key');
+    }
     
     // 验证API密钥
-    const keyValidation = await validateApiKey(key, env, 'add');
+    const keyValidation = await validateApiKey(apiKey, env, 'add');
     if (!keyValidation.valid) {
       return new Response(JSON.stringify({
         success: false,
@@ -144,4 +151,4 @@ export function onRequestOptions() {
       'Access-Control-Max-Age': '86400'
     }
   });
-} 
+}

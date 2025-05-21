@@ -11,16 +11,16 @@ function getAuthToken() {
 
 // 创建认证头信息
 function createAuthHeaders() {
-    const headers = {
+    // 只返回Content-Type头，不再在请求头中包含认证令牌
+    return {
         'Content-Type': 'application/json'
     };
-    
+}
+
+// 获取认证数据（用于请求体）
+function getAuthData() {
     const token = getAuthToken();
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    return headers;
+    return token ? { token } : {};
 }
 
 /**
@@ -30,7 +30,9 @@ function createAuthHeaders() {
 async function checkKVConnection() {
     try {
         const response = await fetch('/api/blacklist/check', {
-            headers: createAuthHeaders()
+            method: 'POST',
+            headers: createAuthHeaders(),
+            body: JSON.stringify(getAuthData())
         });
         
         if (!response.ok) {
@@ -81,10 +83,16 @@ async function isIPBlacklisted(ip) {
  */
 async function addToBlacklist(ip) {
     try {
+        // 获取认证数据
+        const authData = getAuthData();
+        
         const response = await fetch(`${API_BASE}/add`, {
             method: 'POST',
             headers: createAuthHeaders(),
-            body: JSON.stringify({ ip })
+            body: JSON.stringify({ 
+                ...authData,
+                ip 
+            })
         });
         
         if (!response.ok) {
@@ -113,10 +121,16 @@ async function addToBlacklist(ip) {
  */
 async function removeFromBlacklist(ip) {
     try {
+        // 获取认证数据
+        const authData = getAuthData();
+        
         const response = await fetch('/api/blacklist/remove', {
             method: 'POST',
             headers: createAuthHeaders(),
-            body: JSON.stringify({ ip })
+            body: JSON.stringify({ 
+                ...authData,
+                ip 
+            })
         });
         
         if (!response.ok) {
@@ -144,8 +158,13 @@ async function removeFromBlacklist(ip) {
  */
 async function getBlacklist() {
     try {
+        // 获取认证数据
+        const authData = getAuthData();
+        
         const response = await fetch('/api/blacklist/get', {
-            headers: createAuthHeaders()
+            method: 'POST',
+            headers: createAuthHeaders(),
+            body: JSON.stringify(authData)
         });
         
         if (!response.ok) {
@@ -190,4 +209,4 @@ export {
     getBlacklist,
     checkKVConnection,
     checkIP
-}; 
+};

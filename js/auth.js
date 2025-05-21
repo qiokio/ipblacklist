@@ -39,9 +39,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('正在验证token...');
                 // 验证令牌
                 const response = await fetch('/api/auth/verify', {
+                    method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // 保留请求头中的令牌（向后兼容）
+                    },
+                    body: JSON.stringify({ token }) // 在请求体中也发送令牌
                 });
                 
                 console.log('验证响应状态:', response.status);
@@ -129,4 +132,4 @@ document.addEventListener('DOMContentLoaded', () => {
             usageGuide.style.display = 'none';
         }
     }
-}); 
+});

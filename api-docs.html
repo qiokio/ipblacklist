@@ -105,8 +105,18 @@
                 <li><strong>基础URL</strong>: <code>https://您的域名</code></li>
                 <li><strong>认证方式</strong>: 
                     <ul>
-                        <li>JWT认证: 管理类API需通过<code>Authorization: Bearer &lt;token&gt;</code>头传递令牌</li>
-                        <li>API密钥: 查询类API需提供<code>key</code>参数</li>
+                        <li>JWT认证: 
+                            <ul>
+                                <li><strong>推荐方式</strong>: 通过请求体的<code>token</code>字段传递JWT令牌</li>
+                                <li><strong>兼容方式</strong>: 通过<code>Authorization: Bearer &lt;token&gt;</code>头传递令牌</li>
+                            </ul>
+                        </li>
+                        <li>API密钥: 
+                            <ul>
+                                <li><strong>推荐方式</strong>: 通过请求体的<code>key</code>字段传递API密钥</li>
+                                <li><strong>兼容方式</strong>: 通过URL参数<code>key</code>传递API密钥</li>
+                            </ul>
+                        </li>
                     </ul>
                 </li>
                 <li><strong>安全策略</strong>: 所有API都必须进行认证，无法直接匿名访问</li>
@@ -420,4 +430,4 @@
     <script src="js/layout.js"></script>
     <script src="js/logout.js"></script>
 </body>
-</html> 
+</html>

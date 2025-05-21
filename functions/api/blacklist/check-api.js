@@ -79,9 +79,29 @@ export async function onRequestGet(context) {
   };
   
   try {
-    // 获取请求参数
-    const apiKey = url.searchParams.get('key');
-    const ip = url.searchParams.get('ip') || request.headers.get('CF-Connecting-IP');
+    let apiKey = '';
+    let ip = url.searchParams.get('ip') || request.headers.get('CF-Connecting-IP');
+    
+    // 尝试从请求体中获取API密钥和IP
+    try {
+      // 克隆请求以避免多次读取请求体导致的错误
+      const clonedRequest = request.clone();
+      const contentType = request.headers.get('Content-Type') || '';
+      
+      if (contentType.includes('application/json')) {
+        const body = await clonedRequest.json();
+        if (body.key) apiKey = body.key;
+        if (body.ip) ip = body.ip;
+      }
+    } catch (e) {
+      // 如果从请求体获取失败，继续使用URL参数
+      console.error('从请求体获取数据失败:', e);
+    }
+    
+    // 如果请求体中没有API密钥，则尝试从URL参数获取（向后兼容）
+    if (!apiKey) {
+      apiKey = url.searchParams.get('key');
+    }
     
     // 验证API密钥
     const keyValidation = await validateApiKey(apiKey, env, 'read');
@@ -136,4 +156,4 @@ export function onRequestOptions() {
       'Access-Control-Max-Age': '86400'
     }
   });
-} 
+}
