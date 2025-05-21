@@ -492,10 +492,10 @@
                 addIpBtn.disabled = true;
                 
                 try {
-                    const response = await fetch('/api/blacklist/add-api', {
+                    const response = await fetch(`/api/blacklist/add-api?key=${apiKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ key: apiKey, ip: ip })
+                        body: JSON.stringify({ ip: ip })
                     });
                     const data = await response.json();
                     
@@ -525,10 +525,10 @@
                 removeIpBtn.disabled = true;
                 
                 try {
-                    const response = await fetch('/api/blacklist/remove-api', {
+                    const response = await fetch(`/api/blacklist/remove-api?key=${apiKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ key: apiKey, ip: ip })
+                        body: JSON.stringify({ ip: ip })
                     });
                     const data = await response.json();
                     
