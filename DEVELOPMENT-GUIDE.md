@@ -9,6 +9,9 @@
 - [向后兼容性](#向后兼容性)
 - [最佳实践](#最佳实践)
 - [示例代码](#示例代码)
+- [错误处理](#错误处理)
+- [性能优化](#性能优化)
+- [安全建议](#安全建议)
 
 ## 概述
 
@@ -29,7 +32,7 @@
 
 通过请求体传递API密钥：
 
-```http
+```
 POST /api/blacklist/check-api
 Content-Type: application/json
 
@@ -39,13 +42,249 @@ Content-Type: application/json
 }
 ```
 
+## 错误处理
+
+在与API交互时，应当正确处理可能出现的错误情况：
+
+| 状态码 | 描述 | 处理建议 |
+|--------|------|----------|
+| 400 | 请求参数错误 | 检查请求参数是否正确，特别是IP地址格式 |
+| 401 | 认证失败 | 检查API密钥或JWT令牌是否有效 |
+| 403 | 权限不足 | 确认使用的API密钥是否有足够的权限 |
+| 429 | 请求过多 | 实现退避策略，减少请求频率 |
+| 500 | 服务器内部错误 | 联系系统管理员，并提供错误详情 |
+
+### 错误处理示例（JavaScript）
+
+```javascript
+async function checkIpStatus(apiKey, ipAddress) {
+  try {
+    const response = await fetch('https://your-domain.com/api/blacklist/check-api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        key: apiKey,
+        ip: ipAddress
+      })
+    });
+    
+    if (response.status === 400) {
+      throw new Error('请求参数错误，请检查IP地址格式');
+    } else if (response.status === 401) {
+      throw new Error('认证失败，请检查API密钥');
+    } else if (response.status === 429) {
+      throw new Error('请求频率过高，请稍后再试');
+    } else if (response.status === 500) {
+      throw new Error('服务器内部错误，请联系管理员');
+    } else if (!response.ok) {
+      throw new Error(`未知错误，状态码: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('检查IP状态时出错:', error);
+    // 可以在这里实现重试逻辑或其他错误处理
+    throw error;
+  }
+}
+```
+
+## 性能优化
+
+1. **实现缓存机制**：对于频繁查询的IP地址，可以在客户端实现缓存，减少API调用次数
+
+   ```javascript
+   // 简单的缓存实现示例
+   const ipCache = new Map();
+   const CACHE_TTL = 60 * 60 * 1000; // 1小时缓存
+
+   async function checkIpStatusWithCache(apiKey, ipAddress) {
+     // 检查缓存
+     if (ipCache.has(ipAddress)) {
+       const cachedData = ipCache.get(ipAddress);
+       if (Date.now() - cachedData.timestamp < CACHE_TTL) {
+         return cachedData.data;
+       }
+     }
+     
+     // 缓存未命中，调用API
+     const result = await checkIpStatus(apiKey, ipAddress);
+     
+     // 更新缓存
+     ipCache.set(ipAddress, {
+       data: result,
+       timestamp: Date.now()
+     });
+     
+     return result;
+   }
+   ```
+
+2. **批量操作**：如果需要检查多个IP地址，考虑使用批量API（如果系统支持）或实现并发请求
+
+3. **异步处理**：对于非关键路径的IP检查，可以考虑异步处理，不阻塞主流程
+
+4. **减少不必要的请求**：只在必要时进行API调用，避免冗余请求
+
+## 安全建议
+
+1. **不要在客户端代码中硬编码API密钥**：应当从服务器端环境变量或安全存储中获取
+
+   ```javascript
+   // 不推荐 - 在前端代码中硬编码API密钥
+   const API_KEY = 'your-api-key-123';
+   
+   // 推荐 - 从服务器端获取API密钥
+   async function getApiKey() {
+     const response = await fetch('/get-api-key', {
+       credentials: 'same-origin' // 确保请求包含cookies
+     });
+     const data = await response.json();
+     return data.apiKey;
+   }
+   ```
+
+2. **实现API密钥轮换机制**：定期更换API密钥，并确保系统能够平滑过渡
+
+3. **监控异常访问模式**：实现监控系统，检测可能的API滥用行为
+
+4. **限制API密钥权限范围**：根据实际需要分配最小权限
+
+5. **实现IP白名单**：限制API密钥只能从特定IP地址使用
+
+6. **记录详细的访问日志**：包括请求IP、时间、使用的API密钥（部分隐藏）等信息，便于审计和问题排查
+
+7. **使用HTTPS**：确保所有API通信都通过HTTPS进行，防止中间人攻击
+
+8. **实现请求签名**：对于高安全性要求的场景，可以考虑实现请求签名机制，确保请求未被篡改
+
 ### 旧方式（仍支持，但不推荐）
 
 通过URL参数传递API密钥：
 
-```http
+```
 GET /api/blacklist/check-api?key=your-api-key&ip=192.168.1.1
 ```
+
+## 错误处理
+
+在与API交互时，应当正确处理可能出现的错误情况：
+
+| 状态码 | 描述 | 处理建议 |
+|--------|------|----------|
+| 400 | 请求参数错误 | 检查请求参数是否正确，特别是IP地址格式 |
+| 401 | 认证失败 | 检查API密钥或JWT令牌是否有效 |
+| 403 | 权限不足 | 确认使用的API密钥是否有足够的权限 |
+| 429 | 请求过多 | 实现退避策略，减少请求频率 |
+| 500 | 服务器内部错误 | 联系系统管理员，并提供错误详情 |
+
+### 错误处理示例（JavaScript）
+
+```javascript
+async function checkIpStatus(apiKey, ipAddress) {
+  try {
+    const response = await fetch('https://your-domain.com/api/blacklist/check-api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        key: apiKey,
+        ip: ipAddress
+      })
+    });
+    
+    if (response.status === 400) {
+      throw new Error('请求参数错误，请检查IP地址格式');
+    } else if (response.status === 401) {
+      throw new Error('认证失败，请检查API密钥');
+    } else if (response.status === 429) {
+      throw new Error('请求频率过高，请稍后再试');
+    } else if (response.status === 500) {
+      throw new Error('服务器内部错误，请联系管理员');
+    } else if (!response.ok) {
+      throw new Error(`未知错误，状态码: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('检查IP状态时出错:', error);
+    // 可以在这里实现重试逻辑或其他错误处理
+    throw error;
+  }
+}
+```
+
+## 性能优化
+
+1. **实现缓存机制**：对于频繁查询的IP地址，可以在客户端实现缓存，减少API调用次数
+
+   ```javascript
+   // 简单的缓存实现示例
+   const ipCache = new Map();
+   const CACHE_TTL = 60 * 60 * 1000; // 1小时缓存
+
+   async function checkIpStatusWithCache(apiKey, ipAddress) {
+     // 检查缓存
+     if (ipCache.has(ipAddress)) {
+       const cachedData = ipCache.get(ipAddress);
+       if (Date.now() - cachedData.timestamp < CACHE_TTL) {
+         return cachedData.data;
+       }
+     }
+     
+     // 缓存未命中，调用API
+     const result = await checkIpStatus(apiKey, ipAddress);
+     
+     // 更新缓存
+     ipCache.set(ipAddress, {
+       data: result,
+       timestamp: Date.now()
+     });
+     
+     return result;
+   }
+   ```
+
+2. **批量操作**：如果需要检查多个IP地址，考虑使用批量API（如果系统支持）或实现并发请求
+
+3. **异步处理**：对于非关键路径的IP检查，可以考虑异步处理，不阻塞主流程
+
+4. **减少不必要的请求**：只在必要时进行API调用，避免冗余请求
+
+## 安全建议
+
+1. **不要在客户端代码中硬编码API密钥**：应当从服务器端环境变量或安全存储中获取
+
+   ```javascript
+   // 不推荐 - 在前端代码中硬编码API密钥
+   const API_KEY = 'your-api-key-123';
+   
+   // 推荐 - 从服务器端获取API密钥
+   async function getApiKey() {
+     const response = await fetch('/get-api-key', {
+       credentials: 'same-origin' // 确保请求包含cookies
+     });
+     const data = await response.json();
+     return data.apiKey;
+   }
+   ```
+
+2. **实现API密钥轮换机制**：定期更换API密钥，并确保系统能够平滑过渡
+
+3. **监控异常访问模式**：实现监控系统，检测可能的API滥用行为
+
+4. **限制API密钥权限范围**：根据实际需要分配最小权限
+
+5. **实现IP白名单**：限制API密钥只能从特定IP地址使用
+
+6. **记录详细的访问日志**：包括请求IP、时间、使用的API密钥（部分隐藏）等信息，便于审计和问题排查
+
+7. **使用HTTPS**：确保所有API通信都通过HTTPS进行，防止中间人攻击
+
+8. **实现请求签名**：对于高安全性要求的场景，可以考虑实现请求签名机制，确保请求未被篡改
 
 ## JWT令牌传递方式
 
@@ -53,7 +292,7 @@ GET /api/blacklist/check-api?key=your-api-key&ip=192.168.1.1
 
 通过请求体传递JWT令牌：
 
-```http
+```
 POST /api/auth/verify
 Content-Type: application/json
 
@@ -62,14 +301,250 @@ Content-Type: application/json
 }
 ```
 
+## 错误处理
+
+在与API交互时，应当正确处理可能出现的错误情况：
+
+| 状态码 | 描述 | 处理建议 |
+|--------|------|----------|
+| 400 | 请求参数错误 | 检查请求参数是否正确，特别是IP地址格式 |
+| 401 | 认证失败 | 检查API密钥或JWT令牌是否有效 |
+| 403 | 权限不足 | 确认使用的API密钥是否有足够的权限 |
+| 429 | 请求过多 | 实现退避策略，减少请求频率 |
+| 500 | 服务器内部错误 | 联系系统管理员，并提供错误详情 |
+
+### 错误处理示例（JavaScript）
+
+```javascript
+async function checkIpStatus(apiKey, ipAddress) {
+  try {
+    const response = await fetch('https://your-domain.com/api/blacklist/check-api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        key: apiKey,
+        ip: ipAddress
+      })
+    });
+    
+    if (response.status === 400) {
+      throw new Error('请求参数错误，请检查IP地址格式');
+    } else if (response.status === 401) {
+      throw new Error('认证失败，请检查API密钥');
+    } else if (response.status === 429) {
+      throw new Error('请求频率过高，请稍后再试');
+    } else if (response.status === 500) {
+      throw new Error('服务器内部错误，请联系管理员');
+    } else if (!response.ok) {
+      throw new Error(`未知错误，状态码: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('检查IP状态时出错:', error);
+    // 可以在这里实现重试逻辑或其他错误处理
+    throw error;
+  }
+}
+```
+
+## 性能优化
+
+1. **实现缓存机制**：对于频繁查询的IP地址，可以在客户端实现缓存，减少API调用次数
+
+   ```javascript
+   // 简单的缓存实现示例
+   const ipCache = new Map();
+   const CACHE_TTL = 60 * 60 * 1000; // 1小时缓存
+
+   async function checkIpStatusWithCache(apiKey, ipAddress) {
+     // 检查缓存
+     if (ipCache.has(ipAddress)) {
+       const cachedData = ipCache.get(ipAddress);
+       if (Date.now() - cachedData.timestamp < CACHE_TTL) {
+         return cachedData.data;
+       }
+     }
+     
+     // 缓存未命中，调用API
+     const result = await checkIpStatus(apiKey, ipAddress);
+     
+     // 更新缓存
+     ipCache.set(ipAddress, {
+       data: result,
+       timestamp: Date.now()
+     });
+     
+     return result;
+   }
+   ```
+
+2. **批量操作**：如果需要检查多个IP地址，考虑使用批量API（如果系统支持）或实现并发请求
+
+3. **异步处理**：对于非关键路径的IP检查，可以考虑异步处理，不阻塞主流程
+
+4. **减少不必要的请求**：只在必要时进行API调用，避免冗余请求
+
+## 安全建议
+
+1. **不要在客户端代码中硬编码API密钥**：应当从服务器端环境变量或安全存储中获取
+
+   ```javascript
+   // 不推荐 - 在前端代码中硬编码API密钥
+   const API_KEY = 'your-api-key-123';
+   
+   // 推荐 - 从服务器端获取API密钥
+   async function getApiKey() {
+     const response = await fetch('/get-api-key', {
+       credentials: 'same-origin' // 确保请求包含cookies
+     });
+     const data = await response.json();
+     return data.apiKey;
+   }
+   ```
+
+2. **实现API密钥轮换机制**：定期更换API密钥，并确保系统能够平滑过渡
+
+3. **监控异常访问模式**：实现监控系统，检测可能的API滥用行为
+
+4. **限制API密钥权限范围**：根据实际需要分配最小权限
+
+5. **实现IP白名单**：限制API密钥只能从特定IP地址使用
+
+6. **记录详细的访问日志**：包括请求IP、时间、使用的API密钥（部分隐藏）等信息，便于审计和问题排查
+
+7. **使用HTTPS**：确保所有API通信都通过HTTPS进行，防止中间人攻击
+
+8. **实现请求签名**：对于高安全性要求的场景，可以考虑实现请求签名机制，确保请求未被篡改
+
 ### 旧方式（仍支持，但不推荐）
 
 通过Authorization头传递JWT令牌：
 
-```http
+```
 GET /api/auth/verify
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
+
+## 错误处理
+
+在与API交互时，应当正确处理可能出现的错误情况：
+
+| 状态码 | 描述 | 处理建议 |
+|--------|------|----------|
+| 400 | 请求参数错误 | 检查请求参数是否正确，特别是IP地址格式 |
+| 401 | 认证失败 | 检查API密钥或JWT令牌是否有效 |
+| 403 | 权限不足 | 确认使用的API密钥是否有足够的权限 |
+| 429 | 请求过多 | 实现退避策略，减少请求频率 |
+| 500 | 服务器内部错误 | 联系系统管理员，并提供错误详情 |
+
+### 错误处理示例（JavaScript）
+
+```javascript
+async function checkIpStatus(apiKey, ipAddress) {
+  try {
+    const response = await fetch('https://your-domain.com/api/blacklist/check-api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        key: apiKey,
+        ip: ipAddress
+      })
+    });
+    
+    if (response.status === 400) {
+      throw new Error('请求参数错误，请检查IP地址格式');
+    } else if (response.status === 401) {
+      throw new Error('认证失败，请检查API密钥');
+    } else if (response.status === 429) {
+      throw new Error('请求频率过高，请稍后再试');
+    } else if (response.status === 500) {
+      throw new Error('服务器内部错误，请联系管理员');
+    } else if (!response.ok) {
+      throw new Error(`未知错误，状态码: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('检查IP状态时出错:', error);
+    // 可以在这里实现重试逻辑或其他错误处理
+    throw error;
+  }
+}
+```
+
+## 性能优化
+
+1. **实现缓存机制**：对于频繁查询的IP地址，可以在客户端实现缓存，减少API调用次数
+
+   ```javascript
+   // 简单的缓存实现示例
+   const ipCache = new Map();
+   const CACHE_TTL = 60 * 60 * 1000; // 1小时缓存
+
+   async function checkIpStatusWithCache(apiKey, ipAddress) {
+     // 检查缓存
+     if (ipCache.has(ipAddress)) {
+       const cachedData = ipCache.get(ipAddress);
+       if (Date.now() - cachedData.timestamp < CACHE_TTL) {
+         return cachedData.data;
+       }
+     }
+     
+     // 缓存未命中，调用API
+     const result = await checkIpStatus(apiKey, ipAddress);
+     
+     // 更新缓存
+     ipCache.set(ipAddress, {
+       data: result,
+       timestamp: Date.now()
+     });
+     
+     return result;
+   }
+   ```
+
+2. **批量操作**：如果需要检查多个IP地址，考虑使用批量API（如果系统支持）或实现并发请求
+
+3. **异步处理**：对于非关键路径的IP检查，可以考虑异步处理，不阻塞主流程
+
+4. **减少不必要的请求**：只在必要时进行API调用，避免冗余请求
+
+## 安全建议
+
+1. **不要在客户端代码中硬编码API密钥**：应当从服务器端环境变量或安全存储中获取
+
+   ```javascript
+   // 不推荐 - 在前端代码中硬编码API密钥
+   const API_KEY = 'your-api-key-123';
+   
+   // 推荐 - 从服务器端获取API密钥
+   async function getApiKey() {
+     const response = await fetch('/get-api-key', {
+       credentials: 'same-origin' // 确保请求包含cookies
+     });
+     const data = await response.json();
+     return data.apiKey;
+   }
+   ```
+
+2. **实现API密钥轮换机制**：定期更换API密钥，并确保系统能够平滑过渡
+
+3. **监控异常访问模式**：实现监控系统，检测可能的API滥用行为
+
+4. **限制API密钥权限范围**：根据实际需要分配最小权限
+
+5. **实现IP白名单**：限制API密钥只能从特定IP地址使用
+
+6. **记录详细的访问日志**：包括请求IP、时间、使用的API密钥（部分隐藏）等信息，便于审计和问题排查
+
+7. **使用HTTPS**：确保所有API通信都通过HTTPS进行，防止中间人攻击
+
+8. **实现请求签名**：对于高安全性要求的场景，可以考虑实现请求签名机制，确保请求未被篡改
 
 ## 向后兼容性
 
@@ -98,13 +573,139 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 4. **实现速率限制**：防止暴力破解攻击
 
-5. **定期轮换API密钥**：降低密钥泄露的风险
+5. **定期轮换API密钥**：建议每3-6个月更换一次API密钥，降低密钥泄露的风险
+
+6. **使用适当的HTTP方法**：
+   - 对于查询操作，如果使用URL参数传递API密钥，使用GET方法
+   - 对于使用请求体传递认证信息的操作，使用POST方法
+
+7. **验证IP地址格式**：在发送请求前，确保IP地址格式正确（IPv4或IPv6）
+
+8. **处理错误响应**：正确处理API返回的错误状态码和错误消息
 
 ## 示例代码
 
 ### JavaScript (Fetch API)
 
+```
+
+## 错误处理
+
+在与API交互时，应当正确处理可能出现的错误情况：
+
+| 状态码 | 描述 | 处理建议 |
+|--------|------|----------|
+| 400 | 请求参数错误 | 检查请求参数是否正确，特别是IP地址格式 |
+| 401 | 认证失败 | 检查API密钥或JWT令牌是否有效 |
+| 403 | 权限不足 | 确认使用的API密钥是否有足够的权限 |
+| 429 | 请求过多 | 实现退避策略，减少请求频率 |
+| 500 | 服务器内部错误 | 联系系统管理员，并提供错误详情 |
+
+### 错误处理示例（JavaScript）
+
 ```javascript
+async function checkIpStatus(apiKey, ipAddress) {
+  try {
+    const response = await fetch('https://your-domain.com/api/blacklist/check-api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        key: apiKey,
+        ip: ipAddress
+      })
+    });
+    
+    if (response.status === 400) {
+      throw new Error('请求参数错误，请检查IP地址格式');
+    } else if (response.status === 401) {
+      throw new Error('认证失败，请检查API密钥');
+    } else if (response.status === 429) {
+      throw new Error('请求频率过高，请稍后再试');
+    } else if (response.status === 500) {
+      throw new Error('服务器内部错误，请联系管理员');
+    } else if (!response.ok) {
+      throw new Error(`未知错误，状态码: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('检查IP状态时出错:', error);
+    // 可以在这里实现重试逻辑或其他错误处理
+    throw error;
+  }
+}
+```
+
+## 性能优化
+
+1. **实现缓存机制**：对于频繁查询的IP地址，可以在客户端实现缓存，减少API调用次数
+
+   ```javascript
+   // 简单的缓存实现示例
+   const ipCache = new Map();
+   const CACHE_TTL = 60 * 60 * 1000; // 1小时缓存
+
+   async function checkIpStatusWithCache(apiKey, ipAddress) {
+     // 检查缓存
+     if (ipCache.has(ipAddress)) {
+       const cachedData = ipCache.get(ipAddress);
+       if (Date.now() - cachedData.timestamp < CACHE_TTL) {
+         return cachedData.data;
+       }
+     }
+     
+     // 缓存未命中，调用API
+     const result = await checkIpStatus(apiKey, ipAddress);
+     
+     // 更新缓存
+     ipCache.set(ipAddress, {
+       data: result,
+       timestamp: Date.now()
+     });
+     
+     return result;
+   }
+   ```
+
+2. **批量操作**：如果需要检查多个IP地址，考虑使用批量API（如果系统支持）或实现并发请求
+
+3. **异步处理**：对于非关键路径的IP检查，可以考虑异步处理，不阻塞主流程
+
+4. **减少不必要的请求**：只在必要时进行API调用，避免冗余请求
+
+## 安全建议
+
+1. **不要在客户端代码中硬编码API密钥**：应当从服务器端环境变量或安全存储中获取
+
+   ```javascript
+   // 不推荐 - 在前端代码中硬编码API密钥
+   const API_KEY = 'your-api-key-123';
+   
+   // 推荐 - 从服务器端获取API密钥
+   async function getApiKey() {
+     const response = await fetch('/get-api-key', {
+       credentials: 'same-origin' // 确保请求包含cookies
+     });
+     const data = await response.json();
+     return data.apiKey;
+   }
+   ```
+
+2. **实现API密钥轮换机制**：定期更换API密钥，并确保系统能够平滑过渡
+
+3. **监控异常访问模式**：实现监控系统，检测可能的API滥用行为
+
+4. **限制API密钥权限范围**：根据实际需要分配最小权限
+
+5. **实现IP白名单**：限制API密钥只能从特定IP地址使用
+
+6. **记录详细的访问日志**：包括请求IP、时间、使用的API密钥（部分隐藏）等信息，便于审计和问题排查
+
+7. **使用HTTPS**：确保所有API通信都通过HTTPS进行，防止中间人攻击
+
+8. **实现请求签名**：对于高安全性要求的场景，可以考虑实现请求签名机制，确保请求未被篡改javascript
 // 使用API密钥查询IP状态（新方式）
 async function checkIpStatus(apiKey, ip) {
   const response = await fetch('/api/blacklist/check-api', {
@@ -129,9 +730,245 @@ async function verifyToken(token) {
 }
 ```
 
+## 错误处理
+
+在与API交互时，应当正确处理可能出现的错误情况：
+
+| 状态码 | 描述 | 处理建议 |
+|--------|------|----------|
+| 400 | 请求参数错误 | 检查请求参数是否正确，特别是IP地址格式 |
+| 401 | 认证失败 | 检查API密钥或JWT令牌是否有效 |
+| 403 | 权限不足 | 确认使用的API密钥是否有足够的权限 |
+| 429 | 请求过多 | 实现退避策略，减少请求频率 |
+| 500 | 服务器内部错误 | 联系系统管理员，并提供错误详情 |
+
+### 错误处理示例（JavaScript）
+
+```javascript
+async function checkIpStatus(apiKey, ipAddress) {
+  try {
+    const response = await fetch('https://your-domain.com/api/blacklist/check-api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        key: apiKey,
+        ip: ipAddress
+      })
+    });
+    
+    if (response.status === 400) {
+      throw new Error('请求参数错误，请检查IP地址格式');
+    } else if (response.status === 401) {
+      throw new Error('认证失败，请检查API密钥');
+    } else if (response.status === 429) {
+      throw new Error('请求频率过高，请稍后再试');
+    } else if (response.status === 500) {
+      throw new Error('服务器内部错误，请联系管理员');
+    } else if (!response.ok) {
+      throw new Error(`未知错误，状态码: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('检查IP状态时出错:', error);
+    // 可以在这里实现重试逻辑或其他错误处理
+    throw error;
+  }
+}
+```
+
+## 性能优化
+
+1. **实现缓存机制**：对于频繁查询的IP地址，可以在客户端实现缓存，减少API调用次数
+
+   ```javascript
+   // 简单的缓存实现示例
+   const ipCache = new Map();
+   const CACHE_TTL = 60 * 60 * 1000; // 1小时缓存
+
+   async function checkIpStatusWithCache(apiKey, ipAddress) {
+     // 检查缓存
+     if (ipCache.has(ipAddress)) {
+       const cachedData = ipCache.get(ipAddress);
+       if (Date.now() - cachedData.timestamp < CACHE_TTL) {
+         return cachedData.data;
+       }
+     }
+     
+     // 缓存未命中，调用API
+     const result = await checkIpStatus(apiKey, ipAddress);
+     
+     // 更新缓存
+     ipCache.set(ipAddress, {
+       data: result,
+       timestamp: Date.now()
+     });
+     
+     return result;
+   }
+   ```
+
+2. **批量操作**：如果需要检查多个IP地址，考虑使用批量API（如果系统支持）或实现并发请求
+
+3. **异步处理**：对于非关键路径的IP检查，可以考虑异步处理，不阻塞主流程
+
+4. **减少不必要的请求**：只在必要时进行API调用，避免冗余请求
+
+## 安全建议
+
+1. **不要在客户端代码中硬编码API密钥**：应当从服务器端环境变量或安全存储中获取
+
+   ```javascript
+   // 不推荐 - 在前端代码中硬编码API密钥
+   const API_KEY = 'your-api-key-123';
+   
+   // 推荐 - 从服务器端获取API密钥
+   async function getApiKey() {
+     const response = await fetch('/get-api-key', {
+       credentials: 'same-origin' // 确保请求包含cookies
+     });
+     const data = await response.json();
+     return data.apiKey;
+   }
+   ```
+
+2. **实现API密钥轮换机制**：定期更换API密钥，并确保系统能够平滑过渡
+
+3. **监控异常访问模式**：实现监控系统，检测可能的API滥用行为
+
+4. **限制API密钥权限范围**：根据实际需要分配最小权限
+
+5. **实现IP白名单**：限制API密钥只能从特定IP地址使用
+
+6. **记录详细的访问日志**：包括请求IP、时间、使用的API密钥（部分隐藏）等信息，便于审计和问题排查
+
+7. **使用HTTPS**：确保所有API通信都通过HTTPS进行，防止中间人攻击
+
+8. **实现请求签名**：对于高安全性要求的场景，可以考虑实现请求签名机制，确保请求未被篡改
+
 ### Python (Requests)
 
-```python
+```
+
+## 错误处理
+
+在与API交互时，应当正确处理可能出现的错误情况：
+
+| 状态码 | 描述 | 处理建议 |
+|--------|------|----------|
+| 400 | 请求参数错误 | 检查请求参数是否正确，特别是IP地址格式 |
+| 401 | 认证失败 | 检查API密钥或JWT令牌是否有效 |
+| 403 | 权限不足 | 确认使用的API密钥是否有足够的权限 |
+| 429 | 请求过多 | 实现退避策略，减少请求频率 |
+| 500 | 服务器内部错误 | 联系系统管理员，并提供错误详情 |
+
+### 错误处理示例（JavaScript）
+
+```javascript
+async function checkIpStatus(apiKey, ipAddress) {
+  try {
+    const response = await fetch('https://your-domain.com/api/blacklist/check-api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        key: apiKey,
+        ip: ipAddress
+      })
+    });
+    
+    if (response.status === 400) {
+      throw new Error('请求参数错误，请检查IP地址格式');
+    } else if (response.status === 401) {
+      throw new Error('认证失败，请检查API密钥');
+    } else if (response.status === 429) {
+      throw new Error('请求频率过高，请稍后再试');
+    } else if (response.status === 500) {
+      throw new Error('服务器内部错误，请联系管理员');
+    } else if (!response.ok) {
+      throw new Error(`未知错误，状态码: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('检查IP状态时出错:', error);
+    // 可以在这里实现重试逻辑或其他错误处理
+    throw error;
+  }
+}
+```
+
+## 性能优化
+
+1. **实现缓存机制**：对于频繁查询的IP地址，可以在客户端实现缓存，减少API调用次数
+
+   ```javascript
+   // 简单的缓存实现示例
+   const ipCache = new Map();
+   const CACHE_TTL = 60 * 60 * 1000; // 1小时缓存
+
+   async function checkIpStatusWithCache(apiKey, ipAddress) {
+     // 检查缓存
+     if (ipCache.has(ipAddress)) {
+       const cachedData = ipCache.get(ipAddress);
+       if (Date.now() - cachedData.timestamp < CACHE_TTL) {
+         return cachedData.data;
+       }
+     }
+     
+     // 缓存未命中，调用API
+     const result = await checkIpStatus(apiKey, ipAddress);
+     
+     // 更新缓存
+     ipCache.set(ipAddress, {
+       data: result,
+       timestamp: Date.now()
+     });
+     
+     return result;
+   }
+   ```
+
+2. **批量操作**：如果需要检查多个IP地址，考虑使用批量API（如果系统支持）或实现并发请求
+
+3. **异步处理**：对于非关键路径的IP检查，可以考虑异步处理，不阻塞主流程
+
+4. **减少不必要的请求**：只在必要时进行API调用，避免冗余请求
+
+## 安全建议
+
+1. **不要在客户端代码中硬编码API密钥**：应当从服务器端环境变量或安全存储中获取
+
+   ```javascript
+   // 不推荐 - 在前端代码中硬编码API密钥
+   const API_KEY = 'your-api-key-123';
+   
+   // 推荐 - 从服务器端获取API密钥
+   async function getApiKey() {
+     const response = await fetch('/get-api-key', {
+       credentials: 'same-origin' // 确保请求包含cookies
+     });
+     const data = await response.json();
+     return data.apiKey;
+   }
+   ```
+
+2. **实现API密钥轮换机制**：定期更换API密钥，并确保系统能够平滑过渡
+
+3. **监控异常访问模式**：实现监控系统，检测可能的API滥用行为
+
+4. **限制API密钥权限范围**：根据实际需要分配最小权限
+
+5. **实现IP白名单**：限制API密钥只能从特定IP地址使用
+
+6. **记录详细的访问日志**：包括请求IP、时间、使用的API密钥（部分隐藏）等信息，便于审计和问题排查
+
+7. **使用HTTPS**：确保所有API通信都通过HTTPS进行，防止中间人攻击
+
+8. **实现请求签名**：对于高安全性要求的场景，可以考虑实现请求签名机制，确保请求未被篡改python
 import requests
 
 # 使用API密钥查询IP状态（新方式）
@@ -151,12 +988,277 @@ def verify_token(token):
     return response.json()
 ```
 
+## 错误处理
+
+在与API交互时，应当正确处理可能出现的错误情况：
+
+| 状态码 | 描述 | 处理建议 |
+|--------|------|----------|
+| 400 | 请求参数错误 | 检查请求参数是否正确，特别是IP地址格式 |
+| 401 | 认证失败 | 检查API密钥或JWT令牌是否有效 |
+| 403 | 权限不足 | 确认使用的API密钥是否有足够的权限 |
+| 429 | 请求过多 | 实现退避策略，减少请求频率 |
+| 500 | 服务器内部错误 | 联系系统管理员，并提供错误详情 |
+
+### 错误处理示例（JavaScript）
+
+```javascript
+async function checkIpStatus(apiKey, ipAddress) {
+  try {
+    const response = await fetch('https://your-domain.com/api/blacklist/check-api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        key: apiKey,
+        ip: ipAddress
+      })
+    });
+    
+    if (response.status === 400) {
+      throw new Error('请求参数错误，请检查IP地址格式');
+    } else if (response.status === 401) {
+      throw new Error('认证失败，请检查API密钥');
+    } else if (response.status === 429) {
+      throw new Error('请求频率过高，请稍后再试');
+    } else if (response.status === 500) {
+      throw new Error('服务器内部错误，请联系管理员');
+    } else if (!response.ok) {
+      throw new Error(`未知错误，状态码: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('检查IP状态时出错:', error);
+    // 可以在这里实现重试逻辑或其他错误处理
+    throw error;
+  }
+}
+```
+
+## 性能优化
+
+1. **实现缓存机制**：对于频繁查询的IP地址，可以在客户端实现缓存，减少API调用次数
+
+   ```javascript
+   // 简单的缓存实现示例
+   const ipCache = new Map();
+   const CACHE_TTL = 60 * 60 * 1000; // 1小时缓存
+
+   async function checkIpStatusWithCache(apiKey, ipAddress) {
+     // 检查缓存
+     if (ipCache.has(ipAddress)) {
+       const cachedData = ipCache.get(ipAddress);
+       if (Date.now() - cachedData.timestamp < CACHE_TTL) {
+         return cachedData.data;
+       }
+     }
+     
+     // 缓存未命中，调用API
+     const result = await checkIpStatus(apiKey, ipAddress);
+     
+     // 更新缓存
+     ipCache.set(ipAddress, {
+       data: result,
+       timestamp: Date.now()
+     });
+     
+     return result;
+   }
+   ```
+
+2. **批量操作**：如果需要检查多个IP地址，考虑使用批量API（如果系统支持）或实现并发请求
+
+3. **异步处理**：对于非关键路径的IP检查，可以考虑异步处理，不阻塞主流程
+
+4. **减少不必要的请求**：只在必要时进行API调用，避免冗余请求
+
+## 安全建议
+
+1. **不要在客户端代码中硬编码API密钥**：应当从服务器端环境变量或安全存储中获取
+
+   ```javascript
+   // 不推荐 - 在前端代码中硬编码API密钥
+   const API_KEY = 'your-api-key-123';
+   
+   // 推荐 - 从服务器端获取API密钥
+   async function getApiKey() {
+     const response = await fetch('/get-api-key', {
+       credentials: 'same-origin' // 确保请求包含cookies
+     });
+     const data = await response.json();
+     return data.apiKey;
+   }
+   ```
+
+2. **实现API密钥轮换机制**：定期更换API密钥，并确保系统能够平滑过渡
+
+3. **监控异常访问模式**：实现监控系统，检测可能的API滥用行为
+
+4. **限制API密钥权限范围**：根据实际需要分配最小权限
+
+5. **实现IP白名单**：限制API密钥只能从特定IP地址使用
+
+6. **记录详细的访问日志**：包括请求IP、时间、使用的API密钥（部分隐藏）等信息，便于审计和问题排查
+
+7. **使用HTTPS**：确保所有API通信都通过HTTPS进行，防止中间人攻击
+
+8. **实现请求签名**：对于高安全性要求的场景，可以考虑实现请求签名机制，确保请求未被篡改
+
 ### PHP (cURL)
 
-```php
+```
+
+## 错误处理
+
+在与API交互时，应当正确处理可能出现的错误情况：
+
+| 状态码 | 描述 | 处理建议 |
+|--------|------|----------|
+| 400 | 请求参数错误 | 检查请求参数是否正确，特别是IP地址格式 |
+| 401 | 认证失败 | 检查API密钥或JWT令牌是否有效 |
+| 403 | 权限不足 | 确认使用的API密钥是否有足够的权限 |
+| 429 | 请求过多 | 实现退避策略，减少请求频率 |
+| 500 | 服务器内部错误 | 联系系统管理员，并提供错误详情 |
+
+### 错误处理示例（JavaScript）
+
+```javascript
+async function checkIpStatus(apiKey, ipAddress) {
+  try {
+    const response = await fetch('https://your-domain.com/api/blacklist/check-api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        key: apiKey,
+        ip: ipAddress
+      })
+    });
+    
+    if (response.status === 400) {
+      throw new Error('请求参数错误，请检查IP地址格式');
+    } else if (response.status === 401) {
+      throw new Error('认证失败，请检查API密钥');
+    } else if (response.status === 429) {
+      throw new Error('请求频率过高，请稍后再试');
+    } else if (response.status === 500) {
+      throw new Error('服务器内部错误，请联系管理员');
+    } else if (!response.ok) {
+      throw new Error(`未知错误，状态码: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('检查IP状态时出错:', error);
+    // 可以在这里实现重试逻辑或其他错误处理
+    throw error;
+  }
+}
+```
+
+## 性能优化
+
+1. **实现缓存机制**：对于频繁查询的IP地址，可以在客户端实现缓存，减少API调用次数
+
+   ```javascript
+   // 简单的缓存实现示例
+   const ipCache = new Map();
+   const CACHE_TTL = 60 * 60 * 1000; // 1小时缓存
+
+   async function checkIpStatusWithCache(apiKey, ipAddress) {
+     // 检查缓存
+     if (ipCache.has(ipAddress)) {
+       const cachedData = ipCache.get(ipAddress);
+       if (Date.now() - cachedData.timestamp < CACHE_TTL) {
+         return cachedData.data;
+       }
+     }
+     
+     // 缓存未命中，调用API
+     const result = await checkIpStatus(apiKey, ipAddress);
+     
+     // 更新缓存
+     ipCache.set(ipAddress, {
+       data: result,
+       timestamp: Date.now()
+     });
+     
+     return result;
+   }
+   ```
+
+2. **批量操作**：如果需要检查多个IP地址，考虑使用批量API（如果系统支持）或实现并发请求
+
+3. **异步处理**：对于非关键路径的IP检查，可以考虑异步处理，不阻塞主流程
+
+4. **减少不必要的请求**：只在必要时进行API调用，避免冗余请求
+
+## 安全建议
+
+1. **不要在客户端代码中硬编码API密钥**：应当从服务器端环境变量或安全存储中获取
+
+   ```javascript
+   // 不推荐 - 在前端代码中硬编码API密钥
+   const API_KEY = 'your-api-key-123';
+   
+   // 推荐 - 从服务器端获取API密钥
+   async function getApiKey() {
+     const response = await fetch('/get-api-key', {
+       credentials: 'same-origin' // 确保请求包含cookies
+     });
+     const data = await response.json();
+     return data.apiKey;
+   }
+   ```
+
+2. **实现API密钥轮换机制**：定期更换API密钥，并确保系统能够平滑过渡
+
+3. **监控异常访问模式**：实现监控系统，检测可能的API滥用行为
+
+4. **限制API密钥权限范围**：根据实际需要分配最小权限
+
+5. **实现IP白名单**：限制API密钥只能从特定IP地址使用
+
+6. **记录详细的访问日志**：包括请求IP、时间、使用的API密钥（部分隐藏）等信息，便于审计和问题排查
+
+7. **使用HTTPS**：确保所有API通信都通过HTTPS进行，防止中间人攻击
+
+8. **实现请求签名**：对于高安全性要求的场景，可以考虑实现请求签名机制，确保请求未被篡改php
 // 使用API密钥查询IP状态（新方式）
 function checkIpStatus($apiKey, $ip) {
     $ch = curl_init('https://your-domain.com/api/blacklist/check-api');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+        'key' => $apiKey,
+        'ip' => $ip
+    ]));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json'
+    ]);
+    $response = curl_exec($ch);
+    curl_close($ch);
+    return json_decode($response, true);
+}
+
+// 使用JWT令牌验证（新方式）
+function verifyToken($token) {
+    $ch = curl_init('https://your-domain.com/api/auth/verify');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+        'token' => $token
+    ]));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json'
+    ]);
+    $response = curl_exec($ch);
+    curl_close($ch);
+    return json_decode($response, true);
+}
     $data = json_encode(['key' => $apiKey, 'ip' => $ip]);
     
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -170,3 +1272,121 @@ function checkIpStatus($apiKey, $ip) {
     return json_decode($response, true);
 }
 ```
+
+## 错误处理
+
+在与API交互时，应当正确处理可能出现的错误情况：
+
+| 状态码 | 描述 | 处理建议 |
+|--------|------|----------|
+| 400 | 请求参数错误 | 检查请求参数是否正确，特别是IP地址格式 |
+| 401 | 认证失败 | 检查API密钥或JWT令牌是否有效 |
+| 403 | 权限不足 | 确认使用的API密钥是否有足够的权限 |
+| 429 | 请求过多 | 实现退避策略，减少请求频率 |
+| 500 | 服务器内部错误 | 联系系统管理员，并提供错误详情 |
+
+### 错误处理示例（JavaScript）
+
+```javascript
+async function checkIpStatus(apiKey, ipAddress) {
+  try {
+    const response = await fetch('https://your-domain.com/api/blacklist/check-api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        key: apiKey,
+        ip: ipAddress
+      })
+    });
+    
+    if (response.status === 400) {
+      throw new Error('请求参数错误，请检查IP地址格式');
+    } else if (response.status === 401) {
+      throw new Error('认证失败，请检查API密钥');
+    } else if (response.status === 429) {
+      throw new Error('请求频率过高，请稍后再试');
+    } else if (response.status === 500) {
+      throw new Error('服务器内部错误，请联系管理员');
+    } else if (!response.ok) {
+      throw new Error(`未知错误，状态码: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('检查IP状态时出错:', error);
+    // 可以在这里实现重试逻辑或其他错误处理
+    throw error;
+  }
+}
+```
+
+## 性能优化
+
+1. **实现缓存机制**：对于频繁查询的IP地址，可以在客户端实现缓存，减少API调用次数
+
+   ```javascript
+   // 简单的缓存实现示例
+   const ipCache = new Map();
+   const CACHE_TTL = 60 * 60 * 1000; // 1小时缓存
+
+   async function checkIpStatusWithCache(apiKey, ipAddress) {
+     // 检查缓存
+     if (ipCache.has(ipAddress)) {
+       const cachedData = ipCache.get(ipAddress);
+       if (Date.now() - cachedData.timestamp < CACHE_TTL) {
+         return cachedData.data;
+       }
+     }
+     
+     // 缓存未命中，调用API
+     const result = await checkIpStatus(apiKey, ipAddress);
+     
+     // 更新缓存
+     ipCache.set(ipAddress, {
+       data: result,
+       timestamp: Date.now()
+     });
+     
+     return result;
+   }
+   ```
+
+2. **批量操作**：如果需要检查多个IP地址，考虑使用批量API（如果系统支持）或实现并发请求
+
+3. **异步处理**：对于非关键路径的IP检查，可以考虑异步处理，不阻塞主流程
+
+4. **减少不必要的请求**：只在必要时进行API调用，避免冗余请求
+
+## 安全建议
+
+1. **不要在客户端代码中硬编码API密钥**：应当从服务器端环境变量或安全存储中获取
+
+   ```javascript
+   // 不推荐 - 在前端代码中硬编码API密钥
+   const API_KEY = 'your-api-key-123';
+   
+   // 推荐 - 从服务器端获取API密钥
+   async function getApiKey() {
+     const response = await fetch('/get-api-key', {
+       credentials: 'same-origin' // 确保请求包含cookies
+     });
+     const data = await response.json();
+     return data.apiKey;
+   }
+   ```
+
+2. **实现API密钥轮换机制**：定期更换API密钥，并确保系统能够平滑过渡
+
+3. **监控异常访问模式**：实现监控系统，检测可能的API滥用行为
+
+4. **限制API密钥权限范围**：根据实际需要分配最小权限
+
+5. **实现IP白名单**：限制API密钥只能从特定IP地址使用
+
+6. **记录详细的访问日志**：包括请求IP、时间、使用的API密钥（部分隐藏）等信息，便于审计和问题排查
+
+7. **使用HTTPS**：确保所有API通信都通过HTTPS进行，防止中间人攻击
+
+8. **实现请求签名**：对于高安全性要求的场景，可以考虑实现请求签名机制，确保请求未被篡改

@@ -190,7 +190,7 @@
             <h3>2. 检查系统连接状态</h3>
             <h4>请求</h4>
             <pre><code>GET /api/blacklist/check</code></pre>
-            <p><strong>请求头:</strong></p>
+            <p><strong>请求头:</strong> (兼容方式)</p>
             <table>
                 <tr>
                     <th>参数</th>
@@ -205,6 +205,14 @@
                     <td>JWT认证令牌，格式为: <code>Bearer &lt;token&gt;</code></td>
                 </tr>
             </table>
+            
+            <p><strong>或者</strong> (推荐方式)</p>
+            <pre><code>POST /api/blacklist/check
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}</code></pre>
             <h4>响应</h4>
             <pre><code>{
   "connected": true,
@@ -264,7 +272,7 @@
             <h3>2. 验证令牌</h3>
             <h4>请求</h4>
             <pre><code>GET /api/auth/verify</code></pre>
-            <p><strong>请求头:</strong></p>
+            <p><strong>请求头:</strong> (兼容方式)</p>
             <table>
                 <tr>
                     <th>参数</th>
@@ -279,6 +287,14 @@
                     <td>JWT认证令牌，格式为: <code>Bearer &lt;token&gt;</code></td>
                 </tr>
             </table>
+            
+            <p><strong>或者</strong> (推荐方式)</p>
+            <pre><code>POST /api/auth/verify
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}</code></pre>
             <h4>响应</h4>
             <pre><code>{
   "valid": true,
@@ -302,7 +318,7 @@
             <h3>1. 获取黑名单列表</h3>
             <h4>请求</h4>
             <pre><code>GET /api/blacklist/get</code></pre>
-            <p><strong>请求头:</strong></p>
+            <p><strong>请求头:</strong> (兼容方式)</p>
             <table>
                 <tr>
                     <th>参数</th>
@@ -317,6 +333,14 @@
                     <td>JWT认证令牌，格式为: <code>Bearer &lt;token&gt;</code></td>
                 </tr>
             </table>
+            
+            <p><strong>或者</strong> (推荐方式)</p>
+            <pre><code>POST /api/blacklist/get
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}</code></pre>
             <h4>响应</h4>
             <pre><code>[
   "192.168.1.1",
@@ -333,7 +357,7 @@
             <h3>2. 添加IP到黑名单</h3>
             <h4>请求</h4>
             <pre><code>POST /api/blacklist/add</code></pre>
-            <p><strong>请求头:</strong></p>
+            <p><strong>请求头:</strong> (兼容方式)</p>
             <table>
                 <tr>
                     <th>参数</th>
@@ -354,8 +378,17 @@
                     <td><code>application/json</code></td>
                 </tr>
             </table>
-            <p><strong>请求体:</strong></p>
+            <p><strong>请求体:</strong> (兼容方式)</p>
             <pre><code>{
+  "ip": "192.168.1.1"
+}</code></pre>
+            
+            <p><strong>或者</strong> (推荐方式)</p>
+            <pre><code>POST /api/blacklist/add
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "ip": "192.168.1.1"
 }</code></pre>
             <h4>响应</h4>
@@ -373,7 +406,7 @@
             <h3>3. 从黑名单删除IP</h3>
             <h4>请求</h4>
             <pre><code>POST /api/blacklist/remove</code></pre>
-            <p><strong>请求头:</strong></p>
+            <p><strong>请求头:</strong> (兼容方式)</p>
             <table>
                 <tr>
                     <th>参数</th>
@@ -394,8 +427,17 @@
                     <td><code>application/json</code></td>
                 </tr>
             </table>
-            <p><strong>请求体:</strong></p>
+            <p><strong>请求体:</strong> (兼容方式)</p>
             <pre><code>{
+  "ip": "192.168.1.1"
+}</code></pre>
+            
+            <p><strong>或者</strong> (推荐方式)</p>
+            <pre><code>POST /api/blacklist/remove
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "ip": "192.168.1.1"
 }</code></pre>
             <h4>响应</h4>

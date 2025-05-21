@@ -89,9 +89,21 @@ Content-Type: application/json
 
 ```
 GET /api/blacklist/get
+Authorization: Bearer {token}
 ```
 
-**认证要求**: 需要JWT认证
+或（推荐）
+
+```
+POST /api/blacklist/get
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**认证要求**: 需要JWT认证，可通过请求体的`token`字段传递（推荐）或通过`Authorization: Bearer <token>`头传递（向后兼容）
 
 #### 响应
 
@@ -108,15 +120,34 @@ GET /api/blacklist/get
 
 ```
 POST /api/blacklist/add
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "ip": "192.168.1.1"
+}
 ```
 
-**认证要求**: 需要JWT认证
+或（推荐）
+
+```
+POST /api/blacklist/add
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "ip": "192.168.1.1"
+}
+```
+
+**认证要求**: 需要JWT认证，可通过请求体的`token`字段传递（推荐）或通过`Authorization: Bearer <token>`头传递（向后兼容）
 
 **参数:**
 
 | 参数 | 类型 | 必须 | 描述 |
 |------|------|------|------|
 | ip | string | 是 | 要添加到黑名单的IP地址 |
+| token | string | 是 | JWT认证令牌（使用推荐方式时）|
 
 #### 响应
 
@@ -133,15 +164,34 @@ POST /api/blacklist/add
 
 ```
 POST /api/blacklist/remove
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "ip": "192.168.1.1"
+}
 ```
 
-**认证要求**: 需要JWT认证
+或（推荐）
+
+```
+POST /api/blacklist/remove
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "ip": "192.168.1.1"
+}
+```
+
+**认证要求**: 需要JWT认证，可通过请求体的`token`字段传递（推荐）或通过`Authorization: Bearer <token>`头传递（向后兼容）
 
 **参数:**
 
 | 参数 | 类型 | 必须 | 描述 |
 |------|------|------|------|
 | ip | string | 是 | 要从黑名单移除的IP地址 |
+| token | string | 是 | JWT认证令牌（使用推荐方式时）|
 
 #### 响应
 
@@ -158,9 +208,21 @@ POST /api/blacklist/remove
 
 ```
 GET /api/blacklist/check
+Authorization: Bearer {token}
 ```
 
-**认证要求**: 需要JWT认证
+或（推荐）
+
+```
+POST /api/blacklist/check
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**认证要求**: 需要JWT认证，可通过请求体的`token`字段传递（推荐）或通过`Authorization: Bearer <token>`头传递（向后兼容）
 
 #### 响应
 
