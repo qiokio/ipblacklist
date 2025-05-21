@@ -39,15 +39,16 @@ async function validateApiKey(key, env, requiredPermission = 'list') {
   }
 }
 
-export async function onRequestGet(context) {
+// 处理请求的通用函数
+async function handleRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   
   // 设置CORS头
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Content-Type': 'application/json'
   };
   
@@ -109,13 +110,23 @@ export async function onRequestGet(context) {
   }
 }
 
+// 处理GET请求
+export async function onRequestGet(context) {
+  return handleRequest(context);
+}
+
+// 处理POST请求
+export async function onRequestPost(context) {
+  return handleRequest(context);
+}
+
 // 处理预检请求
 export function onRequestOptions() {
   return new Response(null, {
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Max-Age': '86400'
     }
   });

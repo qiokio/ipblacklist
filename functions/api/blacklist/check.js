@@ -3,9 +3,28 @@ import { verify } from '../../../js/jwt.js';
 
 // JWT验证中间件
 async function verifyJWT(request, env) {
-    // 从请求头中获取认证令牌
-    const authHeader = request.headers.get('Authorization') || '';
-    const token = authHeader.replace('Bearer ', '');
+    let token = '';
+    
+    // 尝试从请求体中获取token
+    try {
+        // 克隆请求以避免多次读取请求体导致的错误
+        const clonedRequest = request.clone();
+        const contentType = request.headers.get('Content-Type') || '';
+        
+        if (contentType.includes('application/json')) {
+            const body = await clonedRequest.json();
+            token = body.token || '';
+        }
+    } catch (e) {
+        // 如果从请求体获取失败，继续尝试从请求头获取
+        console.error('从请求体获取token失败:', e);
+    }
+    
+    // 如果请求体中没有token，则尝试从请求头获取（向后兼容）
+    if (!token) {
+        const authHeader = request.headers.get('Authorization') || '';
+        token = authHeader.replace('Bearer ', '');
+    }
     
     if (!token) {
         return { valid: false, message: '未提供认证令牌' };
@@ -36,14 +55,15 @@ async function verifyJWT(request, env) {
     }
 }
 
-export const onRequestGet = async (context) => {
+// 处理请求的通用函数
+async function handleRequest(context) {
     const { env, request } = context;
     
     const headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS'
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
     };
     
     // 验证JWT令牌
@@ -78,6 +98,16 @@ export const onRequestGet = async (context) => {
             headers
         });
     }
+}
+
+// 处理GET请求
+export const onRequestGet = async (context) => {
+    return handleRequest(context);
+};
+
+// 处理POST请求
+export const onRequestPost = async (context) => {
+    return handleRequest(context);
 };
 
 // 处理OPTIONS请求，支持CORS预检
@@ -85,9 +115,9 @@ export const onRequestOptions = async () => {
     return new Response(null, {
         headers: {
             'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             'Access-Control-Max-Age': '86400'
         }
     });
-}; 
+};
