@@ -127,7 +127,12 @@ export async function onRequest(context) {
     await logOperation(env, {
       operationType: 'apikey_create',
       operator,
-      details: { name, permissions, expiryDate },
+      details: { 
+        name,
+        permissions,
+        expiryDate,
+        key: apiKey
+      },
       requestIp,
       requestPath: '/api/apikey/create',
       status: 'success'
@@ -150,7 +155,10 @@ export async function onRequest(context) {
     await logOperation(env, {
       operationType: 'apikey_create',
       operator: context.data?.user?.id || 'system',
-      details: { error: error.message },
+      details: { 
+        error: error.message,
+        requestBody: await request.text()
+      },
       requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
       requestPath: '/api/apikey/create',
       status: 'failed',

@@ -111,7 +111,16 @@ function checkApiKeyPermission(keyData, path) {
 async function logOperation(env, data) {
   try {
     const logKey = `${LOG_PREFIX}${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    await env.IP_BLACKLIST.put(logKey, JSON.stringify(data));
+    const logData = {
+      ...data,
+      timestamp: Date.now(),
+      requestPath: data.requestPath || 'unknown',
+      requestIp: data.requestIp || 'unknown',
+      operator: data.operator || 'system',
+      status: data.status || 'success',
+      error: data.error || null
+    };
+    await env.IP_BLACKLIST.put(logKey, JSON.stringify(logData));
   } catch (error) {
     console.error('记录操作日志失败:', error);
   }
@@ -150,7 +159,11 @@ export async function onRequest(context) {
         await logOperation(env, {
           operationType: 'api_key_verification',
           operator: 'unknown',
-          details: { path },
+          details: { 
+            path,
+            key: url.searchParams.get('key') || 'unknown',
+            reason: keyAuth.message
+          },
           requestIp,
           requestPath: path,
           status: 'failed',
@@ -176,7 +189,11 @@ export async function onRequest(context) {
         await logOperation(env, {
           operationType: 'permission_check',
           operator: keyAuth.key.id,
-          details: { path, requiredPermission: API_KEY_PATHS[path] },
+          details: { 
+            path, 
+            requiredPermission: API_KEY_PATHS[path],
+            key: url.searchParams.get('key') || 'unknown'
+          },
           requestIp,
           requestPath: path,
           status: 'failed',
@@ -194,6 +211,20 @@ export async function onRequest(context) {
           }
         });
       }
+      
+      // 记录成功的API密钥验证
+      await logOperation(env, {
+        operationType: 'api_key_verification',
+        operator: keyAuth.key.id,
+        details: { 
+          path,
+          key: url.searchParams.get('key') || 'unknown',
+          permissions: keyAuth.key.permissions
+        },
+        requestIp,
+        requestPath: path,
+        status: 'success'
+      });
       
       // 将API密钥信息添加到请求上下文
       context.data = { apiKey: keyAuth.key };

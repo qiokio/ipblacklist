@@ -5,6 +5,8 @@ const API_KEY_PREFIX = 'apikey:';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const requestIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const operator = context.data?.user?.id || 'system';
   
   // 设置CORS头
   const headers = {
@@ -19,6 +21,17 @@ export async function onRequestPost(context) {
     const { key, note, permissions, expiryDate } = await request.json();
     
     if (!key) {
+      // 记录错误日志
+      await logOperation(env, {
+        operationType: 'apikey_update',
+        operator,
+        details: { error: '缺少API密钥' },
+        requestIp,
+        requestPath: '/api/apikey/update',
+        status: 'failed',
+        error: '缺少API密钥'
+      });
+
       return new Response(JSON.stringify({
         success: false,
         message: '缺少API密钥'
@@ -28,9 +41,23 @@ export async function onRequestPost(context) {
       });
     }
     
-    // 检查密钥是否存在 - 从新的KV命名空间获取
+    // 检查密钥是否存在
     const keyDataStr = await env.API_KEYS.get(`${API_KEY_PREFIX}${key}`);
     if (!keyDataStr) {
+      // 记录错误日志
+      await logOperation(env, {
+        operationType: 'apikey_update',
+        operator,
+        details: { 
+          key,
+          error: 'API密钥不存在'
+        },
+        requestIp,
+        requestPath: '/api/apikey/update',
+        status: 'failed',
+        error: 'API密钥不存在'
+      });
+
       return new Response(JSON.stringify({
         success: false,
         message: 'API密钥不存在'
@@ -42,6 +69,7 @@ export async function onRequestPost(context) {
     
     // 更新密钥数据
     const keyData = JSON.parse(keyDataStr);
+    const oldData = { ...keyData };
     
     // 更新备注
     if (note !== undefined) {
@@ -66,8 +94,27 @@ export async function onRequestPost(context) {
       keyData.expiryDate = expiryDate;
     }
     
-    // 保存到新的KV命名空间
+    // 保存更新后的数据
     await env.API_KEYS.put(`${API_KEY_PREFIX}${key}`, JSON.stringify(keyData));
+    
+    // 记录成功日志
+    await logOperation(env, {
+      operationType: 'apikey_update',
+      operator,
+      details: { 
+        key,
+        oldData,
+        newData: keyData,
+        changes: {
+          note: note !== undefined,
+          permissions: permissions !== undefined,
+          expiryDate: expiryDate !== undefined
+        }
+      },
+      requestIp,
+      requestPath: '/api/apikey/update',
+      status: 'success'
+    });
     
     return new Response(JSON.stringify({
       success: true,
@@ -75,6 +122,20 @@ export async function onRequestPost(context) {
     }), { headers });
     
   } catch (error) {
+    // 记录错误日志
+    await logOperation(env, {
+      operationType: 'apikey_update',
+      operator,
+      details: { 
+        error: error.message,
+        requestBody: await request.text()
+      },
+      requestIp,
+      requestPath: '/api/apikey/update',
+      status: 'failed',
+      error: error.message
+    });
+
     return new Response(JSON.stringify({
       success: false,
       message: '更新API密钥失败: ' + error.message

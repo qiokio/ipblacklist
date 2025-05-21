@@ -7,6 +7,8 @@ const API_KEY_LIST = 'apikeys_list';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const requestIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const operator = context.data?.user?.id || 'system';
   
   // 设置CORS头
   const headers = {
@@ -17,10 +19,21 @@ export async function onRequestPost(context) {
   };
   
   try {
-    // 解析请求体中的API密钥
+    // 解析请求体中的API密钥数据
     const { key } = await request.json();
     
     if (!key) {
+      // 记录错误日志
+      await logOperation(env, {
+        operationType: 'apikey_delete',
+        operator,
+        details: { error: '缺少API密钥' },
+        requestIp,
+        requestPath: '/api/apikey/delete',
+        status: 'failed',
+        error: '缺少API密钥'
+      });
+
       return new Response(JSON.stringify({
         success: false,
         message: '缺少API密钥'
@@ -30,9 +43,23 @@ export async function onRequestPost(context) {
       });
     }
     
-    // 检查密钥是否存在 - 从新的KV命名空间获取
-    const keyExists = await env.API_KEYS.get(`${API_KEY_PREFIX}${key}`);
-    if (!keyExists) {
+    // 检查密钥是否存在
+    const keyDataStr = await env.API_KEYS.get(`${API_KEY_PREFIX}${key}`);
+    if (!keyDataStr) {
+      // 记录错误日志
+      await logOperation(env, {
+        operationType: 'apikey_delete',
+        operator,
+        details: { 
+          key,
+          error: 'API密钥不存在'
+        },
+        requestIp,
+        requestPath: '/api/apikey/delete',
+        status: 'failed',
+        error: 'API密钥不存在'
+      });
+
       return new Response(JSON.stringify({
         success: false,
         message: 'API密钥不存在'
@@ -42,18 +69,36 @@ export async function onRequestPost(context) {
       });
     }
     
-    // 从KV中删除密钥 - 使用新的KV命名空间
+    // 获取密钥数据用于日志记录
+    const keyData = JSON.parse(keyDataStr);
+    
+    // 删除API密钥
     await env.API_KEYS.delete(`${API_KEY_PREFIX}${key}`);
     
-    // 从密钥列表中移除 - 使用新的KV命名空间和键名
-    let keysList = [];
-    const existingList = await env.API_KEYS.get(API_KEY_LIST);
-    
-    if (existingList) {
-      keysList = JSON.parse(existingList);
-      keysList = keysList.filter(item => item !== key);
-      await env.API_KEYS.put(API_KEY_LIST, JSON.stringify(keysList));
+    // 从API密钥列表中移除
+    try {
+      const keysListStr = await env.API_KEYS.get(API_KEY_LIST);
+      if (keysListStr) {
+        const keysList = JSON.parse(keysListStr);
+        const updatedList = keysList.filter(k => k !== key);
+        await env.API_KEYS.put(API_KEY_LIST, JSON.stringify(updatedList));
+      }
+    } catch (error) {
+      console.error('更新API密钥列表失败:', error);
     }
+    
+    // 记录成功日志
+    await logOperation(env, {
+      operationType: 'apikey_delete',
+      operator,
+      details: { 
+        key,
+        deletedKeyData: keyData
+      },
+      requestIp,
+      requestPath: '/api/apikey/delete',
+      status: 'success'
+    });
     
     return new Response(JSON.stringify({
       success: true,
@@ -61,6 +106,20 @@ export async function onRequestPost(context) {
     }), { headers });
     
   } catch (error) {
+    // 记录错误日志
+    await logOperation(env, {
+      operationType: 'apikey_delete',
+      operator,
+      details: { 
+        error: error.message,
+        requestBody: await request.text()
+      },
+      requestIp,
+      requestPath: '/api/apikey/delete',
+      status: 'failed',
+      error: error.message
+    });
+
     return new Response(JSON.stringify({
       success: false,
       message: '删除API密钥失败: ' + error.message
