@@ -5,13 +5,19 @@ compatibility_date = "2023-12-01"
 [[kv_namespaces]]
 binding = "IP_BLACKLIST"
 # 请将下面的占位符替换为您在Cloudflare控制面板找到的实际KV命名空间ID
-id = "731c9ef87ca4427387755143e7c05cbd" 
+id = "YOUR_IP_BLACKLIST_KV_NAMESPACE_ID" 
 
 # KV命名空间绑定 - 用于存储API密钥
 [[kv_namespaces]]
 binding = "API_KEYS"
 # 请将下面的占位符替换为您在Cloudflare控制面板创建的API密钥KV命名空间ID
-id = "YOUR_API_KEYS_KV_NAMESPACE_ID" 
+id = "YOUR_API_KEYS_KV_NAMESPACE_ID"
+
+# KV命名空间绑定 - 用于存储API日志
+[[kv_namespaces]]
+binding = "API_LOGS"
+# 请将下面的占位符替换为您在Cloudflare控制面板创建的API日志KV命名空间ID
+id = "YOUR_API_LOGS_KV_NAMESPACE_ID" 
 
 # 环境变量配置
 [vars]
@@ -19,4 +25,4 @@ id = "YOUR_API_KEYS_KV_NAMESPACE_ID"
 # 在本地开发时，推荐使用 .dev.vars 文件（不要提交到版本控制）
 ADMIN_USERNAME = "your-admin-username"  # 不要提交实际用户名
 ADMIN_PASSWORD = "your-admin-password"  # 不要提交实际密码
-JWT_SECRET = "your-jwt-secret-key"      # 不要提交实际密钥 
+JWT_SECRET = "your-jwt-secret-key"      # 不要提交实际密钥

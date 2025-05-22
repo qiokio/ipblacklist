@@ -160,7 +160,7 @@ async function logOperation(env, data) {
       status: data.status || 'success',
       error: data.error || null
     };
-    await env.IP_BLACKLIST.put(logKey, JSON.stringify(logData));
+    await env.API_LOGS.put(logKey, JSON.stringify(logData));
   } catch (error) {
     console.error('记录操作日志失败:', error);
   }

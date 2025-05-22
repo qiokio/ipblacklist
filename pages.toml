@@ -1,13 +1,15 @@
 [env.production]
 KV_NAMESPACES = [
-  { binding = "IP_BLACKLIST", id = "YOUR_KV_NAMESPACE_ID_HERE" }
+  { binding = "IP_BLACKLIST", id = "YOUR_KV_NAMESPACE_ID_HERE" },
+  { binding = "API_LOGS", id = "YOUR_API_LOGS_KV_NAMESPACE_ID_HERE" }
 ]
 
 [env.preview]
 KV_NAMESPACES = [
-  { binding = "IP_BLACKLIST", id = "YOUR_KV_NAMESPACE_ID_HERE" }
+  { binding = "IP_BLACKLIST", id = "YOUR_KV_NAMESPACE_ID_HERE" },
+  { binding = "API_LOGS", id = "YOUR_API_LOGS_KV_NAMESPACE_ID_HERE" }
 ]
 
 [build]
 command = ""
-output_directory = "/" 
+output_directory = "/"
