@@ -159,7 +159,7 @@ class BlacklistManager {
 
         try {
             console.log('发送添加IP请求:', {
-                url: '/functions/api/blacklist/add',
+                url: '/api/blacklist/add',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -168,7 +168,7 @@ class BlacklistManager {
                 body: { ip }
             });
 
-            const response = await fetch('/functions/api/blacklist/add', {
+            const response = await fetch('/api/blacklist/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -314,4 +314,4 @@ class BlacklistManager {
 // 初始化黑名单管理器
 document.addEventListener('DOMContentLoaded', () => {
     new BlacklistManager();
-}); 
+});
