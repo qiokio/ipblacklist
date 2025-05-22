@@ -3,6 +3,25 @@
 // API密钥前缀(用于KV存储)
 const API_KEY_PREFIX = 'apikey:';
 
+// 记录操作日志的函数
+async function logOperation(env, data) {
+  try {
+    const logKey = `log:${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const logData = {
+      ...data,
+      timestamp: Date.now(),
+      requestPath: data.requestPath || 'unknown',
+      requestIp: data.requestIp || 'unknown',
+      operator: data.operator || 'system',
+      status: data.status || 'success',
+      error: data.error || null
+    };
+    await env.API_LOGS.put(logKey, JSON.stringify(logData));
+  } catch (error) {
+    console.error('记录操作日志失败:', error);
+  }
+}
+
 // 验证API密钥
 async function validateApiKey(key, env, requiredPermission = 'list') {
   if (!key) {
