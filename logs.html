@@ -112,6 +112,44 @@
             background-color: #fff;
             border-color: #dee2e6;
         }
+        /* 确认对话框样式 */
+        .confirm-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .confirm-modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        .confirm-modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .me-2 {
+            margin-right: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -156,9 +194,14 @@
         <div class="main-content">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1>操作日志</h1>
-                <button class="btn btn-outline-primary" onclick="refreshLogs()">
-                    <i class="fas fa-sync-alt"></i> 刷新
-                </button>
+                <div>
+                    <button class="btn btn-outline-danger me-2" onclick="showClearLogsConfirm()">
+                        <i class="fas fa-trash-alt"></i> 清空日志
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="refreshLogs()">
+                        <i class="fas fa-sync-alt"></i> 刷新
+                    </button>
+                </div>
             </div>
             
             <!-- 筛选部分 -->
@@ -227,6 +270,17 @@
         </div>
     </div>
 
+    <!-- 确认清空日志弹窗 -->
+    <div id="clearLogsConfirmModal" class="confirm-modal">
+        <div class="confirm-modal-content">
+            <p>确定要清空所有操作日志吗？此操作不可恢复！</p>
+            <div class="confirm-modal-actions">
+                <button id="confirmClearLogsBtn" class="btn btn-danger">确定清空</button>
+                <button id="cancelClearLogsBtn" class="btn btn-secondary">取消</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/layout.js"></script>
     <script src="js/logout.js"></script>
     <script type="module" src="js/auth.js"></script>
@@ -285,6 +339,13 @@
                 
                 // token有效，加载日志
                 searchLogs();
+                
+                // 绑定确认和取消清空日志的按钮事件
+                document.getElementById('confirmClearLogsBtn').addEventListener('click', clearAllLogs);
+                document.getElementById('cancelClearLogsBtn').addEventListener('click', () => {
+                    document.getElementById('clearLogsConfirmModal').style.display = 'none';
+                });
+                
             } catch (error) {
                 console.error('验证token失败:', error);
                 localStorage.removeItem('auth_token');
@@ -460,9 +521,52 @@
                 'authentication': '用户认证',
                 'api_key_verification': 'API密钥验证',
                 'permission_check': '权限检查',
-                'system_error': '系统错误'
+                'system_error': '系统错误',
+                'logs_clear_all': '清空所有日志'
             };
             return typeMap[type] || type;
+        }
+
+        // 显示清空日志确认对话框
+        function showClearLogsConfirm() {
+            document.getElementById('clearLogsConfirmModal').style.display = 'flex';
+        }
+
+        // 清空所有日志
+        async function clearAllLogs() {
+            if (!checkAuth()) return;
+
+            showLoading();
+            try {
+                const token = localStorage.getItem('auth_token');
+                const response = await fetch('/api/logs/cleanup?clearAll=true', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('auth_token');
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(`日志清空成功，共删除 ${data.deletedCount} 条记录。`);
+                    refreshLogs();
+                } else {
+                    alert('清空日志失败：' + data.message);
+                }
+            } catch (error) {
+                alert('清空日志失败：' + error.message);
+            } finally {
+                hideLoading();
+                document.getElementById('clearLogsConfirmModal').style.display = 'none';
+            }
         }
     </script>
 </body>
