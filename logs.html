@@ -370,6 +370,21 @@
                 const time = new Date(log.timestamp).toLocaleString();
                 const details = JSON.stringify(log.details, null, 2);
                 
+                // 提取API密钥信息
+                const apiKey = log.details?.apiKey || '无';
+                
+                // 提取操作IP信息
+                let operationIP = '';
+                if (log.details?.ip) {
+                    operationIP = `<div><strong>操作IP：</strong><span class="log-ip">${log.details.ip}</span></div>`;
+                }
+                
+                // 提取操作结果信息
+                let operationResult = '';
+                if (log.details?.result) {
+                    operationResult = `<div><strong>操作结果：</strong>${log.details.result}</div>`;
+                }
+                
                 logItem.innerHTML = `
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
@@ -380,7 +395,10 @@
                     </div>
                     <div class="log-details mt-2">
                         <div><strong>操作者：</strong><span class="log-operator">${log.operator}</span></div>
-                        <div><strong>IP：</strong><span class="log-ip">${log.requestIp}</span></div>
+                        <div><strong>请求IP：</strong><span class="log-ip">${log.requestIp}</span></div>
+                        ${operationIP}
+                        <div><strong>API密钥：</strong><span class="log-key">${apiKey}</span></div>
+                        ${operationResult}
                         <div><strong>详情：</strong></div>
                         <pre>${details}</pre>
                         ${log.error ? `<div class="log-error">错误：${log.error}</div>` : ''}
