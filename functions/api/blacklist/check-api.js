@@ -3,6 +3,25 @@
 // API密钥前缀(用于KV存储)
 const API_KEY_PREFIX = 'apikey:';
 
+// 记录操作日志的函数
+async function logOperation(env, data) {
+  try {
+    const logKey = `log:${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const logData = {
+      ...data,
+      timestamp: Date.now(),
+      requestPath: data.requestPath || 'unknown',
+      requestIp: data.requestIp || 'unknown',
+      operator: data.operator || 'system',
+      status: data.status || 'success',
+      error: data.error || null
+    };
+    await env.API_LOGS.put(logKey, JSON.stringify(logData));
+  } catch (error) {
+    console.error('记录操作日志失败:', error);
+  }
+}
+
 // 验证API密钥
 async function validateApiKey(key, env, requiredPermission = 'read') {
   if (!key) {
@@ -107,6 +126,22 @@ async function handleRequest(context) {
     // 验证API密钥
     const keyValidation = await validateApiKey(apiKey, env, 'read');
     if (!keyValidation.valid) {
+      // 记录失败的API密钥验证
+      const requestIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+      await logOperation(env, {
+        operationType: 'blacklist_check',
+        operator: 'api_key',
+        details: { 
+          ip,
+          apiKey: apiKey ? `${apiKey.substring(0, 4)}...` : 'missing',
+          error: keyValidation.message
+        },
+        requestIp,
+        requestPath: '/api/blacklist/check-api',
+        status: 'failed',
+        error: keyValidation.message
+      });
+      
       return new Response(JSON.stringify({
         error: true,
         message: keyValidation.message
@@ -118,6 +153,20 @@ async function handleRequest(context) {
     
     // 验证IP格式
     if (ip && !validateIPv4(ip)) {
+      // 记录无效IP格式错误
+      await logOperation(env, {
+        operationType: 'blacklist_check',
+        operator: keyValidation.keyData?.id || apiKey || 'unknown',
+        details: { 
+          ip,
+          error: 'IP格式无效'
+        },
+        requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
+        requestPath: '/api/blacklist/check-api',
+        status: 'failed',
+        error: 'IP格式无效'
+      });
+      
       return new Response(JSON.stringify({
         error: true,
         message: 'IP格式无效'
@@ -130,6 +179,21 @@ async function handleRequest(context) {
     // 检查IP是否在黑名单中
     const blocked = await checkIPInBlacklist(ip, env);
     
+    // 记录成功的IP检查
+    await logOperation(env, {
+      operationType: 'blacklist_check',
+      operator: keyValidation.keyData?.id || 'api_key',
+      details: { 
+        ip,
+        blocked,
+        result: blocked ? `IP ${ip} 在黑名单中` : `IP ${ip} 不在黑名单中`,
+        apiKey: apiKey ? `${apiKey.substring(0, 4)}...` : 'unknown'
+      },
+      requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
+      requestPath: '/api/blacklist/check-api',
+      status: 'success'
+    });
+    
     return new Response(JSON.stringify({
       ip,
       blocked,
@@ -137,6 +201,24 @@ async function handleRequest(context) {
     }), { headers });
     
   } catch (error) {
+    // 记录错误日志
+    try {
+      await logOperation(env, {
+        operationType: 'blacklist_check',
+        operator: 'api_key',
+        details: { 
+          ip: url.searchParams.get('ip') || 'unknown',
+          error: error.message 
+        },
+        requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
+        requestPath: '/api/blacklist/check-api',
+        status: 'failed',
+        error: error.message
+      });
+    } catch (e) {
+      console.error('记录错误日志失败:', e);
+    }
+    
     return new Response(JSON.stringify({
       error: true,
       message: '查询失败: ' + error.message
