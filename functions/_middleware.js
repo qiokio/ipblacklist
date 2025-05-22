@@ -259,6 +259,7 @@ export async function onRequest(context) {
         details: { 
           path,
           key: url.searchParams.get('key') || 'unknown',
+          apiKey: url.searchParams.get('key') || 'unknown',
           permissions: keyAuth.key.permissions
         },
         requestIp,

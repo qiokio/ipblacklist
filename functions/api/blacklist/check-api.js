@@ -187,7 +187,8 @@ async function handleRequest(context) {
         ip,
         blocked,
         result: blocked ? `IP ${ip} 在黑名单中` : `IP ${ip} 不在黑名单中`,
-        apiKey: apiKey ? `${apiKey.substring(0, 4)}...` : 'unknown'
+        apiKey: apiKey ? `${apiKey.substring(0, 4)}...` : 'unknown',
+        key: apiKey || 'unknown'
       },
       requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
       requestPath: '/api/blacklist/check-api',

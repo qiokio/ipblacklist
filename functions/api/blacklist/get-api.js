@@ -97,6 +97,22 @@ async function handleRequest(context) {
     
     // 解析黑名单并返回
     const blacklistArray = JSON.parse(blacklist);
+    
+    // 记录成功的黑名单获取操作
+    await logOperation(env, {
+      operationType: 'blacklist_get',
+      operator: keyValidation.keyData?.id || 'api_key',
+      details: { 
+        count: blacklistArray.length,
+        ips: blacklistArray.length <= 100 ? blacklistArray : blacklistArray.slice(0, 100), // 限制日志中的IP数量
+        apiKey: apiKey ? `${apiKey.substring(0, 4)}...` : 'unknown',
+        key: apiKey || 'unknown'  // 添加key字段以确保兼容性
+      },
+      requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
+      requestPath: '/api/blacklist/get-api',
+      status: 'success'
+    });
+    
     return new Response(JSON.stringify(blacklistArray), { headers });
     
   } catch (error) {

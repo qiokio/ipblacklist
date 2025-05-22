@@ -371,7 +371,7 @@
                 const details = JSON.stringify(log.details, null, 2);
                 
                 // 提取API密钥信息
-                const apiKey = log.details?.apiKey || '无';
+                const apiKey = log.details?.apiKey || log.details?.key || '无';
                 
                 // 提取操作IP信息
                 let operationIP = '';

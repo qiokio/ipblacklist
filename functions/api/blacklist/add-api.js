@@ -124,6 +124,22 @@ export async function onRequestPost(context) {
     // 保存黑名单
     await env.IP_BLACKLIST.put('blacklist', JSON.stringify(blacklistArray));
     
+    // 记录操作日志
+    await logOperation(env, {
+      operationType: 'blacklist_add',
+      operator: keyValidation.keyData?.id || 'api_key', 
+      details: { 
+        ip, 
+        reason: 'API密钥验证通过',
+        result: `已将IP ${ip} 添加到黑名单`,
+        apiKey: apiKey ? `${apiKey.substring(0, 4)}...` : 'unknown',
+        key: apiKey || 'unknown'  // 添加key字段以确保兼容性
+      },
+      requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
+      requestPath: '/api/blacklist/add-api',
+      status: 'success'
+    });
+    
     return new Response(JSON.stringify({
       success: true,
       message: `IP ${ip} 已添加到黑名单`,

@@ -122,6 +122,21 @@ export async function onRequestPost(context) {
     // 保存更新后的黑名单
     await env.IP_BLACKLIST.put('blacklist', JSON.stringify(blacklistArray));
     
+    // 记录成功的移除操作
+    await logOperation(env, {
+      operationType: 'blacklist_remove',
+      operator: keyValidation.keyData?.id || 'api_key',
+      details: { 
+        ip,
+        result: `已从黑名单中移除IP ${ip}`,
+        apiKey: apiKey ? `${apiKey.substring(0, 4)}...` : 'unknown',
+        key: apiKey || 'unknown'  // 添加key字段以确保兼容性
+      },
+      requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
+      requestPath: '/api/blacklist/remove-api',
+      status: 'success'
+    });
+    
     return new Response(JSON.stringify({
       success: true,
       message: `IP ${ip} 已从黑名单中移除`,
