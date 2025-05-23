@@ -13,6 +13,7 @@ async function logOperation(env, data) {
       requestPath: data.requestPath || 'unknown',
       requestIp: data.requestIp || 'unknown',
       operator: data.operator || 'system',
+      key: data.key || data.details?.key || 'unknown',  // 确保key字段存在于顶层
       status: data.status || 'success',
       error: data.error || null
     };
@@ -156,6 +157,7 @@ export async function onRequestPost(context) {
       },
       requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
       requestPath: '/api/blacklist/add-api',
+      key: apiKey || 'unknown',  // 在顶层添加key字段，确保在日志界面可见
       status: 'success'
     });
     
