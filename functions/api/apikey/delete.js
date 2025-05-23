@@ -75,17 +75,16 @@ export async function onRequestPost(context) {
     // 删除API密钥
     await env.API_KEYS.delete(`${API_KEY_PREFIX}${key}`);
     
-    // 从API密钥列表中移除
-    try {
-      const keysListStr = await env.API_KEYS.get(API_KEY_LIST);
+    // 从API密钥列表中移除（异步执行，不影响主流程）
+    env.API_KEYS.get(API_KEY_LIST).then(keysListStr => {
       if (keysListStr) {
         const keysList = JSON.parse(keysListStr);
         const updatedList = keysList.filter(k => k !== key);
-        await env.API_KEYS.put(API_KEY_LIST, JSON.stringify(updatedList));
+        return env.API_KEYS.put(API_KEY_LIST, JSON.stringify(updatedList));
       }
-    } catch (error) {
+    }).catch(error => {
       console.error('更新API密钥列表失败:', error);
-    }
+    });
     
     // 记录成功日志
     await logOperation(env, {
@@ -140,4 +139,4 @@ export function onRequestOptions() {
       'Access-Control-Max-Age': '86400'
     }
   });
-} 
+}
