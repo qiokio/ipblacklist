@@ -148,7 +148,7 @@ function checkApiKeyPermission(keyData, path) {
 }
 
 // 导入新的日志记录模块
-import { createLogger, OPERATION_TYPES, OPERATION_STATUS } from '../utils/logger.js';
+import { createLogger, OPERATION_TYPES, OPERATION_STATUS } from './utils/logger.js';
 
 // 记录操作日志 - 兼容性函数
 async function logOperation(env, data) {
