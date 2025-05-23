@@ -147,20 +147,43 @@ function checkApiKeyPermission(keyData, path) {
   return keyData.permissions && keyData.permissions[requiredPermission] === true;
 }
 
-// 记录操作日志
+// 导入新的日志记录模块
+import { createLogger, OPERATION_TYPES, OPERATION_STATUS } from '../utils/logger.js';
+
+// 记录操作日志 - 兼容性函数
 async function logOperation(env, data) {
   try {
-    const logKey = `${LOG_PREFIX}${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const logData = {
-      ...data,
-      timestamp: Date.now(),
-      requestPath: data.requestPath || 'unknown',
-      requestIp: data.requestIp || 'unknown',
+    const logger = createLogger(env);
+    
+    // 转换旧格式到新格式
+    const logOptions = {
+      operationType: data.operationType,
       operator: data.operator || 'system',
-      status: data.status || 'success',
-      error: data.error || null
+      status: data.status === 'failed' ? OPERATION_STATUS.FAILED : OPERATION_STATUS.SUCCESS,
+      details: {
+        ...data.details,
+        requestPath: data.requestPath,
+        requestIp: data.requestIp
+      },
+      error: data.error,
+      message: data.message
     };
-    await env.API_LOGS.put(logKey, JSON.stringify(logData));
+    
+    // 如果有请求对象，构造伪请求对象
+    if (data.requestPath || data.requestIp) {
+      logOptions.request = {
+        method: 'unknown',
+        url: data.requestPath || 'unknown',
+        headers: {
+          get: (name) => {
+            if (name === 'CF-Connecting-IP') return data.requestIp;
+            return 'unknown';
+          }
+        }
+      };
+    }
+    
+    await logger.log(logOptions);
   } catch (error) {
     console.error('记录操作日志失败:', error);
   }
@@ -197,7 +220,7 @@ export async function onRequest(context) {
       if (!keyAuth.valid) {
         // 记录失败的API密钥验证
         await logOperation(env, {
-          operationType: 'api_key_verification',
+          operationType: OPERATION_TYPES.APIKEY_VERIFY,
           operator: 'unknown',
           details: { 
             path,
@@ -227,7 +250,7 @@ export async function onRequest(context) {
       if (!hasPermission) {
         // 记录权限验证失败
         await logOperation(env, {
-          operationType: 'permission_check',
+          operationType: OPERATION_TYPES.PERMISSION_CHECK,
           operator: keyAuth.key.id,
           details: { 
             path, 

@@ -1,4 +1,6 @@
 // Cloudflare Pages Functions - 从黑名单移除IP
+import { createLogger, OPERATION_TYPES, OPERATION_STATUS } from '../../utils/logger.js';
+
 export async function onRequest(context) {
     const { request, env } = context;
     
@@ -24,13 +26,14 @@ export async function onRequest(context) {
         }
         
         // 记录操作日志
-        await logOperation(env, {
-            operationType: 'blacklist_remove',
+        const logger = createLogger(env);
+        await logger.success(OPERATION_TYPES.BLACKLIST_REMOVE, `成功从黑名单移除IP ${ip}`, {
+            request,
             operator,
-            details: { ip },
-            requestIp,
-            requestPath: '/api/blacklist/remove',
-            status: 'success'
+            details: { 
+                ip,
+                action: 'remove_success'
+            }
         });
         
         return new Response(JSON.stringify({
@@ -44,14 +47,15 @@ export async function onRequest(context) {
         });
     } catch (error) {
         // 记录错误日志
-        await logOperation(env, {
-            operationType: 'blacklist_remove',
+        const logger = createLogger(env);
+        await logger.error(OPERATION_TYPES.BLACKLIST_REMOVE, '从黑名单移除IP失败', {
+            request,
             operator: context.data?.user?.id || context.data?.apiKey?.id || 'system',
-            details: { error: error.message },
-            requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
-            requestPath: '/api/blacklist/remove',
-            status: 'failed',
-            error: error.message
+            error,
+            details: {
+                errorType: error.constructor.name,
+                action: 'remove_failed'
+            }
         });
         
         return new Response(JSON.stringify({
@@ -66,4 +70,4 @@ export async function onRequest(context) {
             }
         });
     }
-} 
+}

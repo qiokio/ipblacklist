@@ -1,4 +1,6 @@
 // Cloudflare Pages Functions - 添加IP到黑名单
+import { createLogger, OPERATION_TYPES, OPERATION_STATUS } from '../../utils/logger.js';
+
 export async function onRequest(context) {
     const { request, env } = context;
     
@@ -140,13 +142,15 @@ export async function onRequest(context) {
         
         // 记录操作日志
         try {
-            await logOperation(env, {
-                operationType: 'blacklist_add',
+            const logger = createLogger(env);
+            await logger.success(OPERATION_TYPES.BLACKLIST_ADD, `成功添加IP ${ip} 到黑名单`, {
+                request,
                 operator,
-                details: { ip },
-                requestIp,
-                requestPath: '/api/blacklist/add',
-                status: 'success'
+                details: { 
+                    ip,
+                    blacklistCount: blacklistArray.length,
+                    action: 'add_success'
+                }
             });
         } catch (e) {
             console.error('记录操作日志失败:', e);
@@ -164,14 +168,15 @@ export async function onRequest(context) {
         
         // 记录错误日志
         try {
-            await logOperation(env, {
-                operationType: 'blacklist_add',
+            const logger = createLogger(env);
+            await logger.error(OPERATION_TYPES.BLACKLIST_ADD, '添加IP到黑名单失败', {
+                request,
                 operator: context.data?.user?.id || 'system',
-                details: { error: error.message },
-                requestIp: request.headers.get('CF-Connecting-IP') || 'unknown',
-                requestPath: '/api/blacklist/add',
-                status: 'failed',
-                error: error.message
+                error,
+                details: {
+                    errorType: error.constructor.name,
+                    action: 'add_failed'
+                }
             });
         } catch (e) {
             console.error('记录错误日志失败:', e);
@@ -185,4 +190,4 @@ export async function onRequest(context) {
             headers
         });
     }
-} 
+}

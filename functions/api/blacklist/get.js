@@ -1,23 +1,5 @@
 // Cloudflare Pages Functions - 获取黑名单
-
-// 记录操作日志的函数
-async function logOperation(env, data) {
-  try {
-    const logKey = `log:${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const logData = {
-      ...data,
-      timestamp: Date.now(),
-      requestPath: data.requestPath || 'unknown',
-      requestIp: data.requestIp || 'unknown',
-      operator: data.operator || 'system',
-      status: data.status || 'success',
-      error: data.error || null
-    };
-    await env.API_LOGS.put(logKey, JSON.stringify(logData));
-  } catch (error) {
-    console.error('记录操作日志失败:', error);
-  }
-}
+import { createLogger, OPERATION_TYPES, OPERATION_STATUS } from '../../utils/logger.js';
 
 // 处理请求的通用函数
 async function handleRequest(context) {
@@ -33,16 +15,14 @@ async function handleRequest(context) {
         const blacklistArray = JSON.parse(blacklist || '[]');
         
         // 记录操作日志
-        await logOperation(env, {
-            operationType: 'blacklist_get',
+        const logger = createLogger(env);
+        await logger.success(OPERATION_TYPES.BLACKLIST_GET, `成功获取黑名单，共${blacklistArray.length}个IP`, {
+            request,
             operator,
             details: { 
                 count: blacklistArray.length,
-                ips: blacklistArray
-            },
-            requestIp,
-            requestPath: '/api/blacklist/get',
-            status: 'success'
+                action: 'get_success'
+            }
         });
         
         return new Response(blacklist || '[]', {
@@ -55,14 +35,15 @@ async function handleRequest(context) {
         });
     } catch (error) {
         // 记录错误日志
-        await logOperation(env, {
-            operationType: 'blacklist_get',
+        const logger = createLogger(env);
+        await logger.error(OPERATION_TYPES.BLACKLIST_GET, '获取黑名单失败', {
+            request,
             operator,
-            details: { error: error.message },
-            requestIp,
-            requestPath: '/api/blacklist/get',
-            status: 'failed',
-            error: error.message
+            error,
+            details: {
+                errorType: error.constructor.name,
+                action: 'get_failed'
+            }
         });
         
         return new Response(JSON.stringify({ 

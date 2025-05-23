@@ -1,7 +1,10 @@
-// 日志查询API
+// 日志查询API - 兼容性版本
+import { createLogger, OPERATION_TYPES } from '../../utils/logger.js';
+
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
+  const logger = createLogger(env);
   
   // 获取查询参数
   const page = parseInt(url.searchParams.get('page') || '1');
@@ -26,13 +29,21 @@ export async function onRequest(context) {
     // 获取日志详情
     const logDetails = await Promise.all(
       logs.keys.map(async (key) => {
-        const value = await env.API_LOGS.get(key.name);
-        return JSON.parse(value);
+        try {
+          const value = await env.API_LOGS.get(key.name);
+          return value ? JSON.parse(value) : null;
+        } catch (error) {
+          console.warn(`解析日志失败: ${key.name}`, error);
+          return null;
+        }
       })
     );
     
+    // 过滤掉无效日志
+    const validLogs = logDetails.filter(log => log !== null);
+    
     // 过滤日志
-    let filteredLogs = logDetails.filter(log => {
+    let filteredLogs = validLogs.filter(log => {
       if (startTime && log.timestamp < parseInt(startTime)) return false;
       if (endTime && log.timestamp > parseInt(endTime)) return false;
       if (operationType && log.operationType !== operationType) return false;
@@ -47,6 +58,18 @@ export async function onRequest(context) {
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
     const paginatedLogs = filteredLogs.slice(start, end);
+    
+    // 记录查询操作
+    await logger.success(OPERATION_TYPES.LOGS_VIEW, {
+      request,
+      operator: context.data?.user?.id || 'system',
+      details: {
+        page,
+        pageSize,
+        filters: { startTime, endTime, operationType, operator },
+        resultCount: paginatedLogs.length
+      }
+    });
     
     return new Response(JSON.stringify({
       success: true,
@@ -67,6 +90,12 @@ export async function onRequest(context) {
       }
     });
   } catch (error) {
+    // 记录错误
+    await logger.error(OPERATION_TYPES.LOGS_VIEW, error, {
+      request,
+      operator: context.data?.user?.id || 'system'
+    });
+    
     return new Response(JSON.stringify({
       success: false,
       error: '获取日志失败',
