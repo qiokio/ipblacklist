@@ -6,6 +6,19 @@ export async function onRequest(context) {
   const logger = createLogger(env);
   
   // 只允许管理员访问
+  if (!context.data?.user?.isAdmin) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: '需要管理员权限'
+    }), {
+      status: 403,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
+    });
+  }
+
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({
       success: false,
