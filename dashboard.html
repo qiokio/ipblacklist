@@ -28,7 +28,14 @@
             <button id="mobileMenuToggle" class="mobile-menu-toggle">
                 <i class="fas fa-bars"></i>
             </button>
-            <div class="top-bar-title">IP黑名单系统 - 控制台</div>
+            <div class="top-bar-title">
+                <i class="fas fa-shield-alt"></i> IP黑名单系统
+            </div>
+            <div class="top-bar-actions">
+                <a href="/api-docs.html" class="btn btn-secondary">
+                    <i class="fas fa-book"></i> API文档
+                </a>
+            </div>
         </div>
         
         <!-- 侧栏导航 -->
@@ -42,29 +49,41 @@
                 <div id="userInfo" class="user-info" style="display: none;">
                     <span>用户：</span>
                     <span id="username" class="username">未登录</span>
-                    <button id="logoutBtn" class="btn btn-secondary">退出登录</button>
+                    <button id="logoutBtn" class="btn btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i> 退出登录
+                    </button>
                 </div>
                 <div id="loginActions" style="display: block;">
-                    <a href="/login.html" class="btn btn-secondary">登录</a>
+                    <a href="/login.html" class="btn btn-secondary">
+                        <i class="fas fa-sign-in-alt"></i> 登录
+                    </a>
                 </div>
             </div>
         </div>
         
         <!-- 主内容区域 -->
         <div class="main-content">
+            <h1 class="page-title">控制台</h1>
+            
             <!-- 认证信息提示 -->
-            <div id="authMessage" class="card auth-error" style="display: none;">
-                您需要登录才能管理IP黑名单
+            <div id="authMessage" class="auth-error" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i> 您需要登录才能管理IP黑名单
             </div>
             
             <div id="mainContent" style="display: none;">
-                <div id="kvStatus" class="card">正在检查KV连接状态...</div>
+                <div id="kvStatus" class="info-message">
+                    <i class="fas fa-spinner fa-spin"></i> 正在检查KV连接状态...
+                </div>
                 
                 <div class="card">
-                    <h2>管理IP黑名单</h2>
+                    <h2 class="card-title">
+                        <i class="fas fa-ban"></i> 管理IP黑名单
+                    </h2>
                     <div class="input-group">
                         <input type="text" id="ipInput" placeholder="输入IP地址（例如：192.168.1.1）">
-                        <button id="addIpBtn" class="btn">添加到黑名单</button>
+                        <button id="addIpBtn" class="btn">
+                            <i class="fas fa-plus"></i> 添加到黑名单
+                        </button>
                     </div>
 
                     <table id="blacklistTable">
@@ -82,39 +101,55 @@
                 
                 <!-- 添加API密钥管理入口 -->
                 <div class="card">
-                    <h3>API接口管理</h3>
+                    <h3 class="card-title">
+                        <i class="fas fa-key"></i> API接口管理
+                    </h3>
                     <p>您可以创建API密钥，用于在不登录的情况下查询IP黑名单状态。这些密钥使第三方应用能够安全地查询黑名单，而无需完整的管理权限。</p>
-                    <a href="/apikeys.html" class="btn">管理API密钥</a>
+                    <a href="/apikeys.html" class="btn">
+                        <i class="fas fa-cog"></i> 管理API密钥
+                    </a>
                 </div>
             </div>
             
             <div class="card hint" id="usageGuide">
-                <h3>控制台使用指南</h3>
+                <h3 class="card-title">
+                    <i class="fas fa-info-circle"></i> 控制台使用指南
+                </h3>
                 <p>
                     欢迎使用IP黑名单控制台。本控制台提供以下功能：
                 </p>
                 
-                <h4 style="color: #007bff; margin-top: 15px; margin-bottom: 8px;">1. IP黑名单管理</h4>
-                <ul style="padding-left: 20px; margin-bottom: 15px;">
-                    <li><strong>添加IP：</strong> 在输入框中输入IPv4地址（例如：8.8.8.8），然后点击"添加到黑名单"按钮</li>
-                    <li><strong>查看黑名单：</strong> 当前黑名单中的IP会显示在列表中</li>
-                    <li><strong>删除IP：</strong> 点击IP地址旁边的"删除"按钮，可将其从黑名单中移除</li>
-                </ul>
+                <div class="feature-item">
+                    <span class="feature-title">
+                        <i class="fas fa-ban"></i> IP黑名单管理
+                    </span>
+                    <ul>
+                        <li><strong>添加IP：</strong> 在输入框中输入IPv4地址（例如：8.8.8.8），然后点击"添加到黑名单"按钮</li>
+                        <li><strong>查看黑名单：</strong> 当前黑名单中的IP会显示在列表中</li>
+                        <li><strong>删除IP：</strong> 点击IP地址旁边的"删除"按钮，可将其从黑名单中移除</li>
+                    </ul>
+                </div>
                 
-                <h4 style="color: #28a745; margin-top: 15px; margin-bottom: 8px;">2. API密钥管理</h4>
-                <ul style="padding-left: 20px; margin-bottom: 15px;">
-                    <li>点击"管理API密钥"按钮，进入API密钥管理页面</li>
-                    <li>您可以创建、更新或删除API密钥，用于外部系统查询黑名单状态</li>
-                    <li>每个API密钥都可以添加备注，便于管理和识别其用途</li>
-                </ul>
+                <div class="feature-item">
+                    <span class="feature-title">
+                        <i class="fas fa-key"></i> API密钥管理
+                    </span>
+                    <ul>
+                        <li>点击"管理API密钥"按钮，进入API密钥管理页面</li>
+                        <li>您可以创建、更新或删除API密钥，用于外部系统查询黑名单状态</li>
+                        <li>每个API密钥都可以添加备注，便于管理和识别其用途</li>
+                    </ul>
+                </div>
                 
-                <h4 style="color: #dc3545; margin-top: 15px; margin-bottom: 8px;">技术说明</h4>
-                <p>
-                    本系统使用Cloudflare KV存储黑名单数据。如果显示"KV命名空间未定义"错误，请确保您已在Cloudflare Pages中正确配置了名为"IP_BLACKLIST"的KV命名空间绑定。
-                </p>
-                <p>
-                    所有操作都是实时的，添加或删除IP会立即生效。系统支持标准IPv4地址格式（如：192.168.1.1）。
-                </p>
+                <div class="warning-message">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>技术说明</strong>
+                    <p>
+                        本系统使用Cloudflare KV存储黑名单数据。如果显示"KV命名空间未定义"错误，请确保您已在Cloudflare Pages中正确配置了名为"IP_BLACKLIST"的KV命名空间绑定。
+                    </p>
+                    <p>
+                        所有操作都是实时的，添加或删除IP会立即生效。系统支持标准IPv4地址格式（如：192.168.1.1）。
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -122,6 +157,7 @@
     <!-- 确认退出弹窗 -->
     <div id="logoutConfirmModal" class="confirm-modal">
         <div class="confirm-modal-content">
+            <i class="fas fa-sign-out-alt" style="font-size: 32px; color: #1a73e8; margin-bottom: 16px;"></i>
             <p>确定要退出登录吗？</p>
             <div class="confirm-modal-actions">
                 <button id="confirmLogoutBtn" class="btn">确定</button>
@@ -144,7 +180,7 @@
             const mainContent = document.getElementById('mainContent');
             
             if (!token) {
-                authMessage.style.display = 'block';
+                authMessage.style.display = 'flex';
                 mainContent.style.display = 'none';
                 return;
             }

@@ -12,8 +12,9 @@
     justify-content: center;
     margin: 0 5px;
     vertical-align: middle;
-    font-weight: normal;
+    font-weight: 500;
     border: none;
+    border-radius: 6px;
 }
 
 /* 控制台链接按钮特别处理 */
@@ -33,25 +34,25 @@
 }
 
 .sidebar-toggle {
-    background: rgba(255, 255, 255, 0.1) !important;
-    color: white !important;
+    background: rgba(0, 0, 0, 0.04) !important;
+    color: #555 !important;
     width: 40px !important;
     height: 40px !important;
     border: none !important;
-    border-radius: 4px !important;
+    border-radius: 50% !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
     cursor: pointer !important;
     font-size: 18px !important;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     padding: 0 !important;
     opacity: 1;
     transform-origin: center;
 }
 
 .sidebar-toggle:hover {
-    background-color: rgba(255, 255, 255, 0.2) !important;
+    background-color: rgba(0, 0, 0, 0.08) !important;
     opacity: 1;
 }
 
@@ -98,12 +99,12 @@
 .confirm-modal-content {
     background-color: white;
     margin: 15% auto;
-    padding: 25px;
-    border-radius: 6px;
-    width: 350px;
+    padding: 28px;
+    border-radius: 12px;
+    width: 380px;
     max-width: 90%;
     text-align: center;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     transform: translateY(-20px);
     transition: transform 0.3s ease;
     position: relative;
@@ -114,14 +115,14 @@
 }
 
 .confirm-modal-actions {
-    margin-top: 25px;
+    margin-top: 28px;
     display: flex;
     justify-content: center;
-    gap: 15px;
+    gap: 16px;
 }
 
 .confirm-modal-actions .btn {
-    min-width: 80px;
+    min-width: 100px;
     cursor: pointer;
 }
 
@@ -130,17 +131,17 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 24px;
-    height: 24px;
-    gap: 5px;
+    width: 20px;
+    height: 20px;
+    gap: 4px;
 }
 
 .sidebar-toggle-icon span {
     display: block;
-    width: 24px;
-    height: 3px;
-    background: white;
-    border-radius: 2px;
+    width: 20px;
+    height: 2px;
+    background: #555;
+    border-radius: 4px;
     transition: all 0.3s;
 }
 
@@ -150,14 +151,275 @@
     transition: transform 0.3s;
 }
 
-/* 移除按钮本身的transform */
-/* .sidebar-collapsed .sidebar-toggle { transform: rotate(180deg); } 这行不要 */
-
 .auth-error {
-    background-color: #f8d7da !important;
-    color: #721c24 !important;
-    border-left: 4px solid #dc3545 !important;
+    background-color: #fef2f2 !important;
+    color: #b91c1c !important;
+    border-left: 4px solid #ef4444 !important;
     margin-bottom: 20px;
-    padding: 15px;
+    padding: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.auth-error::before {
+    content: "⚠️";
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+/* 添加字体引用 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* 通用表格样式 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 14px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+thead {
+    background-color: #f8f9fa;
+}
+
+th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 1px solid #eaeaea;
+}
+
+td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #eaeaea;
+}
+
+tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* 表单样式美化 */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+select,
+textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background-color: white;
+    color: #333;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    outline: none;
+}
+
+/* 徽章样式 */
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.badge-primary {
+    background-color: #e8f0fe;
+    color: #1a73e8;
+}
+
+.badge-success {
+    background-color: #e6f4ea;
+    color: #137333;
+}
+
+.badge-warning {
+    background-color: #fef7e0;
+    color: #b06000;
+}
+
+.badge-danger {
+    background-color: #fce8e6;
+    color: #c5221f;
+}
+
+/* 页面标题样式 */
+.page-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #202124;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eaeaea;
+}
+
+/* 提示信息样式 */
+.info-message {
+    background-color: #e8f0fe;
+    border-left: 4px solid #1a73e8;
+    padding: 16px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+.success-message {
+    background-color: #e6f4ea;
+    border-left: 4px solid #137333;
+    padding: 16px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+.warning-message {
+    background-color: #fef7e0;
+    border-left: 4px solid #b06000;
+    padding: 16px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+.error-message {
+    background-color: #fce8e6;
+    border-left: 4px solid #c5221f;
+    padding: 16px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    display: none;
+}
+
+.error-message.show {
+    display: block;
+}
+
+/* 添加波纹效果 */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    pointer-events: none;
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* 侧边栏菜单项波纹效果的容器设置 */
+.sidebar-menu-link {
+    position: relative;
+    overflow: hidden;
+}
+
+/* 移动端侧边栏遮罩层 */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 98;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
     border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* 页面过渡动画 */
+.main-content {
+    animation: fadeInContent 0.3s ease;
+}
+
+@keyframes fadeInContent {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 卡片悬停效果 */
+.card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* 按钮点击效果 */
+.btn:active {
+    transform: scale(0.98);
+}
+
+/* 徽章动画 */
+.badge {
+    transition: all 0.2s;
+}
+
+.badge:hover {
+    transform: scale(1.05);
 } 

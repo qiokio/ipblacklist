@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.querySelector('.sidebar');
     const gridContainer = document.querySelector('.grid-container');
     const sidebarToggle = document.querySelector('.sidebar-toggle');
+    const mainContent = document.querySelector('.main-content');
     
     // 定义菜单项
     const menuItems = [
@@ -20,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebarMenu = document.querySelector('.sidebar-menu');
     if (sidebarMenu) {
         sidebarMenu.innerHTML = menuItems.map(item => `
-            <li>
+            <li class="sidebar-menu-item">
                 <a href="${item.href}" class="sidebar-menu-link">
                     <span class="sidebar-menu-icon"><i class="${item.icon}"></i></span>
                     <span class="sidebar-menu-text">${item.text}</span>
@@ -33,6 +34,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mobileMenuToggle && sidebar) {
         mobileMenuToggle.addEventListener('click', () => {
             sidebar.classList.toggle('active');
+            
+            // 添加遮罩层
+            if (sidebar.classList.contains('active')) {
+                const overlay = document.createElement('div');
+                overlay.classList.add('sidebar-overlay');
+                document.body.appendChild(overlay);
+                
+                overlay.addEventListener('click', () => {
+                    sidebar.classList.remove('active');
+                    document.body.removeChild(overlay);
+                });
+            } else {
+                const overlay = document.querySelector('.sidebar-overlay');
+                if (overlay) {
+                    document.body.removeChild(overlay);
+                }
+            }
         });
     }
     
@@ -53,11 +71,30 @@ document.addEventListener('DOMContentLoaded', () => {
             (currentPath === '/' && href === '/index.html') ||
             (href !== '/' && href !== '/index.html' && currentPath.includes(href))) {
             link.classList.add('active');
+            link.parentElement.classList.add('active-item');
         }
-        
-        // 为每个菜单链接添加span包裹文本内容
-        const textContent = link.innerHTML.replace(/<span class="sidebar-menu-icon">.*?<\/span>\s*/g, '');
-        link.innerHTML = link.innerHTML.replace(textContent, `<span class="sidebar-menu-text">${textContent}</span>`);
+    });
+    
+    // 为菜单项添加波纹效果
+    document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const rect = link.getBoundingClientRect();
+            const ripple = document.createElement('span');
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            
+            ripple.className = 'ripple';
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            
+            link.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
     });
     
     // 初始化侧边栏状态
@@ -70,11 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 获取认证令牌
     const token = localStorage.getItem('auth_token');
-    console.log('当前页面路径:', window.location.pathname);
-    console.log('localStorage中的token:', token ? '存在' : '不存在');
     
     if (token) {
-        console.log('正在验证token...');
         // 尝试获取用户信息
         fetch('/api/auth/verify', {
             headers: {
@@ -82,14 +116,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
         .then(response => {
-            console.log('验证响应状态:', response.status);
             return response.json();
         })
         .then(data => {
-            console.log('验证响应数据:', data);
             if (data.valid) {
                 // 显示用户信息
-                console.log('令牌有效，用户名:', data.user.username);
                 if (usernameElement) {
                     usernameElement.textContent = data.user.username;
                 }
@@ -97,7 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (loginActions) loginActions.style.display = 'none';
             } else {
                 // 令牌无效
-                console.log('令牌无效');
                 localStorage.removeItem('auth_token'); // 移除无效令牌
                 localStorage.removeItem('user');
                 if (userInfo) userInfo.style.display = 'none';
@@ -113,12 +143,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     } else {
         // 未登录
-        console.log('未检测到令牌，显示未登录状态');
         if (userInfo) userInfo.style.display = 'none';
         if (loginActions) loginActions.style.display = 'flex';
     }
-    
-    // 注意：退出登录功能已移至logout.js
     
     // 切换侧边栏状态
     function toggleSidebar() {
@@ -130,6 +157,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (toggleButton) {
             toggleButton.setAttribute('aria-label', 
                 isCollapsed ? '展开侧边栏' : '收起侧边栏');
+        }
+        
+        // 添加过渡动画
+        if (mainContent) {
+            mainContent.style.transition = 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
         }
         
         // 保存状态到本地存储
@@ -149,4 +181,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+    
+    // 添加窗口大小变化监听，在移动设备上自动收起侧边栏
+    window.addEventListener('resize', () => {
+        if (window.innerWidth <= 768) {
+            if (sidebar && sidebar.classList.contains('active')) {
+                const overlay = document.querySelector('.sidebar-overlay');
+                if (overlay) {
+                    document.body.removeChild(overlay);
+                }
+                sidebar.classList.remove('active');
+            }
+        }
+    });
 }); 
