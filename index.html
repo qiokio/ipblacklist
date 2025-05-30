@@ -26,7 +26,14 @@
             <button id="mobileMenuToggle" class="mobile-menu-toggle">
                 <i class="fas fa-bars"></i>
             </button>
-            <div class="top-bar-title">IP黑名单系统</div>
+            <div class="top-bar-title">
+                <i class="fas fa-shield-alt"></i> IP黑名单系统
+            </div>
+            <div class="top-bar-actions">
+                <button id="themeToggle" class="btn btn-icon" aria-label="切换主题">
+                    <i class="fas fa-sun"></i>
+                </button>
+            </div>
         </div>
         
         <!-- 侧栏导航 -->
@@ -40,10 +47,14 @@
                 <div id="userInfo" class="user-info" style="display: none;">
                     <span>用户：</span>
                     <span id="username" class="username">管理员</span>
-                    <button id="logoutBtn" class="btn btn-secondary" type="button">退出登录</button>
+                    <button id="logoutBtn" class="btn btn-secondary" type="button">
+                        <i class="fas fa-sign-out-alt"></i> 退出登录
+                    </button>
                 </div>
                 <div id="loginActions" style="display: flex;">
-                    <a href="/login.html" class="btn btn-secondary">登录</a>
+                    <a href="/login.html" class="btn btn-secondary">
+                        <i class="fas fa-sign-in-alt"></i> 登录
+                    </a>
                 </div>
             </div>
         </div>
@@ -56,7 +67,7 @@
             </div>
             
             <div class="card">
-                <h2>系统简介</h2>
+                <h2 class="card-title">系统简介</h2>
                 <p>
                     IP黑名单系统是一个轻量级解决方案，旨在帮助网站管理员轻松管理IP黑名单，保护网站免受恶意访问。
                     系统基于Cloudflare Pages和KV存储构建，具有高性能和全球可用性。
@@ -64,39 +75,53 @@
                 
                 <ul class="feature-list">
                     <li class="feature-item">
-                        <span class="feature-title">简单易用</span>
+                        <span class="feature-title">
+                            <i class="fas fa-check-circle"></i> 简单易用
+                        </span>
                         直观的用户界面，无需专业知识即可快速上手。添加和删除IP地址只需点击几下。
                     </li>
                     <li class="feature-item">
-                        <span class="feature-title">安全可靠</span>
+                        <span class="feature-title">
+                            <i class="fas fa-lock"></i> 安全可靠
+                        </span>
                         基于JWT的认证系统确保只有授权用户可以管理黑名单。API密钥系统提供安全的查询能力。
                     </li>
                     <li class="feature-item">
-                        <span class="feature-title">灵活集成</span>
+                        <span class="feature-title">
+                            <i class="fas fa-plug"></i> 灵活集成
+                        </span>
                         提供多种API端点，便于与您现有的系统和应用程序集成。支持RESTful接口和多种编程语言。
                     </li>
                     <li class="feature-item">
-                        <span class="feature-title">高性能</span>
+                        <span class="feature-title">
+                            <i class="fas fa-bolt"></i> 高性能
+                        </span>
                         利用Cloudflare的全球网络，确保查询响应迅速，无论用户位于何处。
                     </li>
                 </ul>
             </div>
             
             <div class="card">
-                <h2>主要功能</h2>
+                <h2 class="card-title">主要功能</h2>
                 
-                <h3>IP黑名单管理</h3>
+                <h3>
+                    <i class="fas fa-ban"></i> IP黑名单管理
+                </h3>
                 <p>
                     通过简单直观的界面添加、查看和删除黑名单中的IP地址。系统支持IPv4地址格式，提供实时的添加和删除操作。
                 </p>
                 
-                <h3>API密钥管理</h3>
+                <h3>
+                    <i class="fas fa-key"></i> API密钥管理
+                </h3>
                 <p>
                     创建和管理API密钥，允许第三方应用在不需要完整登录的情况下查询IP是否在黑名单中。每个API密钥都可以添加备注，方便管理。
                 </p>
                 
                 <div class="api-section">
-                    <h3>API接口</h3>
+                    <h3>
+                        <i class="fas fa-code"></i> API接口
+                    </h3>
                     <p>
                         系统提供多种API端点，用于查询和管理IP黑名单：
                     </p>
@@ -114,9 +139,15 @@
             </div>
             
             <div class="action-buttons">
-                <a href="/dashboard.html" class="btn">进入控制台</a>
-                <a href="/login.html" class="btn btn-secondary">登录系统</a>
-                <a href="/key-test.html" class="btn btn-secondary">API密钥测试</a>
+                <a href="/dashboard.html" class="btn">
+                    <i class="fas fa-tachometer-alt"></i> 进入控制台
+                </a>
+                <a href="/login.html" class="btn btn-secondary">
+                    <i class="fas fa-sign-in-alt"></i> 登录系统
+                </a>
+                <a href="/key-test.html" class="btn btn-secondary">
+                    <i class="fas fa-vial"></i> API密钥测试
+                </a>
             </div>
             
             <footer>
@@ -128,6 +159,7 @@
     <!-- 确认退出弹窗 -->
     <div id="logoutConfirmModal" class="confirm-modal">
         <div class="confirm-modal-content">
+            <i class="fas fa-sign-out-alt" style="font-size: 32px; color: var(--color-primary); margin-bottom: 16px;"></i>
             <p>确定要退出登录吗？</p>
             <div class="confirm-modal-actions">
                 <button id="confirmLogoutBtn" class="btn">确定</button>
@@ -138,5 +170,6 @@
     
     <script src="js/layout.js"></script>
     <script src="js/logout.js"></script>
+    <script src="js/theme.js"></script>
 </body>
 </html> 

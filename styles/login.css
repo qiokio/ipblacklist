@@ -2,26 +2,28 @@ body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f8f9fa;
+    background-color: var(--bg-body);
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .container {
-    background-color: white;
+    background-color: var(--bg-card);
     padding: 40px;
     border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    box-shadow: var(--shadow-sm);
     width: 100%;
     max-width: 420px;
-    border: 1px solid #eaeaea;
+    border: 1px solid var(--border-color);
+    position: relative;
+    z-index: 1;
 }
 
 h1 {
-    color: #202124;
+    color: var(--text-primary);
     margin-bottom: 28px;
     text-align: center;
     font-weight: 600;
@@ -36,7 +38,7 @@ label {
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
-    color: #333;
+    color: var(--text-primary);
     font-size: 14px;
 }
 
@@ -44,25 +46,27 @@ input[type="text"],
 input[type="password"] {
     width: 100%;
     padding: 12px 14px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 15px;
     box-sizing: border-box;
     transition: all 0.2s;
+    background-color: var(--bg-input);
+    color: var(--text-primary);
 }
 
 input[type="text"]:focus,
 input[type="password"]:focus {
-    border-color: #1a73e8;
-    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    border-color: var(--border-color-focus);
+    box-shadow: var(--shadow-focus);
     outline: none;
 }
 
 button {
     width: 100%;
     padding: 14px;
-    background-color: #1a73e8;
-    color: white;
+    background-color: var(--color-primary);
+    color: var(--text-light);
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -71,11 +75,15 @@ button {
     position: relative;
     transition: all 0.2s;
     margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 button:hover {
-    background-color: #1765cc;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background-color: var(--color-primary-hover);
+    box-shadow: var(--shadow-md);
 }
 
 button.loading {
@@ -101,14 +109,14 @@ button.loading:after {
 }
 
 .error-message {
-    color: #c5221f;
+    color: var(--color-danger);
     margin-top: 16px;
     text-align: center;
     display: none;
     padding: 12px;
-    background-color: #fce8e6;
+    background-color: var(--error-bg);
     border-radius: 8px;
-    border-left: 4px solid #c5221f;
+    border-left: 4px solid var(--error-border);
     font-size: 14px;
 }
 
@@ -116,7 +124,7 @@ button.loading:after {
     display: block;
     text-align: center;
     margin-top: 24px;
-    color: #1a73e8;
+    color: var(--color-primary);
     text-decoration: none;
     font-weight: 500;
     font-size: 14px;
@@ -124,7 +132,7 @@ button.loading:after {
 }
 
 .back-link:hover {
-    color: #1765cc;
+    color: var(--color-primary-hover);
 }
 
 /* 添加一些额外的美化元素 */
@@ -135,11 +143,15 @@ button.loading:after {
     left: -10px;
     right: -10px;
     bottom: -10px;
-    background: linear-gradient(135deg, #1a73e8, #34a853, #fbbc04, #ea4335);
+    background: linear-gradient(135deg, var(--color-primary), #34a853, #fbbc04, #ea4335);
     z-index: -1;
     filter: blur(20px);
     opacity: 0.1;
     border-radius: 20px;
+}
+
+.dark-theme .container::before {
+    opacity: 0.15;
 }
 
 /* 添加品牌标识 */
@@ -151,6 +163,14 @@ button.loading:after {
 .brand-logo img {
     height: 48px;
     width: auto;
+}
+
+/* 主题切换按钮容器 */
+.theme-toggle-wrapper {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
 }
 
 /* 响应式调整 */

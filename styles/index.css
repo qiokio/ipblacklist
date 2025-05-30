@@ -1,12 +1,13 @@
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f5f5f5;
+    background-color: var(--bg-body);
+    color: var(--text-primary);
 }
 
 .container {
-    background-color: white;
+    background-color: var(--bg-card);
     padding: 20px;
     border-radius: 0;
     box-shadow: none;
@@ -20,28 +21,28 @@ header {
 }
 
 h1 {
-    color: #333;
+    color: var(--text-primary);
     margin-bottom: 10px;
     font-size: 2.4em;
 }
 
 h2 {
-    color: #444;
+    color: var(--text-primary);
     margin-top: 30px;
     margin-bottom: 15px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 10px;
     font-size: 1.8em;
 }
 
 h3 {
-    color: #555;
+    color: var(--text-secondary);
     margin-top: 20px;
     font-size: 1.4em;
 }
 
 .subtitle {
-    color: #666;
+    color: var(--text-secondary);
     font-size: 1.2em;
     margin-bottom: 20px;
 }
@@ -53,19 +54,21 @@ h3 {
 }
 
 .feature-item {
-    background-color: #f8f9fa;
-    border-left: 4px solid #007bff;
+    background-color: var(--bg-body);
+    border-left: 4px solid var(--color-primary);
     padding: 15px;
     margin-bottom: 15px;
     border-radius: 4px;
 }
 
 .feature-title {
-    font-weight: bold;
-    color: #007bff;
+    font-weight: 600;
+    color: var(--color-primary);
     font-size: 1.2em;
     margin-bottom: 8px;
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .action-buttons {
@@ -73,51 +76,73 @@ h3 {
     display: flex;
     gap: 15px;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 .btn {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     padding: 12px 24px;
-    background-color: #007bff;
-    color: white;
+    background-color: var(--color-primary);
+    color: var(--text-light);
     text-decoration: none;
-    border-radius: 4px;
-    font-weight: bold;
-    transition: background-color 0.3s;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s;
 }
 
 .btn:hover {
-    background-color: #0056b3;
+    background-color: var(--color-primary-hover);
+    box-shadow: var(--shadow-md);
 }
 
 .btn-secondary {
-    background-color: #6c757d;
+    background-color: var(--color-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover {
-    background-color: #5a6268;
+    background-color: var(--color-secondary-hover);
 }
 
 .api-section {
-    background-color: #f8f9fa;
+    background-color: var(--bg-body);
     padding: 20px;
-    border-radius: 4px;
+    border-radius: 8px;
     margin-top: 30px;
+    border: 1px solid var(--border-color);
 }
 
 code {
-    background-color: #f1f1f1;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: Consolas, Monaco, 'Andale Mono', monospace;
+    background-color: var(--bg-body);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
     font-size: 0.9em;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
 }
 
 footer {
     margin-top: 40px;
     text-align: center;
-    color: #777;
+    color: var(--text-secondary);
     font-size: 0.9em;
+    padding: 20px 0;
+    border-top: 1px solid var(--border-color);
+}
+
+footer a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+footer a:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
 }
 
 .auth-header {
@@ -137,6 +162,31 @@ button.btn {
     border: none;
     cursor: pointer;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 500;
     font-family: inherit;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    h1 {
+        font-size: 2em;
+    }
+    
+    h2 {
+        font-size: 1.6em;
+    }
+    
+    h3 {
+        font-size: 1.3em;
+    }
 } 
